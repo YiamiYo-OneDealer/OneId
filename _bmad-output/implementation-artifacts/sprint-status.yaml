@@ -48,7 +48,7 @@ development_status:
   epic-1: in-progress
   1-1-initialize-backend-and-frontend-projects: done
   1-2-local-development-stack-docker-compose: done
-  1-3a-tenant-context-middleware-and-registration-order-enforcement: backlog
+  1-3a-tenant-context-middleware-and-registration-order-enforcement: done
   1-3b-ef-core-global-query-filters-entity-stubs-and-concurrency-tokens: backlog
   1-4-observability-pipeline-serilog-otel-seq: backlog
   1-5-integration-test-infrastructure-testcontainers-respawn-testtokenfactory: backlog

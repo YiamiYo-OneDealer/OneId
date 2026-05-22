@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using OneId.Server.Application.Common;
+using OneId.Server.Infrastructure.Middleware;
 using OneId.Server.Infrastructure.Persistence;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -38,8 +40,9 @@ try
     builder.Services.AddControllers();
     builder.Services.AddOpenApi();
 
-    // AR-5 STEP 1: ITenantContextMiddleware MUST precede EF Core and OpenIddict — see architecture.md
-    // TODO Story 1.3a: app.UseMiddleware<TenantContextMiddleware>();
+    // AR-5: ITenantContext MUST precede OpenIddict and EF Core — see architecture.md
+    builder.Services.AddScoped<TenantContext>();
+    builder.Services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
 
     // AR-5 STEP 2: EF Core with global query filters referencing ITenantContext
     // Global query filters are added in Story 1.3b once ITenantContext is wired
@@ -68,6 +71,8 @@ try
 
     app.UseHttpsRedirection();
     app.UseAuthentication();
+    // AR-5: TenantContextMiddleware MUST precede OpenIddict and EF Core — see architecture.md
+    app.UseMiddleware<TenantContextMiddleware>();
     app.UseAuthorization();
     app.MapControllers();
     app.MapHealthChecks("/health");

@@ -23,7 +23,11 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/health)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5341)",
       "Bash(curl -s http://localhost:8080/health)",
-      "Bash(curl -s \"http://localhost:5341/api/events?count=10\")"
+      "Bash(curl -s \"http://localhost:5341/api/events?count=10\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "Read(//dev/**)"
     ]
   }
 }
