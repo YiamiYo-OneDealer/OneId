@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OneId.Server.Application.Common;
+using OneId.Server.Infrastructure.Caching;
 using OneId.Server.Infrastructure.Logging;
 using OneId.Server.Infrastructure.Middleware;
 using OneId.Server.Infrastructure.Persistence;
@@ -43,6 +44,11 @@ try
 
     builder.Services.AddControllers();
     builder.Services.AddOpenApi();
+
+    // AR-10: All cache access must go through ICacheService — direct IMemoryCache injection is forbidden
+    // outside Infrastructure/Caching/ and is enforced by InternalBoundaryTests.cs.
+    builder.Services.AddMemoryCache();
+    builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
 
     // AR-5: ITenantContext MUST precede OpenIddict and EF Core — see architecture.md
     builder.Services.AddScoped<TenantContext>();

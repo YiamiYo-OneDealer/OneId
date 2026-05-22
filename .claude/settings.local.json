@@ -56,7 +56,8 @@
       "Bash(dotnet-script -e ' *)",
       "Bash(mkdir -p \"C:\\\\Temp\\\\TestRespawn\" 2>/dev/null; true)",
       "Bash(Select-Object -Property Name, PSIsContainer)",
-      "Bash(Format-Table -AutoSize)"
+      "Bash(Format-Table -AutoSize)",
+      "Bash(Remove-Item \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Server\\\\Infrastructure\\\\Caching\\\\.gitkeep\" -Force)"
     ],
     "additionalDirectories": [
       "C:\\Temp"
