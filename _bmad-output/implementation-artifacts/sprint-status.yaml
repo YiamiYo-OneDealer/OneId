@@ -1,0 +1,158 @@
+# generated: 2026-05-22
+# last_updated: 2026-05-22
+# project: OneId
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-05-22
+last_updated: 2026-05-22
+project: OneId
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Epic 1: Foundation & Dev Infrastructure
+  # ─────────────────────────────────────────────────────────────────────────
+  epic-1: backlog
+  1-1-initialize-backend-and-frontend-projects: backlog
+  1-2-local-development-stack-docker-compose: backlog
+  1-3a-tenant-context-middleware-and-registration-order-enforcement: backlog
+  1-3b-ef-core-global-query-filters-entity-stubs-and-concurrency-tokens: backlog
+  1-4-observability-pipeline-serilog-otel-seq: backlog
+  1-5-integration-test-infrastructure-testcontainers-respawn-testtokenfactory: backlog
+  1-6-cicd-pipeline-github-actions: backlog
+  1-7a-archunit-boundary-enforcement-and-cache-abstraction: backlog
+  1-7b-devseeder-and-permission-catalog-stub: backlog
+  epic-1-retrospective: optional
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Epic 2: Working Authentication
+  # ─────────────────────────────────────────────────────────────────────────
+  epic-2: backlog
+  2-1-openiddict-configuration-and-oidc-discovery: backlog
+  2-2-password-authentication-and-account-lockout: backlog
+  2-3-totp-mfa-enrollment-and-challenge: backlog
+  2-4-jwt-issuance-with-itokenclaimsenricher-pipeline: backlog
+  2-5-token-introspection-and-jti-revocation-store: backlog
+  2-6-role-change-jti-invalidation-fr-5a: backlog
+  2-7-password-reset-via-email-link: backlog
+  2-8-refresh-token-rotation-and-spa-token-lifecycle: backlog
+  2-9-session-expiry-ux: backlog
+  epic-2-retrospective: optional
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Epic 3: Tenant & License Governance
+  # ─────────────────────────────────────────────────────────────────────────
+  epic-3: backlog
+  3-1-itenant-context-middleware-and-tenant-isolation-regression-tests: backlog
+  3-2-tenant-crud-internal-admin: backlog
+  3-3-seat-count-license-management-internal-admin: backlog
+  3-4-tenant-admin-designation-internal-admin: backlog
+  3-5-seat-limit-enforcement-at-token-issuance-fr-18: backlog
+  3-6-tenant-suspension-with-jti-revocation-fr-12: backlog
+  3-7-tenant-admin-license-view: backlog
+  3-8-audit-log-infrastructure: backlog
+  epic-3-retrospective: optional
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Epic 4a: Authorization Data Model
+  # ─────────────────────────────────────────────────────────────────────────
+  epic-4a: backlog
+  4a-1-permission-catalog-internal-admin: backlog
+  4a-2-role-management-tenant-admin: backlog
+  4a-3-role-set-management-tenant-admin: backlog
+  4a-4-group-management-tenant-admin: backlog
+  4a-5-dimensional-attribute-reference-lists: backlog
+  4a-6-per-user-dimension-assignments-tenant-admin: backlog
+  4a-7-user-lifecycle-management-tenant-admin: backlog
+  epic-4a-retrospective: optional
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Epic 4b: Token Evaluation & Overrides
+  # ─────────────────────────────────────────────────────────────────────────
+  epic-4b: backlog
+  4b-1-user-level-permission-override-data-model: backlog
+  4b-2-permission-evaluation-pipeline: backlog
+  4b-3-enriched-introspection-response-and-performance-gate: backlog
+  epic-4b-retrospective: optional
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Epic 5a: Frontend Shell & Core Components
+  # (parallel track — can start alongside Epic 4a)
+  # ─────────────────────────────────────────────────────────────────────────
+  epic-5a: backlog
+  5a-1-design-system-foundation: backlog
+  5a-2-app-shell-routing-tenant-context-and-query-key-factory: backlog
+  5a-3-globalnav-and-admintierbanner: backlog
+  5a-4-datatable-and-emptystate-components: backlog
+  5a-5-ci-playwright-stub-and-playwright-configuration: backlog
+  epic-5a-retrospective: optional
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Epic 5b: Permission & Override UX
+  # (depends on Epic 4b introspection payload shape being stable)
+  # ─────────────────────────────────────────────────────────────────────────
+  epic-5b: backlog
+  5b-1-useformmutation-and-usehaspermission-hooks: backlog
+  5b-2-permission-label-map-and-disabledbuttonwithtooltip: backlog
+  5b-3-effectivepermissionspanel-live-mode: backlog
+  5b-4-effectivepermissionspanel-preview-mode: backlog
+  5b-5-denyoverridesheet-denyoverridebadge-and-seatusageindicator: backlog
+  5b-6-dimensionalscopesummary-component: backlog
+  epic-5b-retrospective: optional
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Epic 5c: Admin Pages & Accessibility
+  # ─────────────────────────────────────────────────────────────────────────
+  epic-5c: backlog
+  5c-1-tenant-admin-management-pages: backlog
+  5c-2-f-1-new-user-stepper-with-real-time-permissions-preview: backlog
+  5c-3-internal-admin-management-pages: backlog
+  5c-4-f-3-tenant-provisioning-stepper: backlog
+  5c-5-audit-log-ui: backlog
+  5c-6-commandpalette: backlog
+  5c-7-wcag-aa-audit-automated-accessibility-tests-and-ci-playwright-activation: backlog
+  epic-5c-retrospective: optional
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Epic 6: Federated Authentication ★ Stretch Goal ★
+  # (after Epic 3; parallel with 5a–5c if scope permits)
+  # ─────────────────────────────────────────────────────────────────────────
+  epic-6: backlog
+  6-1-testfederationhandler-and-devseeder-federated-test-user: backlog
+  6-2-okta-oidc-federation: backlog
+  6-3-azure-ad-federation: backlog
+  6-4-idp-configuration-ui: backlog
+  epic-6-retrospective: optional

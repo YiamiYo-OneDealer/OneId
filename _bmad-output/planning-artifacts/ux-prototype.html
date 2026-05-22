@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OneId Console — UI Prototype</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:          #09090b; /* zinc-950 */
+    --sidebar:     #18181b; /* zinc-900 */
+    --surface:     #27272a; /* zinc-800 */
+    --elevated:    #3f3f46; /* zinc-700 */
+    --border:      #3f3f46; /* zinc-700 */
+    --text:        #fafafa; /* zinc-50  */
+    --text-muted:  #a1a1aa; /* zinc-400 */
+    --text-dim:    #71717a; /* zinc-500 */
+    --accent:      #6366f1; /* indigo-500 */
+    --accent-fg:   #a5b4fc; /* indigo-300 */
+    --deny-bg:     #450a0a; /* red-950   */
+    --deny-fg:     #ef4444; /* red-500   */
+    --warn-bg:     #d97706; /* amber-600 */
+    --warn-fg:     #09090b; /* zinc-950  */
+    --success:     #22c55e; /* green-500 */
+    --seat-warn:   #fbbf24; /* amber-400 */
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; line-height: 1.5; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* ── Admin Tier Banner ── */
+  .admin-banner { background: var(--warn-bg); color: var(--warn-fg); height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+  .admin-banner-left { display: flex; align-items: center; gap: 8px; }
+  .admin-banner-icon { font-size: 15px; }
+  .admin-banner-back { background: rgba(0,0,0,0.15); border: none; color: var(--warn-fg); padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+  .admin-banner-back:hover { background: rgba(0,0,0,0.25); }
+
+  /* ── Shell ── */
+  .shell { display: flex; flex: 1; overflow: hidden; }
+
+  /* ── Sidebar ── */
+  .sidebar { width: 240px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+  .sidebar-logo { padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .sidebar-logo-mark { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: white; }
+  .sidebar-logo-name { font-weight: 600; font-size: 15px; }
+  .sidebar-tenant { padding: 10px 16px; font-size: 12px; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+  .sidebar-tenant strong { color: var(--text-muted); font-weight: 500; }
+  .sidebar-nav { flex: 1; padding: 8px 0; }
+  .sidebar-section { padding: 4px 12px 2px; font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 8px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 7px 16px; font-size: 13.5px; color: var(--text-muted); cursor: pointer; border-left: 2px solid transparent; transition: all 0.1s; }
+  .nav-item:hover { background: var(--surface); color: var(--text); }
+  .nav-item.active { background: var(--surface); color: var(--text); border-left-color: var(--accent); }
+  .nav-item-icon { width: 18px; text-align: center; font-size: 15px; }
+  .sidebar-footer { padding: 12px 16px; border-top: 1px solid var(--border); }
+  .cmd-hint { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-dim); cursor: pointer; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); }
+  .cmd-hint:hover { background: var(--surface); color: var(--text-muted); }
+  .kbd { background: var(--surface); border: 1px solid var(--elevated); border-radius: 4px; padding: 1px 5px; font-size: 11px; font-family: monospace; }
+
+  /* ── Content ── */
+  .content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+  .page { display: none; flex-direction: column; flex: 1; }
+  .page.active { display: flex; }
+
+  /* ── Page Header ── */
+  .page-header { padding: 20px 28px 0; border-bottom: 1px solid var(--border); }
+  .breadcrumb { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .breadcrumb a { color: var(--text-muted); cursor: pointer; text-decoration: none; }
+  .breadcrumb a:hover { color: var(--text); }
+  .page-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+  .page-tabs { display: flex; gap: 0; }
+  .page-tab { padding: 8px 16px; font-size: 13.5px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .page-tab:hover { color: var(--text); }
+  .page-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+  /* ── Page Body ── */
+  .page-body { padding: 24px 28px; flex: 1; }
+
+  /* ── Seat Usage ── */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-title { font-size: 15px; font-weight: 600; }
+  .seat-indicator { font-size: 12.5px; display: flex; align-items: center; gap: 6px; }
+  .seat-count { color: var(--seat-warn); font-weight: 500; }
+  .seat-icon { font-size: 13px; }
+
+  /* ── Search ── */
+  .search-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .search-input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; color: var(--text); font-size: 13.5px; outline: none; }
+  .search-input::placeholder { color: var(--text-dim); }
+  .search-input:focus { border-color: var(--accent); }
+  .btn { padding: 7px 14px; border-radius: 6px; font-size: 13.5px; font-weight: 500; cursor: pointer; border: none; transition: all 0.1s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #5558e3; }
+  .btn-outline { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-outline:hover { background: var(--surface); color: var(--text); }
+  .btn-destructive { background: transparent; color: var(--deny-fg); border: 1px solid var(--deny-fg); }
+  .btn-destructive:hover { background: var(--deny-bg); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* ── Table ── */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th { text-align: left; padding: 8px 12px; font-size: 12px; font-weight: 500; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); }
+  .data-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .user-cell { display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+  .user-name { font-weight: 500; color: var(--text); }
+  .user-email { font-size: 12px; color: var(--text-dim); }
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 11.5px; font-weight: 500; }
+  .badge-active { background: rgba(34,197,94,0.12); color: var(--success); }
+  .badge-inactive { background: rgba(113,113,122,0.2); color: var(--text-dim); }
+  .badge-deny { background: var(--deny-bg); color: var(--deny-fg); cursor: pointer; border: 1px solid rgba(239,68,68,0.3); }
+  .badge-deny:hover { background: #7f1d1d; }
+  .link { color: var(--accent-fg); cursor: pointer; font-size: 13px; text-decoration: none; }
+  .link:hover { text-decoration: underline; }
+  .mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; color: var(--accent-fg); }
+
+  /* ── User Profile ── */
+  .profile-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 13.5px; font-weight: 600; }
+  .card-body { padding: 18px; }
+  .field-row { display: grid; grid-template-columns: 120px 1fr; gap: 8px; margin-bottom: 14px; align-items: start; }
+  .field-row:last-child { margin-bottom: 0; }
+  .field-label { font-size: 12px; color: var(--text-dim); padding-top: 2px; }
+  .field-value { font-size: 13.5px; color: var(--text); }
+  .tag { display: inline-flex; align-items: center; background: rgba(99,102,241,0.15); color: var(--accent-fg); border: 1px solid rgba(99,102,241,0.3); border-radius: 4px; padding: 2px 8px; font-size: 12px; margin: 2px 3px 2px 0; }
+  .dim-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* ── Effective Permissions Panel ── */
+  .ep-tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .ep-tab { padding: 10px 16px; font-size: 13px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .ep-tab:hover { color: var(--text); }
+  .ep-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .ep-search { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .ep-search input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 5px 10px; color: var(--text); font-size: 12.5px; outline: none; }
+  .ep-search input:focus { border-color: var(--accent); }
+  .ep-search input::placeholder { color: var(--text-dim); }
+  .ep-body { padding: 12px 0; max-height: 480px; overflow-y: auto; }
+  .ep-item { display: flex; align-items: center; justify-content: space-between; padding: 7px 14px; }
+  .ep-item:hover { background: rgba(255,255,255,0.03); }
+  .ep-item-label { font-size: 13px; color: var(--text); }
+  .ep-item-source { font-size: 11.5px; color: var(--text-dim); margin-top: 1px; }
+  .ep-item-right { display: flex; align-items: center; gap: 8px; }
+  .ep-detail-item { padding: 8px 14px; }
+  .ep-detail-item:hover { background: rgba(255,255,255,0.03); }
+  .ep-perm-id { font-family: monospace; font-size: 12px; color: var(--accent-fg); }
+  .provenance { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+  .prov-node { font-size: 11px; color: var(--text-dim); background: var(--bg); border: 1px solid var(--elevated); border-radius: 4px; padding: 1px 7px; cursor: pointer; }
+  .prov-node:hover { color: var(--text); border-color: var(--accent); }
+  .prov-sep { color: var(--elevated); font-size: 11px; }
+  .ep-preview-chip { font-size: 11px; background: rgba(99,102,241,0.15); color: var(--accent-fg); border: 1px solid rgba(99,102,241,0.3); border-radius: 4px; padding: 2px 8px; margin-left: auto; }
+
+  /* ── Sheet / Overlay ── */
+  .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; display: none; }
+  .sheet-overlay.open { display: block; }
+  .sheet { position: fixed; right: 0; top: 0; bottom: 0; width: 420px; background: var(--surface); border-left: 1px solid var(--border); z-index: 50; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.2s ease; }
+  .sheet.open { transform: translateX(0); }
+  .sheet-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; }
+  .sheet-title { font-size: 15px; font-weight: 600; }
+  .sheet-subtitle { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+  .sheet-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 0; line-height: 1; }
+  .sheet-close:hover { color: var(--text); }
+  .sheet-body { flex: 1; padding: 20px; overflow-y: auto; }
+  .sheet-field { margin-bottom: 18px; }
+  .sheet-field-label { font-size: 11.5px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+  .sheet-field-value { font-size: 13.5px; color: var(--text); }
+  .deny-alert { background: var(--deny-bg); border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; padding: 12px 14px; margin-bottom: 18px; font-size: 13px; color: var(--deny-fg); }
+  .sheet-footer { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+  .propagation-note { font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 4px; }
+
+  /* ── Command Palette ── */
+  .palette-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 60; display: none; align-items: flex-start; justify-content: center; padding-top: 120px; }
+  .palette-overlay.open { display: flex; }
+  .palette { width: 560px; background: var(--surface); border: 1px solid var(--elevated); border-radius: 10px; overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,0.5); }
+  .palette-input-row { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .palette-icon { color: var(--text-dim); font-size: 16px; }
+  .palette-input { flex: 1; background: none; border: none; color: var(--text); font-size: 15px; outline: none; }
+  .palette-input::placeholder { color: var(--text-dim); }
+  .palette-group { padding: 8px 0; }
+  .palette-group-label { padding: 4px 14px; font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+  .palette-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; cursor: pointer; }
+  .palette-item:hover, .palette-item.selected { background: rgba(99,102,241,0.12); }
+  .palette-item-left { display: flex; align-items: center; gap: 10px; font-size: 13.5px; }
+  .palette-item-icon { color: var(--text-dim); width: 20px; text-align: center; }
+  .palette-item-right { font-size: 11.5px; color: var(--text-dim); }
+  .palette-footer { padding: 8px 14px; border-top: 1px solid var(--border); display: flex; gap: 16px; font-size: 11.5px; color: var(--text-dim); }
+  .palette-key { display: flex; align-items: center; gap: 4px; }
+
+  /* ── Toast ── */
+  .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
+  .toast { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; min-width: 280px; max-width: 380px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); display: flex; align-items: flex-start; gap: 10px; animation: slideIn 0.2s ease; }
+  .toast-success { border-left: 3px solid var(--success); }
+  .toast-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .toast-content-title { font-size: 13.5px; font-weight: 500; }
+  .toast-content-body { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .toast-close { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 15px; margin-left: auto; flex-shrink: 0; }
+  @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* ── New User Form ── */
+  .form-section { margin-bottom: 24px; }
+  .form-section-title { font-size: 12px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-field { display: flex; flex-direction: column; gap: 5px; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+  .form-label .required { color: var(--deny-fg); margin-left: 2px; }
+  .form-input { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 7px 11px; color: var(--text); font-size: 13.5px; outline: none; }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--text-dim); }
+  .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2371717a' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+  .multi-select-area { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px; min-height: 70px; }
+  .selected-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+  .selected-tag { background: rgba(99,102,241,0.15); color: var(--accent-fg); border: 1px solid rgba(99,102,241,0.3); border-radius: 4px; padding: 2px 8px; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+  .selected-tag-remove { cursor: pointer; color: var(--text-dim); font-size: 14px; line-height: 1; }
+  .warning-banner { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 6px; padding: 10px 14px; font-size: 12.5px; color: #fbbf24; margin-top: 8px; display: flex; gap: 8px; }
+  .ep-preview-panel { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .ep-preview-header { padding: 10px 14px; background: var(--bg); display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 500; border-bottom: 1px solid var(--border); }
+  .form-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 20px; border-top: 1px solid var(--border); margin-top: 24px; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--elevated); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- Admin Tier Banner -->
+<div class="admin-banner">
+  <div class="admin-banner-left">
+    <span class="admin-banner-icon">⚡</span>
+    <span>Internal Admin — Tenant: <strong>Renault Brussels</strong> / Users</span>
+  </div>
+  <button class="admin-banner-back" onclick="showToast('Returned to all tenants view', '')">← All Tenants</button>
+</div>
+
+<!-- Shell -->
+<div class="shell">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">OI</div>
+      <span class="sidebar-logo-name">OneId</span>
+    </div>
+    <div class="sidebar-tenant">Viewing <strong>Renault Brussels</strong></div>
+    <div class="sidebar-nav">
+      <div class="nav-item" onclick="navigate('users')">
+        <span class="nav-item-icon">👥</span> Users
+      </div>
+      <div class="nav-item" onclick="navigate('groups')">
+        <span class="nav-item-icon">🗂</span> Groups
+      </div>
+      <div class="nav-item" onclick="navigate('groups')">
+        <span class="nav-item-icon">🎭</span> Roles
+      </div>
+      <div class="nav-item" onclick="navigate('groups')">
+        <span class="nav-item-icon">📦</span> Role Sets
+      </div>
+      <div class="nav-item" onclick="navigate('groups')">
+        <span class="nav-item-icon">📋</span> Audit Log
+      </div>
+      <div class="sidebar-section">Internal Admin</div>
+      <div class="nav-item" onclick="navigate('groups')">
+        <span class="nav-item-icon">🏢</span> Tenants
+      </div>
+      <div class="nav-item" onclick="navigate('groups')">
+        <span class="nav-item-icon">🔑</span> Permissions
+      </div>
+      <div class="nav-item" onclick="navigate('groups')">
+        <span class="nav-item-icon">🎫</span> Licenses
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="cmd-hint" onclick="openPalette()">
+        <span>⌘</span>
+        <span style="flex:1;font-size:12px">Search or jump to…</span>
+        <span class="kbd">⌘K</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- Users List Page -->
+    <div class="page active" id="page-users">
+      <div class="page-header">
+        <div class="breadcrumb">
+          <a>Renault Brussels</a> <span>›</span> <span>Users</span>
+        </div>
+        <div class="page-title">Users</div>
+      </div>
+      <div class="page-body">
+        <div class="section-header">
+          <div class="section-title">All Users</div>
+          <div class="seat-indicator">
+            <span class="seat-icon">💺</span>
+            <span class="seat-count">42 / 50 seats used</span>
+          </div>
+        </div>
+        <div class="search-row">
+          <input class="search-input" placeholder="Search users by name or email…">
+          <button class="btn btn-outline btn-sm" style="align-self:center">Filter</button>
+          <button class="btn btn-primary btn-sm" style="align-self:center" onclick="navigate('new-user')">+ New User</button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Groups</th>
+              <th>Status</th>
+              <th>Last login</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="cursor:pointer" onclick="navigate('profile')">
+              <td><div class="user-cell"><div class="avatar" style="background:#7c3aed">DP</div><div><div class="user-name">Diana Papadopoulou</div><div class="user-email">diana.p@renaultbxl.be</div></div></div></td>
+              <td><span class="tag">Finance</span><span class="tag">Managers</span></td>
+              <td><span class="badge badge-active">Active</span></td>
+              <td style="color:var(--text-muted)">Today, 09:14</td>
+              <td><a class="link">View →</a></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="avatar" style="background:#0891b2">MP</div><div><div class="user-name">Michalis Petridis</div><div class="user-email">m.petridis@renaultbxl.be</div></div></div></td>
+              <td><span class="tag">Sales Staff</span></td>
+              <td><span class="badge badge-active">Active</span></td>
+              <td style="color:var(--text-muted)">Yesterday</td>
+              <td><a class="link">View →</a></td>
+            </tr>
+            <tr onclick="navigate('profile-deny')" style="cursor:pointer">
+              <td><div class="user-cell"><div class="avatar" style="background:#b45309">SC</div><div><div class="user-name">Sarah Chen</div><div class="user-email">s.chen@renaultbxl.be</div></div></div></td>
+              <td><span class="tag">Finance</span></td>
+              <td><span class="badge badge-active">Active</span></td>
+              <td style="color:var(--text-muted)">3 days ago</td>
+              <td><span class="badge badge-deny" onclick="event.stopPropagation(); openSheet()">DENY</span></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="avatar" style="background:#4d7c0f">NK</div><div><div class="user-name">Nikolaos Kostas</div><div class="user-email">n.kostas@renaultbxl.be</div></div></div></td>
+              <td><span class="tag">Technicians</span></td>
+              <td><span class="badge badge-inactive">Inactive</span></td>
+              <td style="color:var(--text-muted)">2 weeks ago</td>
+              <td><a class="link">View →</a></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-dim);display:flex;align-items:center;justify-content:space-between">
+          <span>Showing 4 of 42 users</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-outline btn-sm">← Prev</button>
+            <button class="btn btn-outline btn-sm">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Profile — with DENY -->
+    <div class="page" id="page-profile-deny">
+      <div class="page-header">
+        <div class="breadcrumb">
+          <a onclick="navigate('users')" class="link">Users</a> <span>›</span> <span>Sarah Chen</span>
+        </div>
+        <div class="page-title">
+          <div class="avatar" style="background:#b45309;width:32px;height:32px;font-size:13px">SC</div>
+          Sarah Chen
+          <span class="badge badge-active" style="font-size:12px">Active</span>
+        </div>
+        <div class="page-tabs">
+          <div class="page-tab active">Overview</div>
+          <div class="page-tab">Groups</div>
+          <div class="page-tab">Audit Log</div>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="profile-grid">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-header"><span class="card-title">User Details</span> <button class="btn btn-outline btn-sm">Edit</button></div>
+              <div class="card-body">
+                <div class="field-row"><span class="field-label">Email</span><span class="field-value">s.chen@renaultbxl.be</span></div>
+                <div class="field-row"><span class="field-label">Created</span><span class="field-value" style="color:var(--text-muted)">14 Jan 2026</span></div>
+                <div class="field-row"><span class="field-label">Last login</span><span class="field-value" style="color:var(--text-muted)">3 days ago</span></div>
+                <div class="field-row"><span class="field-label">Groups</span><div><span class="tag">Finance</span></div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">Dimensional Attributes</span></div>
+              <div class="card-body">
+                <div class="field-row"><span class="field-label">Location</span><div class="dim-row"><span class="tag">Brussels</span></div></div>
+                <div class="field-row"><span class="field-label">Branch</span><div class="dim-row"><span class="tag">Finance</span><span class="tag">Aftersales</span></div></div>
+                <div class="field-row"><span class="field-label">Make</span><div class="dim-row"><span class="tag">Renault</span><span class="tag">Dacia</span></div></div>
+              </div>
+            </div>
+          </div>
+          <!-- Effective Permissions Panel -->
+          <div class="card" style="align-self:start">
+            <div class="card-header">
+              <span class="card-title">Effective Permissions</span>
+              <span class="badge badge-deny" style="cursor:pointer" onclick="openSheet()">1 DENY</span>
+            </div>
+            <div class="ep-tabs">
+              <div class="ep-tab active" id="ep-tab-cap" onclick="switchEpTab('cap')">Capabilities</div>
+              <div class="ep-tab" id="ep-tab-det" onclick="switchEpTab('det')">Permission Details</div>
+            </div>
+            <div class="ep-search"><input placeholder="Search capabilities or od. IDs…"></div>
+            <div class="ep-body" id="ep-body-cap">
+              <div class="ep-item">
+                <div><div class="ep-item-label">View finance reports</div><div class="ep-item-source">via Finance → Finance Reports Role</div></div>
+              </div>
+              <div class="ep-item">
+                <div><div class="ep-item-label">Create invoices</div><div class="ep-item-source">via Finance → Invoicing Role</div></div>
+              </div>
+              <div class="ep-item" style="background:rgba(239,68,68,0.04)">
+                <div>
+                  <div class="ep-item-label" style="display:flex;align-items:center;gap:8px">
+                    Approve finance transactions
+                    <span class="badge badge-deny" style="font-size:11px;cursor:pointer" onclick="openSheet()">DENY</span>
+                  </div>
+                  <div class="ep-item-source" style="color:var(--deny-fg);opacity:0.7">User-level override · Applied 2 days ago</div>
+                </div>
+              </div>
+              <div class="ep-item">
+                <div><div class="ep-item-label">View customer records</div><div class="ep-item-source">via Finance → CRM Read Role</div></div>
+              </div>
+              <div class="ep-item">
+                <div><div class="ep-item-label">Submit purchase orders</div><div class="ep-item-source">via Finance → Procurement Role</div></div>
+              </div>
+            </div>
+            <div class="ep-body" id="ep-body-det" style="display:none">
+              <div class="ep-detail-item">
+                <div class="ep-perm-id">od.finance.reports.view</div>
+                <div class="provenance">
+                  <span class="prov-node">Finance</span><span class="prov-sep">›</span>
+                  <span class="prov-node">Finance Staff</span><span class="prov-sep">›</span>
+                  <span class="prov-node">Finance Reports</span><span class="prov-sep">›</span>
+                  <span class="prov-node" style="color:var(--accent-fg)">reports.view</span>
+                </div>
+              </div>
+              <div class="ep-detail-item">
+                <div class="ep-perm-id">od.finance.invoice.create</div>
+                <div class="provenance">
+                  <span class="prov-node">Finance</span><span class="prov-sep">›</span>
+                  <span class="prov-node">Finance Staff</span><span class="prov-sep">›</span>
+                  <span class="prov-node">Invoicing</span><span class="prov-sep">›</span>
+                  <span class="prov-node" style="color:var(--accent-fg)">invoice.create</span>
+                </div>
+              </div>
+              <div class="ep-detail-item" style="background:rgba(239,68,68,0.04)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span class="ep-perm-id">od.finance.transaction.approve</span>
+                  <span class="badge badge-deny" style="cursor:pointer;font-size:11px" onclick="openSheet()">DENY</span>
+                </div>
+                <div class="provenance">
+                  <span class="prov-node">Finance</span><span class="prov-sep">›</span>
+                  <span class="prov-node">Finance Staff</span><span class="prov-sep">›</span>
+                  <span class="prov-node">Approvals</span><span class="prov-sep">›</span>
+                  <span class="prov-node" style="color:var(--accent-fg)">transaction.approve</span>
+                  <span class="prov-sep">—</span>
+                  <span style="font-size:11px;color:var(--deny-fg)">blocked by user override</span>
+                </div>
+              </div>
+              <div class="ep-detail-item">
+                <div class="ep-perm-id">od.crm.customer.view</div>
+                <div class="provenance">
+                  <span class="prov-node">Finance</span><span class="prov-sep">›</span>
+                  <span class="prov-node">Finance Staff</span><span class="prov-sep">›</span>
+                  <span class="prov-node">CRM Read</span><span class="prov-sep">›</span>
+                  <span class="prov-node" style="color:var(--accent-fg)">customer.view</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Profile — normal -->
+    <div class="page" id="page-profile">
+      <div class="page-header">
+        <div class="breadcrumb">
+          <a onclick="navigate('users')" class="link">Users</a> <span>›</span> <span>Diana Papadopoulou</span>
+        </div>
+        <div class="page-title">
+          <div class="avatar" style="background:#7c3aed;width:32px;height:32px;font-size:13px">DP</div>
+          Diana Papadopoulou
+          <span class="badge badge-active" style="font-size:12px">Active</span>
+        </div>
+        <div class="page-tabs">
+          <div class="page-tab active">Overview</div>
+          <div class="page-tab">Groups</div>
+          <div class="page-tab">Audit Log</div>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="profile-grid">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-header"><span class="card-title">User Details</span><button class="btn btn-outline btn-sm">Edit</button></div>
+              <div class="card-body">
+                <div class="field-row"><span class="field-label">Email</span><span class="field-value">diana.p@renaultbxl.be</span></div>
+                <div class="field-row"><span class="field-label">Created</span><span class="field-value" style="color:var(--text-muted)">3 Mar 2025</span></div>
+                <div class="field-row"><span class="field-label">Last login</span><span class="field-value" style="color:var(--text-muted)">Today, 09:14</span></div>
+                <div class="field-row"><span class="field-label">Groups</span><div><span class="tag">Finance</span><span class="tag">Managers</span></div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">Dimensional Attributes</span></div>
+              <div class="card-body">
+                <div class="field-row"><span class="field-label">Location</span><div class="dim-row"><span class="tag">Brussels</span></div></div>
+                <div class="field-row"><span class="field-label">Branch</span><div class="dim-row"><span class="tag">Finance</span></div></div>
+                <div class="field-row"><span class="field-label">Make</span><div class="dim-row"><span class="tag">Renault</span><span class="tag">Dacia</span></div></div>
+                <div class="field-row"><span class="field-label">Company</span><div class="dim-row"><span class="tag">Renault Brussels SA</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="align-self:start">
+            <div class="card-header"><span class="card-title">Effective Permissions</span></div>
+            <div class="ep-tabs">
+              <div class="ep-tab active">Capabilities</div>
+              <div class="ep-tab">Permission Details</div>
+            </div>
+            <div class="ep-search"><input placeholder="Search capabilities or od. IDs…"></div>
+            <div class="ep-body">
+              <div class="ep-item"><div><div class="ep-item-label">View finance reports</div><div class="ep-item-source">via Finance → Finance Reports Role</div></div></div>
+              <div class="ep-item"><div><div class="ep-item-label">Approve finance transactions</div><div class="ep-item-source">via Finance → Approvals Role</div></div></div>
+              <div class="ep-item"><div><div class="ep-item-label">Create invoices</div><div class="ep-item-source">via Finance → Invoicing Role</div></div></div>
+              <div class="ep-item"><div><div class="ep-item-label">View customer records</div><div class="ep-item-source">via Finance → CRM Read Role</div></div></div>
+              <div class="ep-item"><div><div class="ep-item-label">Manage team members</div><div class="ep-item-source">via Managers → Team Management Role</div></div></div>
+              <div class="ep-item"><div><div class="ep-item-label">View management reports</div><div class="ep-item-source">via Managers → Reporting Role</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- New User Page -->
+    <div class="page" id="page-new-user">
+      <div class="page-header">
+        <div class="breadcrumb">
+          <a onclick="navigate('users')" class="link">Users</a> <span>›</span> <span>New User</span>
+        </div>
+        <div class="page-title">Add New User</div>
+      </div>
+      <div class="page-body" style="max-width:860px">
+        <div style="display:grid;grid-template-columns:1fr 360px;gap:24px">
+          <div>
+            <div class="form-section">
+              <div class="form-section-title">User Details</div>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label class="form-label">First name <span class="required">*</span></label>
+                  <input class="form-input" placeholder="e.g. Maria" oninput="updatePreview()">
+                </div>
+                <div class="form-field">
+                  <label class="form-label">Last name <span class="required">*</span></label>
+                  <input class="form-input" placeholder="e.g. Georgiou" oninput="updatePreview()">
+                </div>
+                <div class="form-field full">
+                  <label class="form-label">Email address <span class="required">*</span></label>
+                  <input class="form-input" placeholder="user@renaultbxl.be" oninput="updatePreview()">
+                </div>
+              </div>
+            </div>
+            <div class="form-section">
+              <div class="form-section-title">Group Assignments</div>
+              <div class="form-field">
+                <label class="form-label">Assign to groups <span class="required">*</span></label>
+                <div class="multi-select-area">
+                  <div class="selected-tags">
+                    <div class="selected-tag">Finance <span class="selected-tag-remove" onclick="removeTag(this)">×</span></div>
+                  </div>
+                  <input class="form-input" style="border:none;background:transparent;padding:2px 4px" placeholder="Search groups…">
+                </div>
+              </div>
+            </div>
+            <div class="form-section">
+              <div class="form-section-title">Dimensional Attributes</div>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label class="form-label">Location</label>
+                  <select class="form-input form-select"><option>Brussels</option><option>Antwerp</option><option>Ghent</option></select>
+                </div>
+                <div class="form-field">
+                  <label class="form-label">Branch</label>
+                  <select class="form-input form-select"><option>Finance</option><option>Sales</option><option>Aftersales</option></select>
+                </div>
+                <div class="form-field">
+                  <label class="form-label">Make</label>
+                  <select class="form-input form-select"><option>Renault</option><option>Dacia</option><option>Alpine</option></select>
+                </div>
+                <div class="form-field">
+                  <label class="form-label">Company</label>
+                  <select class="form-input form-select"><option>Renault Brussels SA</option></select>
+                </div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-outline" onclick="navigate('users')">Cancel</button>
+              <button class="btn btn-primary" onclick="submitNewUser()">Create User</button>
+            </div>
+          </div>
+          <!-- Preview Panel -->
+          <div style="position:sticky;top:0">
+            <div class="ep-preview-panel">
+              <div class="ep-preview-header">
+                Effective Permissions Preview
+                <span class="ep-preview-chip">Preview</span>
+              </div>
+              <div class="ep-tabs">
+                <div class="ep-tab active" style="font-size:12px;padding:7px 12px">Capabilities</div>
+                <div class="ep-tab" style="font-size:12px;padding:7px 12px">Permission Details</div>
+              </div>
+              <div class="ep-body" id="preview-body">
+                <div class="ep-item"><div><div class="ep-item-label" style="font-size:12.5px">View finance reports</div><div class="ep-item-source">via Finance → Finance Reports</div></div></div>
+                <div class="ep-item"><div><div class="ep-item-label" style="font-size:12.5px">Create invoices</div><div class="ep-item-source">via Finance → Invoicing</div></div></div>
+                <div class="ep-item"><div><div class="ep-item-label" style="font-size:12.5px">Submit purchase orders</div><div class="ep-item-source">via Finance → Procurement</div></div></div>
+                <div class="ep-item"><div><div class="ep-item-label" style="font-size:12.5px">View customer records</div><div class="ep-item-source">via Finance → CRM Read</div></div></div>
+              </div>
+              <div style="padding:10px 14px;border-top:1px solid var(--border);font-size:11.5px;color:var(--text-dim)">
+                4 capabilities granted via Finance
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Groups placeholder -->
+    <div class="page" id="page-groups">
+      <div class="page-header">
+        <div class="breadcrumb"><span>Renault Brussels</span> <span>›</span> <span>Groups</span></div>
+        <div class="page-title">Groups</div>
+      </div>
+      <div class="page-body" style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--text-dim);flex-direction:column;gap:8px">
+        <span style="font-size:32px">🗂</span>
+        <span>Groups management — navigate from the sidebar</span>
+        <button class="btn btn-outline btn-sm" onclick="navigate('users')">← Back to Users</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- DENY Override Sheet -->
+<div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-header">
+    <div>
+      <div class="sheet-title">DENY Override</div>
+      <div class="sheet-subtitle">od.finance.transaction.approve</div>
+    </div>
+    <button class="sheet-close" onclick="closeSheet()">×</button>
+  </div>
+  <div class="sheet-body">
+    <div class="deny-alert">⛔ This override is blocking access to <strong>Approve finance transactions</strong>. The user cannot perform this action until the override is removed.</div>
+    <div class="sheet-field"><div class="sheet-field-label">Override type</div><div class="sheet-field-value"><span class="badge badge-deny">DENY</span></div></div>
+    <div class="sheet-field"><div class="sheet-field-label">Reason</div><div class="sheet-field-value">Temporary restriction pending finance audit completion</div></div>
+    <div class="sheet-field"><div class="sheet-field-label">Applied by</div><div class="sheet-field-value">Georgios Mathioudakis (Admin)</div></div>
+    <div class="sheet-field"><div class="sheet-field-label">Applied on</div><div class="sheet-field-value" style="color:var(--text-muted)">19 May 2026, 14:32</div></div>
+    <div class="sheet-field"><div class="sheet-field-label">Expires</div><div class="sheet-field-value" style="color:var(--text-muted)">No expiry set</div></div>
+  </div>
+  <div class="sheet-footer">
+    <button class="btn btn-destructive" onclick="removeOverride()">Remove Override</button>
+    <button class="btn btn-outline" id="force-reauth-btn" style="display:none" onclick="forceReauth()">Force Re-authenticate</button>
+    <div class="propagation-note" id="prop-note">Changes effective within 5 minutes</div>
+  </div>
+</div>
+
+<!-- Command Palette -->
+<div class="palette-overlay" id="palette" onclick="closePalette()">
+  <div class="palette" onclick="event.stopPropagation()">
+    <div class="palette-input-row">
+      <span class="palette-icon">🔍</span>
+      <input class="palette-input" id="palette-input" placeholder="Search or jump to…" autofocus>
+    </div>
+    <div class="palette-group">
+      <div class="palette-group-label">Navigation</div>
+      <div class="palette-item selected" onclick="navigate('users');closePalette()"><div class="palette-item-left"><span class="palette-item-icon">👥</span>Users — Renault Brussels</div><div class="palette-item-right">Enter ↵</div></div>
+      <div class="palette-item" onclick="navigate('groups');closePalette()"><div class="palette-item-left"><span class="palette-item-icon">🗂</span>Groups — Renault Brussels</div></div>
+      <div class="palette-item" onclick="navigate('new-user');closePalette()"><div class="palette-item-left"><span class="palette-item-icon">➕</span>New User</div></div>
+    </div>
+    <div class="palette-group">
+      <div class="palette-group-label">Recent</div>
+      <div class="palette-item" onclick="navigate('profile-deny');closePalette()"><div class="palette-item-left"><span class="palette-item-icon">👤</span>Sarah Chen</div><div class="palette-item-right">User</div></div>
+      <div class="palette-item" onclick="navigate('profile');closePalette()"><div class="palette-item-left"><span class="palette-item-icon">👤</span>Diana Papadopoulou</div><div class="palette-item-right">User</div></div>
+    </div>
+    <div class="palette-footer">
+      <span class="palette-key"><span class="kbd">↑↓</span> Navigate</span>
+      <span class="palette-key"><span class="kbd">↵</span> Select</span>
+      <span class="palette-key"><span class="kbd">Esc</span> Close</span>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+  const pages = ['users','profile','profile-deny','new-user','groups'];
+  const navItems = document.querySelectorAll('.nav-item');
+
+  function navigate(page) {
+    pages.forEach(p => {
+      const el = document.getElementById('page-' + p);
+      if (el) el.classList.remove('active');
+    });
+    const target = document.getElementById('page-' + page);
+    if (target) target.classList.add('active');
+
+    navItems.forEach(n => n.classList.remove('active'));
+    if (page === 'users' || page === 'profile' || page === 'profile-deny' || page === 'new-user') {
+      navItems[0].classList.add('active');
+    } else if (page === 'groups') {
+      navItems[1].classList.add('active');
+    }
+  }
+  navigate('users');
+
+  function switchEpTab(tab) {
+    document.getElementById('ep-tab-cap').classList.toggle('active', tab === 'cap');
+    document.getElementById('ep-tab-det').classList.toggle('active', tab === 'det');
+    document.getElementById('ep-body-cap').style.display = tab === 'cap' ? 'block' : 'none';
+    document.getElementById('ep-body-det').style.display = tab === 'det' ? 'block' : 'none';
+  }
+
+  function openSheet() {
+    document.getElementById('sheet-overlay').classList.add('open');
+    document.getElementById('sheet').classList.add('open');
+    document.getElementById('force-reauth-btn').style.display = 'none';
+    document.getElementById('prop-note').textContent = 'Changes effective within 5 minutes';
+  }
+  function closeSheet() {
+    document.getElementById('sheet-overlay').classList.remove('open');
+    document.getElementById('sheet').classList.remove('open');
+  }
+  function removeOverride() {
+    document.getElementById('force-reauth-btn').style.display = 'block';
+    document.getElementById('prop-note').textContent = '';
+    showToast('Override removed', 'Changes effective within 5 minutes');
+  }
+  function forceReauth() {
+    closeSheet();
+    showToast('User must re-authenticate', 'Changes are immediate upon next login');
+  }
+
+  function openPalette() {
+    document.getElementById('palette').classList.add('open');
+    setTimeout(() => document.getElementById('palette-input').focus(), 50);
+  }
+  function closePalette() {
+    document.getElementById('palette').classList.remove('open');
+  }
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openPalette(); }
+    if (e.key === 'Escape') { closePalette(); closeSheet(); }
+  });
+
+  function showToast(title, body) {
+    const container = document.getElementById('toasts');
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-success';
+    toast.innerHTML = `<span class="toast-icon">✓</span><div class="toast-content"><div class="toast-content-title">${title}</div>${body ? `<div class="toast-content-body">${body}</div>` : ''}</div><button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 6000);
+  }
+
+  function submitNewUser() {
+    navigate('users');
+    showToast('User created', 'Invitation sent. Changes effective within 5 minutes.');
+  }
+
+  function removeTag(el) { el.parentElement.remove(); }
+  function updatePreview() { /* preview updates on form change */ }
+</script>
+</body>
+</html>

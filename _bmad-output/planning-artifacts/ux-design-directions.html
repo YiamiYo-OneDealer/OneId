@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OneId — UX Design Directions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; }
+
+  /* NAV */
+  .top-nav { background: #1e293b; border-bottom: 1px solid #334155; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .top-nav h1 { font-size: 16px; font-weight: 600; color: #f1f5f9; }
+  .top-nav .subtitle { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+  .direction-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .dir-tab { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid #334155; background: transparent; color: #94a3b8; transition: all 0.15s; }
+  .dir-tab:hover, .dir-tab.active { background: #6366f1; border-color: #6366f1; color: #fff; }
+
+  /* SECTIONS */
+  .direction-section { display: none; padding: 24px; }
+  .direction-section.active { display: block; }
+  .section-header { margin-bottom: 20px; }
+  .section-header h2 { font-size: 20px; font-weight: 700; color: #f1f5f9; }
+  .section-header p { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+  .tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .tag { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; background: #1e293b; border: 1px solid #334155; color: #94a3b8; }
+  .tag.highlight { background: #312e81; border-color: #6366f1; color: #a5b4fc; }
+
+  .mockup-frame { border-radius: 12px; overflow: hidden; border: 1px solid #334155; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .mockup-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+  .grid-1 { margin-top: 20px; }
+
+  /* ═══════════════════════════════════════════════════
+     DIRECTION 1: Professional Dark Sidebar
+  ═══════════════════════════════════════════════════ */
+  .d1-shell { display: flex; height: 580px; background: #f8fafc; font-size: 13px; }
+  .d1-sidebar { width: 220px; background: #1e293b; display: flex; flex-direction: column; flex-shrink: 0; }
+  .d1-sidebar-logo { padding: 16px; border-bottom: 1px solid #334155; font-size: 14px; font-weight: 700; color: #f1f5f9; display: flex; align-items: center; gap: 8px; }
+  .d1-sidebar-logo span { width: 24px; height: 24px; background: #6366f1; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .d1-nav-section { padding: 8px 0; }
+  .d1-nav-label { padding: 6px 16px; font-size: 10px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; }
+  .d1-nav-item { padding: 7px 16px; cursor: pointer; color: #94a3b8; display: flex; align-items: center; gap: 8px; border-radius: 0; transition: all 0.1s; font-size: 13px; }
+  .d1-nav-item:hover { color: #e2e8f0; background: #293548; }
+  .d1-nav-item.active { color: #e2e8f0; background: #293548; border-left: 2px solid #6366f1; }
+  .d1-nav-icon { width: 16px; height: 16px; background: currentColor; border-radius: 3px; opacity: 0.6; flex-shrink: 0; }
+  .d1-main { flex: 1; overflow: auto; display: flex; flex-direction: column; }
+  .d1-topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .d1-breadcrumb { font-size: 12px; color: #64748b; }
+  .d1-breadcrumb span { color: #6366f1; }
+  .d1-content { padding: 20px; flex: 1; overflow: auto; }
+  .d1-page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .d1-page-title { font-size: 18px; font-weight: 700; color: #0f172a; }
+  .d1-page-subtitle { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .d1-user-meta { display: flex; gap: 8px; }
+  .d1-badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+  .d1-badge.active { background: #dcfce7; color: #166534; }
+  .d1-badge.tenant { background: #ede9fe; color: #5b21b6; }
+  .d1-two-col { display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px; height: calc(100% - 80px); }
+  .d1-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+  .d1-card-header { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #0f172a; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }
+  .d1-card-body { padding: 12px 16px; overflow: auto; }
+  .d1-assignment-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; color: #374151; }
+  .d1-assignment-row:last-child { border-bottom: none; }
+  .d1-assign-icon { width: 20px; height: 20px; border-radius: 4px; background: #ede9fe; flex-shrink: 0; }
+  .d1-assign-label { flex: 1; }
+  .d1-assign-sub { font-size: 11px; color: #94a3b8; }
+  .d1-perm-group { margin-bottom: 10px; }
+  .d1-perm-group-label { font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .d1-perm-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 12px; color: #374151; }
+  .d1-perm-id { font-family: 'SF Mono', monospace; font-size: 11px; color: #6366f1; background: #f5f3ff; padding: 1px 4px; border-radius: 3px; }
+  .d1-prov { font-size: 10px; color: #94a3b8; margin-left: auto; }
+  .d1-deny { font-size: 11px; font-weight: 600; background: #fef2f2; color: #dc2626; padding: 1px 6px; border-radius: 10px; border: 1px solid #fecaca; }
+  .d1-propagate { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 8px 12px; font-size: 11px; color: #9a3412; display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+  .d1-dim-row { display: flex; align-items: center; gap: 6px; padding: 4px 0; font-size: 12px; }
+  .d1-dim-axis { font-weight: 600; color: #475569; width: 80px; flex-shrink: 0; }
+  .d1-dim-values { display: flex; gap: 4px; flex-wrap: wrap; }
+  .d1-dim-chip { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; font-size: 11px; padding: 1px 6px; border-radius: 10px; }
+  .d1-btn { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; }
+  .d1-btn.primary { background: #6366f1; color: #fff; }
+  .d1-btn.ghost { background: transparent; border: 1px solid #e2e8f0; color: #374151; }
+
+  /* ═══════════════════════════════════════════════════
+     DIRECTION 2: Tabbed Light Shell
+  ═══════════════════════════════════════════════════ */
+  .d2-shell { display: flex; height: 580px; background: #f8fafc; font-size: 13px; }
+  .d2-sidebar { width: 200px; background: #fff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; flex-shrink: 0; }
+  .d2-sidebar-logo { padding: 14px 16px; font-size: 14px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f1f5f9; }
+  .d2-logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; }
+  .d2-nav-item { padding: 8px 16px; cursor: pointer; color: #64748b; display: flex; align-items: center; gap: 8px; font-size: 13px; transition: all 0.1s; border-radius: 6px; margin: 1px 6px; }
+  .d2-nav-item:hover { color: #0f172a; background: #f8fafc; }
+  .d2-nav-item.active { color: #6366f1; background: #eef2ff; font-weight: 500; }
+  .d2-nav-icon { width: 16px; height: 16px; border-radius: 3px; background: currentColor; opacity: 0.5; flex-shrink: 0; }
+  .d2-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .d2-topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 14px 20px; flex-shrink: 0; }
+  .d2-user-header { display: flex; align-items: center; gap: 12px; }
+  .d2-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .d2-user-name { font-size: 16px; font-weight: 700; color: #0f172a; }
+  .d2-user-email { font-size: 12px; color: #64748b; }
+  .d2-tabs { display: flex; gap: 0; border-bottom: 1px solid #e2e8f0; padding: 0 20px; background: #fff; flex-shrink: 0; }
+  .d2-tab { padding: 10px 16px; font-size: 13px; cursor: pointer; color: #64748b; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.1s; }
+  .d2-tab.active { color: #6366f1; border-bottom-color: #6366f1; font-weight: 500; }
+  .d2-content { flex: 1; overflow: auto; padding: 16px 20px; }
+  .d2-perm-section { margin-bottom: 16px; }
+  .d2-section-title { font-size: 12px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .d2-perm-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .d2-perm-row { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #f8fafc; }
+  .d2-perm-row:last-child { border-bottom: none; }
+  .d2-perm-code { font-family: monospace; font-size: 12px; color: #6366f1; background: #f5f3ff; padding: 2px 6px; border-radius: 4px; }
+  .d2-perm-source { font-size: 11px; color: #94a3b8; margin-left: auto; display: flex; align-items: center; gap: 4px; }
+  .d2-arrow { color: #cbd5e1; font-size: 10px; }
+  .d2-deny-row { background: #fef2f2; border-left: 3px solid #dc2626; }
+  .d2-deny-badge { background: #dc2626; color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; }
+  .d2-fix-btn { font-size: 11px; color: #6366f1; cursor: pointer; padding: 2px 6px; border: 1px solid #c7d2fe; border-radius: 4px; background: #eef2ff; }
+  .d2-dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .d2-dim-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+  .d2-dim-axis-name { font-size: 11px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .d2-dim-summary { font-size: 12px; color: #374151; font-style: italic; margin-bottom: 6px; }
+  .d2-dim-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+  .d2-chip { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; font-size: 11px; padding: 1px 6px; border-radius: 10px; }
+  .d2-notice { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 8px 12px; font-size: 11px; color: #9a3412; margin-bottom: 12px; }
+
+  /* ═══════════════════════════════════════════════════
+     DIRECTION 3: Dark Mode / Command-Centric
+  ═══════════════════════════════════════════════════ */
+  .d3-shell { display: flex; height: 580px; background: #09090b; font-size: 13px; color: #fafafa; }
+  .d3-sidebar { width: 220px; background: #09090b; border-right: 1px solid #27272a; display: flex; flex-direction: column; flex-shrink: 0; }
+  .d3-sidebar-logo { padding: 14px 16px; font-size: 14px; font-weight: 700; color: #fafafa; display: flex; align-items: center; gap: 8px; }
+  .d3-logo-icon { width: 24px; height: 24px; background: #6366f1; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
+  .d3-cmd { margin: 8px 12px; padding: 7px 10px; background: #18181b; border: 1px solid #3f3f46; border-radius: 6px; display: flex; align-items: center; gap: 6px; color: #71717a; font-size: 12px; cursor: pointer; }
+  .d3-cmd kbd { margin-left: auto; background: #27272a; border: 1px solid #3f3f46; border-radius: 3px; padding: 1px 4px; font-size: 10px; font-family: monospace; color: #a1a1aa; }
+  .d3-nav-section { padding: 4px 0; }
+  .d3-nav-label { padding: 8px 16px 4px; font-size: 10px; font-weight: 600; color: #52525b; text-transform: uppercase; letter-spacing: 0.08em; }
+  .d3-nav-item { padding: 6px 16px; cursor: pointer; color: #a1a1aa; display: flex; align-items: center; gap: 8px; font-size: 13px; border-radius: 6px; margin: 1px 6px; }
+  .d3-nav-item:hover { color: #fafafa; background: #18181b; }
+  .d3-nav-item.active { color: #a5b4fc; background: #18181b; }
+  .d3-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .d3-topbar { background: #09090b; border-bottom: 1px solid #27272a; padding: 10px 20px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .d3-breadcrumb { font-size: 12px; color: #52525b; }
+  .d3-breadcrumb span { color: #a1a1aa; }
+  .d3-content { flex: 1; overflow: auto; padding: 16px 20px; }
+  .d3-user-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .d3-avatar { width: 36px; height: 36px; border-radius: 50%; background: #6366f1; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 13px; }
+  .d3-user-name { font-size: 16px; font-weight: 600; color: #fafafa; }
+  .d3-user-sub { font-size: 12px; color: #71717a; }
+  .d3-badge { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .d3-badge.active { background: #14532d; color: #86efac; border: 1px solid #166534; }
+  .d3-two-col { display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; }
+  .d3-card { background: #18181b; border: 1px solid #27272a; border-radius: 8px; overflow: hidden; }
+  .d3-card-header { padding: 10px 14px; border-bottom: 1px solid #27272a; font-weight: 600; color: #e4e4e7; font-size: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .d3-card-body { padding: 10px 14px; }
+  .d3-assign-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #27272a; font-size: 12px; color: #a1a1aa; }
+  .d3-assign-row:last-child { border-bottom: none; }
+  .d3-perm-group-label { font-size: 10px; font-weight: 600; color: #52525b; text-transform: uppercase; letter-spacing: 0.06em; margin: 8px 0 4px; }
+  .d3-perm-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 12px; color: #a1a1aa; }
+  .d3-perm-code { font-family: monospace; font-size: 11px; color: #a5b4fc; background: #1e1b4b; padding: 1px 5px; border-radius: 3px; }
+  .d3-prov { font-size: 10px; color: #52525b; margin-left: auto; }
+  .d3-deny { font-size: 11px; font-weight: 600; background: #450a0a; color: #f87171; padding: 1px 6px; border-radius: 10px; border: 1px solid #7f1d1d; }
+  .d3-fix-btn { font-size: 10px; color: #a5b4fc; background: #1e1b4b; border: 1px solid #3730a3; border-radius: 4px; padding: 1px 6px; cursor: pointer; }
+  .d3-propagate { background: #1c1400; border: 1px solid #713f12; border-radius: 6px; padding: 7px 10px; font-size: 11px; color: #fbbf24; display: flex; align-items: center; gap: 6px; margin-bottom: 10px; opacity: 0.8; }
+
+  /* ═══════════════════════════════════════════════════
+     DIRECTION 4: Compact Dense / Data-Heavy
+  ═══════════════════════════════════════════════════ */
+  .d4-shell { display: flex; height: 580px; background: #f9fafb; font-size: 12px; }
+  .d4-sidebar { width: 180px; background: #111827; display: flex; flex-direction: column; flex-shrink: 0; }
+  .d4-sidebar-logo { padding: 12px 14px; font-size: 13px; font-weight: 700; color: #f9fafb; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #1f2937; }
+  .d4-logo-icon { width: 20px; height: 20px; background: #4f46e5; border-radius: 4px; flex-shrink: 0; }
+  .d4-nav-item { padding: 6px 14px; cursor: pointer; color: #9ca3af; display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .d4-nav-item.active { color: #e5e7eb; background: #1f2937; border-left: 2px solid #4f46e5; }
+  .d4-nav-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .d4-main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+  .d4-topbar { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .d4-page-title { font-size: 14px; font-weight: 700; color: #111827; }
+  .d4-content { padding: 12px 16px; flex: 1; overflow: auto; }
+  .d4-two-col { display: grid; grid-template-columns: 220px 1fr; gap: 12px; height: 100%; }
+  .d4-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; }
+  .d4-card-header { padding: 7px 10px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #111827; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; background: #f9fafb; display: flex; justify-content: space-between; align-items: center; }
+  .d4-card-body { padding: 0; }
+  .d4-row { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-bottom: 1px solid #f3f4f6; font-size: 12px; color: #374151; }
+  .d4-row:last-child { border-bottom: none; }
+  .d4-row.deny { background: #fef2f2; }
+  .d4-code { font-family: monospace; font-size: 11px; color: #4f46e5; }
+  .d4-badge-sm { font-size: 9px; padding: 1px 5px; border-radius: 8px; font-weight: 600; }
+  .d4-badge-sm.deny { background: #dc2626; color: #fff; }
+  .d4-badge-sm.allow { background: #16a34a; color: #fff; }
+  .d4-prov-sm { font-size: 10px; color: #9ca3af; margin-left: auto; }
+  .d4-group-header { padding: 4px 10px; background: #f9fafb; font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid #e5e7eb; }
+  .d4-stale-bar { background: #fef3c7; border-bottom: 1px solid #fde68a; padding: 4px 10px; font-size: 10px; color: #92400e; display: flex; align-items: center; gap: 6px; }
+  .d4-dim-row { display: flex; align-items: baseline; gap: 6px; padding: 4px 10px; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
+  .d4-dim-axis-label { font-weight: 600; color: #374151; width: 80px; flex-shrink: 0; font-size: 11px; }
+  .d4-chips-inline { display: flex; gap: 3px; flex-wrap: wrap; }
+  .d4-chip-sm { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; font-size: 10px; padding: 1px 5px; border-radius: 8px; }
+
+  /* ═══════════════════════════════════════════════════
+     DIRECTION 5: Setup Wizard / Guided Flow
+  ═══════════════════════════════════════════════════ */
+  .d5-shell { background: #f8fafc; height: 580px; display: flex; font-size: 13px; }
+  .d5-sidebar { width: 200px; background: #1e293b; display: flex; flex-direction: column; flex-shrink: 0; }
+  .d5-sidebar-logo { padding: 14px 16px; font-size: 14px; font-weight: 700; color: #f1f5f9; display: flex; align-items: center; gap: 8px; }
+  .d5-logo-icon { width: 24px; height: 24px; background: #6366f1; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
+  .d5-nav-item { padding: 7px 16px; cursor: pointer; color: #94a3b8; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .d5-nav-item.active { color: #e2e8f0; background: #293548; border-left: 2px solid #6366f1; }
+  .d5-main { flex: 1; overflow: auto; padding: 24px; background: #f8fafc; display: flex; justify-content: center; }
+  .d5-wizard-container { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; width: 100%; max-width: 640px; overflow: hidden; }
+  .d5-wizard-header { padding: 20px 24px 0; }
+  .d5-wizard-title { font-size: 18px; font-weight: 700; color: #0f172a; }
+  .d5-wizard-subtitle { font-size: 13px; color: #64748b; margin-top: 4px; }
+  .d5-steps { display: flex; gap: 0; padding: 16px 24px; border-bottom: 1px solid #f1f5f9; }
+  .d5-step { display: flex; align-items: center; gap: 6px; font-size: 12px; flex: 1; }
+  .d5-step-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .d5-step-num.done { background: #dcfce7; color: #16a34a; }
+  .d5-step-num.active { background: #6366f1; color: #fff; }
+  .d5-step-num.pending { background: #f1f5f9; color: #94a3b8; }
+  .d5-step-label { color: #64748b; }
+  .d5-step-label.active { color: #0f172a; font-weight: 500; }
+  .d5-step-connector { flex: 1; height: 1px; background: #e2e8f0; margin: 0 6px; }
+  .d5-step-connector.done { background: #86efac; }
+  .d5-body { padding: 20px 24px; }
+  .d5-section-label { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 10px; }
+  .d5-role-set-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .d5-role-set-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; background: #f8fafc; }
+  .d5-role-set-item.selected { border-color: #6366f1; background: #eef2ff; }
+  .d5-role-set-icon { width: 32px; height: 32px; background: #ede9fe; border-radius: 6px; flex-shrink: 0; }
+  .d5-role-set-name { font-weight: 600; color: #0f172a; font-size: 13px; }
+  .d5-role-set-desc { font-size: 11px; color: #64748b; margin-top: 1px; }
+  .d5-role-set-check { margin-left: auto; width: 18px; height: 18px; border-radius: 50%; background: #6366f1; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; }
+  .d5-preview-box { background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
+  .d5-preview-title { font-size: 11px; font-weight: 600; color: #5b21b6; margin-bottom: 6px; }
+  .d5-preview-perms { display: flex; gap: 4px; flex-wrap: wrap; }
+  .d5-perm-chip { background: #ede9fe; color: #5b21b6; font-size: 10px; font-family: monospace; padding: 2px 6px; border-radius: 4px; }
+  .d5-footer { padding: 14px 24px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+  .d5-btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .d5-btn.primary { background: #6366f1; color: #fff; }
+  .d5-btn.ghost { background: transparent; border: 1px solid #e2e8f0; color: #374151; }
+  .d5-btn.advanced { background: transparent; color: #94a3b8; font-size: 12px; border: none; cursor: pointer; }
+
+  /* ═══════════════════════════════════════════════════
+     DIRECTION 6: Card-Group Module View
+  ═══════════════════════════════════════════════════ */
+  .d6-shell { display: flex; height: 580px; background: #f8fafc; font-size: 13px; }
+  .d6-sidebar { width: 220px; background: #1e293b; display: flex; flex-direction: column; flex-shrink: 0; }
+  .d6-sidebar-logo { padding: 14px 16px; font-size: 14px; font-weight: 700; color: #f1f5f9; display: flex; align-items: center; gap: 8px; }
+  .d6-logo-icon { width: 24px; height: 24px; background: #6366f1; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
+  .d6-nav-item { padding: 7px 16px; cursor: pointer; color: #94a3b8; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .d6-nav-item.active { color: #e2e8f0; background: #293548; border-left: 2px solid #6366f1; }
+  .d6-main { flex: 1; overflow: auto; display: flex; flex-direction: column; }
+  .d6-topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 12px 20px; flex-shrink: 0; }
+  .d6-user-row { display: flex; align-items: center; justify-content: space-between; }
+  .d6-user-left { display: flex; align-items: center; gap: 10px; }
+  .d6-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 13px; }
+  .d6-user-name { font-size: 16px; font-weight: 700; color: #0f172a; }
+  .d6-user-sub { font-size: 12px; color: #64748b; }
+  .d6-content { flex: 1; overflow: auto; padding: 16px 20px; }
+  .d6-module-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .d6-module-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
+  .d6-module-header { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 8px; }
+  .d6-module-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+  .d6-module-icon.crm { background: #dbeafe; }
+  .d6-module-icon.erp { background: #fce7f3; }
+  .d6-module-icon.core { background: #dcfce7; }
+  .d6-module-icon.service { background: #fef3c7; }
+  .d6-module-title { font-weight: 600; color: #0f172a; font-size: 13px; }
+  .d6-module-count { font-size: 11px; color: #94a3b8; margin-left: auto; }
+  .d6-module-body { padding: 10px 14px; }
+  .d6-perm-line { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 12px; color: #374151; }
+  .d6-perm-code { font-family: monospace; font-size: 11px; color: #6366f1; }
+  .d6-perm-prov { font-size: 10px; color: #94a3b8; margin-left: auto; }
+  .d6-deny-line { background: #fef2f2; margin: 2px -14px; padding: 3px 14px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #374151; }
+  .d6-deny-badge { background: #dc2626; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 8px; }
+  .d6-fix-link { font-size: 10px; color: #6366f1; cursor: pointer; margin-left: auto; }
+  .d6-dim-strip { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 10px 20px; flex-shrink: 0; }
+  .d6-dim-title { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .d6-dim-axes { display: flex; gap: 12px; flex-wrap: wrap; }
+  .d6-axis { display: flex; align-items: center; gap: 6px; }
+  .d6-axis-name { font-size: 11px; font-weight: 600; color: #374151; }
+  .d6-axis-chips { display: flex; gap: 3px; }
+  .d6-axis-chip { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; font-size: 10px; padding: 1px 5px; border-radius: 8px; }
+  .d6-propagate { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 6px 12px; font-size: 11px; color: #9a3412; display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+
+  /* ADMIN TIER BANNER */
+  .admin-banner { background: #92400e; background: linear-gradient(90deg, #92400e, #b45309); color: #fef3c7; font-size: 11px; font-weight: 600; padding: 6px 16px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .admin-banner-icon { width: 14px; height: 14px; border-radius: 50%; background: #fbbf24; flex-shrink: 0; }
+
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <div>
+    <div class="top-nav h1">OneId — Design Directions</div>
+    <div class="subtitle">6 visual explorations for the admin console</div>
+  </div>
+  <div class="direction-tabs">
+    <button class="dir-tab active" onclick="show('d1',this)">1. Dark Sidebar</button>
+    <button class="dir-tab" onclick="show('d2',this)">2. Tabbed Light</button>
+    <button class="dir-tab" onclick="show('d3',this)">3. Dark Mode</button>
+    <button class="dir-tab" onclick="show('d4',this)">4. Compact Dense</button>
+    <button class="dir-tab" onclick="show('d5',this)">5. Setup Wizard</button>
+    <button class="dir-tab" onclick="show('d6',this)">6. Module Cards</button>
+  </div>
+</div>
+
+<!-- ═══ DIRECTION 1 ═══ -->
+<div id="d1" class="direction-section active">
+  <div class="section-header">
+    <h2>Direction 1 — Professional Dark Sidebar</h2>
+    <p>Standard enterprise admin pattern. Dark sidebar for wayfinding, light content area for data focus. Two-column user profile with assignments left, Effective Permissions right.</p>
+    <div class="tags">
+      <span class="tag highlight">Recommended baseline</span>
+      <span class="tag">Dark sidebar</span>
+      <span class="tag">Two-column profile</span>
+      <span class="tag">Inline Effective Permissions</span>
+    </div>
+  </div>
+  <div class="grid-1">
+    <div class="mockup-label">Tenant Admin — User profile (Diagnostic View)</div>
+    <div class="mockup-frame">
+      <div class="d1-shell">
+        <div class="d1-sidebar">
+          <div class="d1-sidebar-logo"><span>O</span>OneId</div>
+          <div class="d1-nav-section">
+            <div class="d1-nav-label">Management</div>
+            <div class="d1-nav-item active"><div class="d1-nav-icon"></div> Users</div>
+            <div class="d1-nav-item"><div class="d1-nav-icon"></div> Groups</div>
+            <div class="d1-nav-item"><div class="d1-nav-icon"></div> Roles</div>
+            <div class="d1-nav-item"><div class="d1-nav-icon"></div> Role Sets</div>
+          </div>
+          <div class="d1-nav-section">
+            <div class="d1-nav-label">Tenant</div>
+            <div class="d1-nav-item"><div class="d1-nav-icon"></div> Dimensions</div>
+            <div class="d1-nav-item"><div class="d1-nav-icon"></div> Audit Log</div>
+          </div>
+        </div>
+        <div class="d1-main">
+          <div class="d1-topbar">
+            <div class="d1-breadcrumb">Users / <span>Lucas Ferreira</span></div>
+            <div class="d1-user-meta">
+              <span class="d1-badge active">Active</span>
+              <button class="d1-btn ghost" style="font-size:11px">Edit</button>
+            </div>
+          </div>
+          <div class="d1-content">
+            <div class="d1-page-header">
+              <div>
+                <div class="d1-page-title">Lucas Ferreira</div>
+                <div class="d1-page-subtitle">lucas.ferreira@autohaus.pt · Sales Consultant · Lisbon branch</div>
+              </div>
+            </div>
+            <div class="d1-two-col">
+              <div class="d1-card">
+                <div class="d1-card-header">Assignments <button class="d1-btn primary" style="font-size:11px;padding:3px 8px">+ Add</button></div>
+                <div class="d1-card-body">
+                  <div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Groups (2)</div>
+                  <div class="d1-assignment-row"><div class="d1-assign-icon"></div><div><div class="d1-assign-label">Lisbon Sales Team</div><div class="d1-assign-sub">3 Role Sets</div></div></div>
+                  <div class="d1-assignment-row"><div class="d1-assign-icon"></div><div><div class="d1-assign-label">Standard Users</div><div class="d1-assign-sub">1 Role Set</div></div></div>
+                  <div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 6px">Dimensions</div>
+                  <div class="d1-dim-row"><div class="d1-dim-axis">Location</div><div class="d1-dim-values"><span class="d1-dim-chip">Lisbon</span></div></div>
+                  <div class="d1-dim-row"><div class="d1-dim-axis">Make</div><div class="d1-dim-values"><span class="d1-dim-chip">VW</span><span class="d1-dim-chip">Audi</span></div></div>
+                  <div class="d1-dim-row"><div class="d1-dim-axis">Branch</div><div class="d1-dim-values"><span class="d1-dim-chip">Sales</span></div></div>
+                  <div style="font-size:11px;font-style:italic;color:#94a3b8;margin-top:8px">Sees data from Sales branch at Lisbon for VW and Audi</div>
+                </div>
+              </div>
+              <div class="d1-card">
+                <div class="d1-card-header">
+                  Effective Permissions
+                  <span style="font-size:10px;color:#94a3b8;font-weight:400">resolved from 4 roles</span>
+                </div>
+                <div class="d1-card-body">
+                  <div class="d1-propagate">⏱ Last resolved 2m ago — updates propagating (effective within 5 min)</div>
+                  <div class="d1-perm-group">
+                    <div class="d1-perm-group-label">CRM <span style="font-size:10px;font-weight:400;color:#94a3b8">(6 permissions)</span></div>
+                    <div class="d1-perm-row"><span class="d1-perm-id">crm.deal.view</span><span class="d1-prov">Lisbon Sales → Standard Sales</span></div>
+                    <div class="d1-perm-row"><span class="d1-perm-id">crm.deal.create</span><span class="d1-prov">Lisbon Sales → Standard Sales</span></div>
+                    <div class="d1-perm-row"><span class="d1-perm-id">crm.invoice.view</span><span class="d1-prov">Lisbon Sales → Standard Sales</span></div>
+                    <div class="d1-perm-row" style="background:#fef2f2;margin:0 -16px;padding:3px 16px"><span class="d1-deny">DENY</span><span class="d1-perm-id">crm.finance.view</span><span class="d1-prov" style="cursor:pointer;color:#6366f1;text-decoration:underline">User override → Remove</span></div>
+                    <div class="d1-perm-row"><span class="d1-perm-id">crm.customer.view</span><span class="d1-prov">Standard Users → Base</span></div>
+                  </div>
+                  <div class="d1-perm-group">
+                    <div class="d1-perm-group-label">ERP <span style="font-size:10px;font-weight:400;color:#94a3b8">(3 permissions)</span></div>
+                    <div class="d1-perm-row"><span class="d1-perm-id">erp.inventory.view</span><span class="d1-prov">Lisbon Sales → Inventory</span></div>
+                    <div class="d1-perm-row"><span class="d1-perm-id">erp.pricing.view</span><span class="d1-prov">Lisbon Sales → Pricing Read</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="grid-2" style="margin-top:16px">
+    <div>
+      <div class="mockup-label">With AdminTierBanner (Internal Admin in tenant context)</div>
+      <div class="mockup-frame">
+        <div class="d1-shell" style="height:120px">
+          <div class="d1-sidebar" style="width:220px"><div class="d1-sidebar-logo"><span>O</span>OneId</div></div>
+          <div style="flex:1;display:flex;flex-direction:column">
+            <div class="admin-banner"><div class="admin-banner-icon"></div>Operating as Internal Admin within <strong>Autohaus München GmbH</strong> — all changes affect live tenant</div>
+            <div class="d1-topbar" style="flex:1">
+              <div class="d1-breadcrumb">Tenants / <span>Autohaus München GmbH</span> / Users / <span>Lucas Ferreira</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="mockup-label">Inline fix sheet — DENY override resolved</div>
+      <div class="mockup-frame">
+        <div style="background:#f8fafc;height:120px;display:flex;align-items:stretch;overflow:hidden">
+          <div style="flex:1;padding:16px;background:#fff;border-right:1px solid #e2e8f0">
+            <div style="font-size:12px;color:#64748b;margin-bottom:6px">Effective Permissions</div>
+            <div style="display:flex;align-items:center;gap:6px;background:#fef2f2;padding:6px 8px;border-radius:6px">
+              <span class="d1-deny">DENY</span>
+              <span class="d1-perm-id">crm.finance.view</span>
+              <span style="font-size:10px;color:#94a3b8;margin-left:auto">User override</span>
+            </div>
+          </div>
+          <div style="width:260px;background:#fff;padding:14px;border-left:1px solid #e2e8f0;box-shadow:-4px 0 20px rgba(0,0,0,0.08)">
+            <div style="font-size:13px;font-weight:600;color:#0f172a;margin-bottom:4px">DENY override — crm.finance.view</div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:10px">Set by Maria Santos on 2026-05-10 · Reason: "Not authorised for finance tab"</div>
+            <div style="display:flex;gap:6px">
+              <button class="d1-btn primary" style="font-size:11px">Remove override</button>
+              <button class="d1-btn ghost" style="font-size:11px">Keep</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DIRECTION 2 ═══ -->
+<div id="d2" class="direction-section">
+  <div class="section-header">
+    <h2>Direction 2 — Tabbed Light Shell</h2>
+    <p>All-light interface. User profile uses tabs to separate Assignments, Effective Permissions, Dimensions, and Audit. Reduces visual complexity per tab; requires more navigation to see the full picture.</p>
+    <div class="tags">
+      <span class="tag">Light shell</span>
+      <span class="tag">Tab-based profile</span>
+      <span class="tag">Dimension cards grid</span>
+      <span class="tag highlight">Best for: users who prefer separation of concerns</span>
+    </div>
+  </div>
+  <div class="grid-1">
+    <div class="mockup-label">Tenant Admin — User profile, Effective Permissions tab</div>
+    <div class="mockup-frame">
+      <div class="d2-shell">
+        <div class="d2-sidebar">
+          <div class="d2-sidebar-logo"><div class="d2-logo-icon">O</div>OneId</div>
+          <div style="padding:8px 0">
+            <div class="d2-nav-item active"><div class="d2-nav-icon"></div> Users</div>
+            <div class="d2-nav-item"><div class="d2-nav-icon"></div> Groups</div>
+            <div class="d2-nav-item"><div class="d2-nav-icon"></div> Roles</div>
+            <div class="d2-nav-item"><div class="d2-nav-icon"></div> Role Sets</div>
+            <div class="d2-nav-item"><div class="d2-nav-icon"></div> Dimensions</div>
+            <div class="d2-nav-item"><div class="d2-nav-icon"></div> Audit Log</div>
+          </div>
+        </div>
+        <div class="d2-main">
+          <div class="d2-topbar">
+            <div class="d2-user-header">
+              <div class="d2-avatar">LF</div>
+              <div>
+                <div class="d2-user-name">Lucas Ferreira</div>
+                <div class="d2-user-email">lucas.ferreira@autohaus.pt · Sales Consultant</div>
+              </div>
+              <div style="margin-left:auto;display:flex;gap:6px">
+                <span class="d1-badge active">Active</span>
+                <button class="d1-btn ghost" style="font-size:11px">Edit user</button>
+              </div>
+            </div>
+          </div>
+          <div class="d2-tabs">
+            <div class="d2-tab">Assignments</div>
+            <div class="d2-tab active">Permissions</div>
+            <div class="d2-tab">Dimensions</div>
+            <div class="d2-tab">Audit</div>
+          </div>
+          <div class="d2-content">
+            <div class="d2-notice">⏱ Permissions last resolved 2 min ago — changes effective within 5 minutes</div>
+            <div class="d2-perm-section">
+              <div class="d2-section-title">CRM <span style="font-size:11px;font-weight:400;color:#94a3b8;text-transform:none;letter-spacing:0">6 permissions</span></div>
+              <div class="d2-perm-card">
+                <div class="d2-perm-row d2-deny-row">
+                  <span class="d2-deny-badge">DENY</span>
+                  <span class="d2-perm-code">crm.finance.view</span>
+                  <span style="font-size:11px;color:#dc2626">User override</span>
+                  <span class="d2-fix-btn" style="margin-left:auto">Fix →</span>
+                </div>
+                <div class="d2-perm-row">
+                  <span class="d2-perm-code">crm.deal.view</span>
+                  <span class="d2-perm-source">Lisbon Sales <span class="d2-arrow">→</span> Standard Sales <span class="d2-arrow">→</span> Role</span>
+                </div>
+                <div class="d2-perm-row">
+                  <span class="d2-perm-code">crm.deal.create</span>
+                  <span class="d2-perm-source">Lisbon Sales <span class="d2-arrow">→</span> Standard Sales</span>
+                </div>
+                <div class="d2-perm-row">
+                  <span class="d2-perm-code">crm.invoice.view</span>
+                  <span class="d2-perm-source">Lisbon Sales <span class="d2-arrow">→</span> Standard Sales</span>
+                </div>
+                <div class="d2-perm-row">
+                  <span class="d2-perm-code">crm.customer.view</span>
+                  <span class="d2-perm-source">Standard Users <span class="d2-arrow">→</span> Base</span>
+                </div>
+              </div>
+            </div>
+            <div class="d2-perm-section">
+              <div class="d2-section-title">ERP <span style="font-size:11px;font-weight:400;color:#94a3b8;text-transform:none;letter-spacing:0">3 permissions</span></div>
+              <div class="d2-perm-card">
+                <div class="d2-perm-row">
+                  <span class="d2-perm-code">erp.inventory.view</span>
+                  <span class="d2-perm-source">Lisbon Sales <span class="d2-arrow">→</span> Inventory</span>
+                </div>
+                <div class="d2-perm-row">
+                  <span class="d2-perm-code">erp.pricing.view</span>
+                  <span class="d2-perm-source">Lisbon Sales <span class="d2-arrow">→</span> Pricing Read</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DIRECTION 3 ═══ -->
+<div id="d3" class="direction-section">
+  <div class="section-header">
+    <h2>Direction 3 — Dark Mode / Command-Centric</h2>
+    <p>Full dark mode, Linear-inspired. Command palette prominent in sidebar. Strong visual contrast for data. Suits power users and technical admins who prefer low-brightness environments.</p>
+    <div class="tags">
+      <span class="tag">Full dark mode</span>
+      <span class="tag highlight">Command palette prominent</span>
+      <span class="tag">High contrast data</span>
+      <span class="tag">Best for: technical Internal Admins</span>
+    </div>
+  </div>
+  <div class="grid-1">
+    <div class="mockup-label">Internal Admin — User profile in dark mode</div>
+    <div class="mockup-frame">
+      <div class="d3-shell">
+        <div class="d3-sidebar">
+          <div class="d3-sidebar-logo"><div class="d3-logo-icon">O</div>OneId</div>
+          <div class="d3-cmd">⌘ Search or jump... <kbd>⌘K</kbd></div>
+          <div class="d3-nav-section">
+            <div class="d3-nav-label">Tenant</div>
+            <div class="d3-nav-item active">Users</div>
+            <div class="d3-nav-item">Groups</div>
+            <div class="d3-nav-item">Roles</div>
+            <div class="d3-nav-item">Role Sets</div>
+          </div>
+          <div class="d3-nav-section">
+            <div class="d3-nav-label">Admin</div>
+            <div class="d3-nav-item">All Tenants</div>
+            <div class="d3-nav-item">Permissions</div>
+            <div class="d3-nav-item">Licenses</div>
+          </div>
+        </div>
+        <div class="d3-main">
+          <div style="background:#78350f;border-bottom:1px solid #92400e;padding:5px 16px;font-size:11px;font-weight:600;color:#fef3c7;display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <div style="width:10px;height:10px;border-radius:50%;background:#fbbf24;flex-shrink:0"></div>
+            Internal Admin · Autohaus München GmbH
+          </div>
+          <div class="d3-topbar">
+            <div class="d3-breadcrumb">Tenants / <span>München</span> / Users / <span>Lucas Ferreira</span></div>
+          </div>
+          <div class="d3-content">
+            <div class="d3-user-row">
+              <div class="d3-avatar">LF</div>
+              <div>
+                <div class="d3-user-name">Lucas Ferreira</div>
+                <div class="d3-user-sub">lucas.ferreira@autohaus.pt · Sales Consultant</div>
+              </div>
+              <span class="d3-badge active" style="margin-left:auto">Active</span>
+            </div>
+            <div class="d3-propagate">⏱ Effective permissions resolved 2m ago · propagating · effective within 5 min</div>
+            <div class="d3-two-col">
+              <div class="d3-card">
+                <div class="d3-card-header">Assignments</div>
+                <div class="d3-card-body">
+                  <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Groups</div>
+                  <div class="d3-assign-row">Lisbon Sales Team</div>
+                  <div class="d3-assign-row">Standard Users</div>
+                  <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.06em;margin:8px 0 4px">Dimensions</div>
+                  <div class="d3-assign-row" style="font-size:11px">Location: <span style="color:#a5b4fc;margin-left:4px">Lisbon</span></div>
+                  <div class="d3-assign-row" style="font-size:11px">Make: <span style="color:#a5b4fc;margin-left:4px">VW, Audi</span></div>
+                </div>
+              </div>
+              <div class="d3-card">
+                <div class="d3-card-header">Effective Permissions</div>
+                <div class="d3-card-body">
+                  <div class="d3-perm-group-label">CRM</div>
+                  <div class="d3-perm-row" style="background:#1a0a0a;margin:2px -14px;padding:4px 14px">
+                    <span class="d3-deny">DENY</span>
+                    <span class="d3-perm-code">crm.finance.view</span>
+                    <span class="d3-fix-btn">Remove override</span>
+                  </div>
+                  <div class="d3-perm-row"><span class="d3-perm-code">crm.deal.view</span><span class="d3-prov">Lisbon Sales → Standard Sales</span></div>
+                  <div class="d3-perm-row"><span class="d3-perm-code">crm.deal.create</span><span class="d3-prov">Lisbon Sales → Standard Sales</span></div>
+                  <div class="d3-perm-row"><span class="d3-perm-code">crm.invoice.view</span><span class="d3-prov">Lisbon Sales → Standard Sales</span></div>
+                  <div class="d3-perm-group-label">ERP</div>
+                  <div class="d3-perm-row"><span class="d3-perm-code">erp.inventory.view</span><span class="d3-prov">Lisbon Sales → Inventory</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DIRECTION 4 ═══ -->
+<div id="d4" class="direction-section">
+  <div class="section-header">
+    <h2>Direction 4 — Compact Dense</h2>
+    <p>Maximum information density. Narrow sidebar, small typography, tight rows. Optimised for experienced admins managing many users quickly. Less onboarding-friendly but more efficient at scale.</p>
+    <div class="tags">
+      <span class="tag">Maximum density</span>
+      <span class="tag">Compact rows</span>
+      <span class="tag highlight">Best for: experienced Tenant Admins managing large user bases</span>
+    </div>
+  </div>
+  <div class="grid-1">
+    <div class="mockup-label">Tenant Admin — Compact user profile</div>
+    <div class="mockup-frame">
+      <div class="d4-shell">
+        <div class="d4-sidebar">
+          <div class="d4-sidebar-logo"><div class="d4-logo-icon"></div>OneId</div>
+          <div style="padding:6px 0">
+            <div class="d4-nav-item active"><div class="d4-nav-dot"></div>Users</div>
+            <div class="d4-nav-item"><div class="d4-nav-dot"></div>Groups</div>
+            <div class="d4-nav-item"><div class="d4-nav-dot"></div>Roles</div>
+            <div class="d4-nav-item"><div class="d4-nav-dot"></div>Role Sets</div>
+            <div class="d4-nav-item"><div class="d4-nav-dot"></div>Dimensions</div>
+            <div class="d4-nav-item"><div class="d4-nav-dot"></div>Audit Log</div>
+          </div>
+        </div>
+        <div class="d4-main">
+          <div class="d4-topbar">
+            <div class="d4-page-title">Lucas Ferreira <span style="font-size:11px;font-weight:400;color:#6b7280">— Sales Consultant · Lisbon</span></div>
+            <div style="display:flex;gap:6px">
+              <span class="d4-badge-sm allow" style="padding:2px 8px;border-radius:10px">Active</span>
+              <button class="d1-btn ghost" style="font-size:11px;padding:3px 8px">Edit</button>
+            </div>
+          </div>
+          <div class="d4-content">
+            <div class="d4-stale-bar">⏱ Permissions resolved 2m ago — propagating (≤5 min)</div>
+            <div class="d4-two-col">
+              <div class="d4-card">
+                <div class="d4-card-header">Assignments <span style="color:#6b7280">+</span></div>
+                <div class="d4-card-body">
+                  <div class="d4-group-header">Groups (2)</div>
+                  <div class="d4-row">Lisbon Sales Team</div>
+                  <div class="d4-row">Standard Users</div>
+                  <div class="d4-group-header">Dimensions</div>
+                  <div class="d4-dim-row"><div class="d4-dim-axis-label">Location</div><div class="d4-chips-inline"><span class="d4-chip-sm">Lisbon</span></div></div>
+                  <div class="d4-dim-row"><div class="d4-dim-axis-label">Make</div><div class="d4-chips-inline"><span class="d4-chip-sm">VW</span><span class="d4-chip-sm">Audi</span></div></div>
+                  <div class="d4-dim-row"><div class="d4-dim-axis-label">Branch</div><div class="d4-chips-inline"><span class="d4-chip-sm">Sales</span></div></div>
+                  <div style="font-size:10px;font-style:italic;color:#9ca3af;padding:6px 10px">Sales branch, Lisbon, VW+Audi</div>
+                </div>
+              </div>
+              <div class="d4-card">
+                <div class="d4-card-header">Effective Permissions <span style="color:#9ca3af;font-weight:400;font-size:10px">9 total</span></div>
+                <div class="d4-card-body">
+                  <div class="d4-group-header">CRM</div>
+                  <div class="d4-row deny"><span class="d4-badge-sm deny">DENY</span> <span class="d4-code">crm.finance.view</span> <span class="d4-prov-sm" style="color:#6366f1;cursor:pointer">override → remove</span></div>
+                  <div class="d4-row"><span class="d4-code">crm.deal.view</span> <span class="d4-prov-sm">Lisbon Sales → Sales</span></div>
+                  <div class="d4-row"><span class="d4-code">crm.deal.create</span> <span class="d4-prov-sm">Lisbon Sales → Sales</span></div>
+                  <div class="d4-row"><span class="d4-code">crm.invoice.view</span> <span class="d4-prov-sm">Lisbon Sales → Sales</span></div>
+                  <div class="d4-row"><span class="d4-code">crm.customer.view</span> <span class="d4-prov-sm">Standard → Base</span></div>
+                  <div class="d4-group-header">ERP</div>
+                  <div class="d4-row"><span class="d4-code">erp.inventory.view</span> <span class="d4-prov-sm">Lisbon Sales → Inv.</span></div>
+                  <div class="d4-row"><span class="d4-code">erp.pricing.view</span> <span class="d4-prov-sm">Lisbon Sales → Pricing</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DIRECTION 5 ═══ -->
+<div id="d5" class="direction-section">
+  <div class="section-header">
+    <h2>Direction 5 — Guided Setup Wizard</h2>
+    <p>The proactive onboarding flow. Stepped wizard with preview of what the role set grants before confirming. Progressive disclosure with "advanced mode" escape. The design entry point for new users.</p>
+    <div class="tags">
+      <span class="tag highlight">Proactive onboarding flow</span>
+      <span class="tag">Wizard pattern</span>
+      <span class="tag">Permission preview</span>
+      <span class="tag">Expert escape valve</span>
+    </div>
+  </div>
+  <div class="grid-1">
+    <div class="mockup-label">Tenant Admin — New user setup wizard (Step 2: Role Sets)</div>
+    <div class="mockup-frame">
+      <div class="d5-shell">
+        <div class="d5-sidebar">
+          <div class="d5-sidebar-logo"><div class="d5-logo-icon">O</div>OneId</div>
+          <div style="padding:6px 0">
+            <div class="d5-nav-item active">Users</div>
+            <div class="d5-nav-item">Groups</div>
+            <div class="d5-nav-item">Roles</div>
+          </div>
+        </div>
+        <div class="d5-main">
+          <div class="d5-wizard-container">
+            <div class="d5-wizard-header">
+              <div class="d5-wizard-title">Set up Lucas Ferreira</div>
+              <div class="d5-wizard-subtitle">Sales Consultant · Autohaus Lisboa</div>
+            </div>
+            <div class="d5-steps">
+              <div class="d5-step">
+                <div class="d5-step-num done">✓</div>
+                <div class="d5-step-label">Profile</div>
+              </div>
+              <div class="d5-step-connector done"></div>
+              <div class="d5-step">
+                <div class="d5-step-num active">2</div>
+                <div class="d5-step-label active">Role Sets</div>
+              </div>
+              <div class="d5-step-connector"></div>
+              <div class="d5-step">
+                <div class="d5-step-num pending">3</div>
+                <div class="d5-step-label">Dimensions</div>
+              </div>
+              <div class="d5-step-connector"></div>
+              <div class="d5-step">
+                <div class="d5-step-num pending">4</div>
+                <div class="d5-step-label">Review</div>
+              </div>
+            </div>
+            <div class="d5-body">
+              <div class="d5-section-label">Choose a Role Set — what should Lucas be able to do?</div>
+              <div class="d5-role-set-list">
+                <div class="d5-role-set-item selected">
+                  <div class="d5-role-set-icon"></div>
+                  <div>
+                    <div class="d5-role-set-name">Standard Sales Consultant</div>
+                    <div class="d5-role-set-desc">CRM access, deal creation, inventory view — no finance</div>
+                  </div>
+                  <div class="d5-role-set-check">✓</div>
+                </div>
+                <div class="d5-role-set-item">
+                  <div class="d5-role-set-icon"></div>
+                  <div>
+                    <div class="d5-role-set-name">Senior Sales Consultant</div>
+                    <div class="d5-role-set-desc">All of Standard + pricing approval, discount authority</div>
+                  </div>
+                </div>
+                <div class="d5-role-set-item">
+                  <div class="d5-role-set-icon"></div>
+                  <div>
+                    <div class="d5-role-set-name">Sales Manager</div>
+                    <div class="d5-role-set-desc">Full sales + team oversight, finance read, reporting</div>
+                  </div>
+                </div>
+              </div>
+              <div class="d5-preview-box">
+                <div class="d5-preview-title">Lucas will be able to:</div>
+                <div class="d5-preview-perms">
+                  <span class="d5-perm-chip">crm.deal.view</span>
+                  <span class="d5-perm-chip">crm.deal.create</span>
+                  <span class="d5-perm-chip">crm.invoice.view</span>
+                  <span class="d5-perm-chip">crm.customer.view</span>
+                  <span class="d5-perm-chip">erp.inventory.view</span>
+                  <span class="d5-perm-chip">erp.pricing.view</span>
+                  <span style="font-size:11px;color:#94a3b8;align-self:center">+ 3 more</span>
+                </div>
+              </div>
+            </div>
+            <div class="d5-footer">
+              <button class="d5-btn ghost">← Back</button>
+              <button class="d5-btn advanced">Advanced mode</button>
+              <button class="d5-btn primary">Next: Dimensions →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DIRECTION 6 ═══ -->
+<div id="d6" class="direction-section">
+  <div class="section-header">
+    <h2>Direction 6 — Module Card Groups</h2>
+    <p>Permissions grouped by product module in cards rather than a flat list. Easier to scan "what can Lucas do in CRM?" at a glance. Dimensional summary as a persistent strip at the bottom.</p>
+    <div class="tags">
+      <span class="tag">Card-based grouping</span>
+      <span class="tag">Module-first permissions</span>
+      <span class="tag highlight">Best for: domain-oriented scanning</span>
+      <span class="tag">Persistent dimensions strip</span>
+    </div>
+  </div>
+  <div class="grid-1">
+    <div class="mockup-label">Tenant Admin — User profile, module card view</div>
+    <div class="mockup-frame">
+      <div class="d6-shell">
+        <div class="d6-sidebar">
+          <div class="d6-sidebar-logo"><div class="d6-logo-icon">O</div>OneId</div>
+          <div style="padding:6px 0">
+            <div class="d6-nav-item active">Users</div>
+            <div class="d6-nav-item">Groups</div>
+            <div class="d6-nav-item">Roles</div>
+            <div class="d6-nav-item">Role Sets</div>
+            <div class="d6-nav-item">Dimensions</div>
+            <div class="d6-nav-item">Audit Log</div>
+          </div>
+        </div>
+        <div class="d6-main">
+          <div class="d6-topbar">
+            <div class="d6-user-row">
+              <div class="d6-user-left">
+                <div class="d6-avatar">LF</div>
+                <div>
+                  <div class="d6-user-name">Lucas Ferreira</div>
+                  <div class="d6-user-sub">lucas.ferreira@autohaus.pt · Sales Consultant · Lisbon</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;color:#94a3b8">Resolved 2m ago</span>
+                <span class="d1-badge active">Active</span>
+              </div>
+            </div>
+          </div>
+          <div class="d6-content">
+            <div class="d6-propagate">⏱ Changes effective within 5 minutes — last resolved 2 min ago</div>
+            <div class="d6-module-grid">
+              <div class="d6-module-card">
+                <div class="d6-module-header">
+                  <div class="d6-module-icon crm">📋</div>
+                  <div>
+                    <div class="d6-module-title">CRM</div>
+                  </div>
+                  <div class="d6-module-count">5 permissions · 1 issue</div>
+                </div>
+                <div class="d6-module-body">
+                  <div class="d6-deny-line"><span class="d6-deny-badge">DENY</span><span style="font-size:12px;color:#374151">crm.finance.view</span><span class="d6-fix-link">Fix →</span></div>
+                  <div class="d6-perm-line"><span class="d6-perm-code">crm.deal.view</span><span class="d6-perm-prov">Lisbon Sales → Sales</span></div>
+                  <div class="d6-perm-line"><span class="d6-perm-code">crm.deal.create</span><span class="d6-perm-prov">Lisbon Sales → Sales</span></div>
+                  <div class="d6-perm-line"><span class="d6-perm-code">crm.invoice.view</span><span class="d6-perm-prov">Lisbon Sales → Sales</span></div>
+                  <div class="d6-perm-line"><span class="d6-perm-code">crm.customer.view</span><span class="d6-perm-prov">Standard → Base</span></div>
+                </div>
+              </div>
+              <div class="d6-module-card">
+                <div class="d6-module-header">
+                  <div class="d6-module-icon erp">⚙️</div>
+                  <div><div class="d6-module-title">ERP</div></div>
+                  <div class="d6-module-count">2 permissions</div>
+                </div>
+                <div class="d6-module-body">
+                  <div class="d6-perm-line"><span class="d6-perm-code">erp.inventory.view</span><span class="d6-perm-prov">Lisbon Sales → Inv.</span></div>
+                  <div class="d6-perm-line"><span class="d6-perm-code">erp.pricing.view</span><span class="d6-perm-prov">Lisbon Sales → Pricing</span></div>
+                </div>
+              </div>
+              <div class="d6-module-card">
+                <div class="d6-module-header">
+                  <div class="d6-module-icon core">🔑</div>
+                  <div><div class="d6-module-title">Core</div></div>
+                  <div class="d6-module-count">2 permissions</div>
+                </div>
+                <div class="d6-module-body">
+                  <div class="d6-perm-line"><span class="d6-perm-code">core.profile.view</span><span class="d6-perm-prov">Standard → Base</span></div>
+                  <div class="d6-perm-line"><span class="d6-perm-code">core.notifications.view</span><span class="d6-perm-prov">Standard → Base</span></div>
+                </div>
+              </div>
+              <div class="d6-module-card" style="border:1px dashed #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:center">
+                <div style="text-align:center;color:#94a3b8">
+                  <div style="font-size:20px;margin-bottom:4px">+</div>
+                  <div style="font-size:11px">Add Role Set</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="d6-dim-strip">
+            <div class="d6-dim-title">Dimensional scope — Lucas sees data matching:</div>
+            <div class="d6-dim-axes">
+              <div class="d6-axis"><div class="d6-axis-name">Location</div><div class="d6-axis-chips"><span class="d6-axis-chip">Lisbon</span></div></div>
+              <div class="d6-axis"><div class="d6-axis-name">Make</div><div class="d6-axis-chips"><span class="d6-axis-chip">VW</span><span class="d6-axis-chip">Audi</span></div></div>
+              <div class="d6-axis"><div class="d6-axis-name">Branch</div><div class="d6-axis-chips"><span class="d6-axis-chip">Sales</span></div></div>
+              <div style="font-size:11px;font-style:italic;color:#94a3b8;margin-left:8px">Sales branch at Lisbon for VW and Audi</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.direction-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.dir-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
