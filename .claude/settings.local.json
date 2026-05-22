@@ -41,7 +41,23 @@
       "Bash(powershell -Command \"Get-Content 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml' | Select-String -Pattern 'member name.*NpgsqlProperty|member name.*xmin|UseXmin|RowVersion' | Select-Object -First 20\")",
       "Bash(powershell -Command \"Get-Content 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml' -TotalCount 200 | Select-String -Pattern 'xmin' -CaseSensitive:0\")",
       "Bash(powershell -Command *)",
-      "Bash(powershell -Command \"\\(Get-Content 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml'\\) -cmatch 'xmin' | Select-Object -First 20\")"
+      "Bash(powershell -Command \"\\(Get-Content 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml'\\) -cmatch 'xmin' | Select-Object -First 20\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\tests\\\\OneId.Server.IntegrationTests\\\\\" -Recurse -File | Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Server\\\\Infrastructure\\\\Persistence\\\\\" -Recurse | Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\tests\\\\OneId.Server.IntegrationTests\" -Recurse)",
+      "Bash(Get-ChildItem *)",
+      "Bash(Select-Object FullName)",
+      "WebFetch(domain:www.nuget.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:*)",
+      "WebSearch",
+      "Bash(find ~/.nuget/packages/respawn/7.0.0 -name \"*.dll\" 2>/dev/null | head -5)",
+      "Read(//c/Users/georgios.mathioudaki/.nuget/packages/respawn/7.0.0/**)",
+      "Bash(dotnet-script -e ' *)",
+      "Bash(mkdir -p \"C:\\\\Temp\\\\TestRespawn\" 2>/dev/null; true)"
+    ],
+    "additionalDirectories": [
+      "C:\\Temp"
     ]
   }
 }
