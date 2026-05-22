@@ -17,7 +17,13 @@
       "Bash(grep -v \".exe$\")",
       "Bash(grep -v \".pdb$\")",
       "Bash(grep -v \".json$\")",
-      "Bash(grep -v \".config$\")"
+      "Bash(grep -v \".config$\")",
+      "Bash(ls \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\\" 2>&1)",
+      "Read(//c/Users/georgios.mathioudaki/Dev/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5341)",
+      "Bash(curl -s http://localhost:8080/health)",
+      "Bash(curl -s \"http://localhost:5341/api/events?count=10\")"
     ]
   }
 }
