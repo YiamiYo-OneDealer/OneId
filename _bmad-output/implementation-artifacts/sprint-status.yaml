@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-23  # Story 1-7a review
+last_updated: 2026-05-23  # Story 1-7b pending review
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -54,7 +54,7 @@ development_status:
   1-5-integration-test-infrastructure-testcontainers-respawn-testtokenfactory: review
   1-6-cicd-pipeline-github-actions: review
   1-7a-archunit-boundary-enforcement-and-cache-abstraction: review
-  1-7b-devseeder-and-permission-catalog-stub: backlog
+  1-7b-devseeder-and-permission-catalog-stub: review
   epic-1-retrospective: optional
 
   # ─────────────────────────────────────────────────────────────────────────

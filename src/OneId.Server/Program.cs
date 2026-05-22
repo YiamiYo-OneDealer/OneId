@@ -4,6 +4,7 @@ using OneId.Server.Infrastructure.Caching;
 using OneId.Server.Infrastructure.Logging;
 using OneId.Server.Infrastructure.Middleware;
 using OneId.Server.Infrastructure.Persistence;
+using OneId.Server.Infrastructure.Persistence.Seeds;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Formatting.Json;
@@ -77,6 +78,7 @@ try
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.Database.MigrateAsync();
+        await DevSeeder.SeedAsync(db);
     }
 
     // Must be first — wraps entire pipeline to catch exceptions from any layer

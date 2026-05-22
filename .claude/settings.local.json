@@ -57,7 +57,10 @@
       "Bash(mkdir -p \"C:\\\\Temp\\\\TestRespawn\" 2>/dev/null; true)",
       "Bash(Select-Object -Property Name, PSIsContainer)",
       "Bash(Format-Table -AutoSize)",
-      "Bash(Remove-Item \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Server\\\\Infrastructure\\\\Caching\\\\.gitkeep\" -Force)"
+      "Bash(Remove-Item \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Server\\\\Infrastructure\\\\Caching\\\\.gitkeep\" -Force)",
+      "Bash(find src/OneId.Server/Infrastructure/Persistence/Seeds -type f)",
+      "Bash(ls src/OneId.Server/Infrastructure/Persistence/)",
+      "Bash(del \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Server\\\\Infrastructure\\\\Persistence\\\\Seeds\\\\.gitkeep\")"
     ],
     "additionalDirectories": [
       "C:\\Temp"

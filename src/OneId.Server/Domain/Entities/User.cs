@@ -8,4 +8,5 @@ public class User
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
+    public string? PasswordHash { get; set; }
 }
