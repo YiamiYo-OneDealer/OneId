@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OneId.Server.Application.Common;
+using OneId.Server.Infrastructure.Logging;
 using OneId.Server.Infrastructure.Middleware;
 using OneId.Server.Infrastructure.Persistence;
 using OpenTelemetry.Trace;
@@ -15,7 +16,10 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
-    // Serilog as the application logger — Story 1.4 adds enrichers and destructuring
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddSerilogEnrichers();
+
+    // Serilog as the application logger
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
@@ -71,6 +75,20 @@ try
 
     // Must be first — wraps entire pipeline to catch exceptions from any layer
     app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+    // Request logging: adds Outcome field to HTTP request completion log events
+    app.UseSerilogRequestLogging(options =>
+    {
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        {
+            diagnosticContext.Set(
+                "Outcome",
+                httpContext.Response.StatusCode < 400 ? "Success" : "Failure");
+        };
+        options.MessageTemplate =
+            "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms — {Outcome}";
+    });
+
     app.UseHttpsRedirection();
     app.UseAuthentication();
     // AR-5: TenantContextMiddleware MUST precede OpenIddict and EF Core — see architecture.md
