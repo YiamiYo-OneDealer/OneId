@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OneId.Server/OneId.Server.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OneId.Server.IntegrationTests/OneId.Server.IntegrationTests.csproj" />
+    <Project Path="tests/OneId.Server.UnitTests/OneId.Server.UnitTests.csproj" />
+  </Folder>
+</Solution>

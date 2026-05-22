@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-22
+last_updated: 2026-05-22 (code review)
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -45,8 +45,8 @@ development_status:
   # ─────────────────────────────────────────────────────────────────────────
   # Epic 1: Foundation & Dev Infrastructure
   # ─────────────────────────────────────────────────────────────────────────
-  epic-1: backlog
-  1-1-initialize-backend-and-frontend-projects: backlog
+  epic-1: in-progress
+  1-1-initialize-backend-and-frontend-projects: done
   1-2-local-development-stack-docker-compose: backlog
   1-3a-tenant-context-middleware-and-registration-order-enforcement: backlog
   1-3b-ef-core-global-query-filters-entity-stubs-and-concurrency-tokens: backlog

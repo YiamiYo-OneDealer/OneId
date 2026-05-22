@@ -1,0 +1,55 @@
+# .NET build output
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# NuGet packages
+packages/
+*.nupkg
+*.snupkg
+
+# EF Core migrations scaffolding temp
+*.efbackup
+
+# Signing keys (Epic 2 — never commit dev or prod signing keys)
+keys/
+*.key
+*.pfx
+*.p12
+
+# User secrets override (contains local credentials, never commit)
+appsettings.*.local.json
+secrets.json
+
+# Node / frontend
+src/OneId.Web/node_modules/
+src/OneId.Web/dist/
+src/OneId.Web/.vite/
+src/OneId.Web/.env
+src/OneId.Web/.env.*
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Coverage reports
+coverage/
+TestResults/
+*.coverage
+*.coveragexml
+
+# Rider / JetBrains
+.idea/
+*.DotSettings.user
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

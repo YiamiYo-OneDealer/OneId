@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet test *)",
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(npx shadcn@latest init --defaults)",
+      "Bash(npm ls *)",
+      "Bash(npx shadcn@latest init --defaults -y)",
+      "Bash(npx shadcn@4.7.0 init --defaults -y)",
+      "Bash(npx shadcn@4.7.0 init --defaults)",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Web\\\\src\\\\lib\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Web\\\\src\\\\components\\\\ui\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Web\\\\src\\\\hooks\")",
+      "Bash(npm run *)",
+      "Bash(grep -v \".dll$\")",
+      "Bash(grep -v \".exe$\")",
+      "Bash(grep -v \".pdb$\")",
+      "Bash(grep -v \".json$\")",
+      "Bash(grep -v \".config$\")"
+    ]
+  }
+}
