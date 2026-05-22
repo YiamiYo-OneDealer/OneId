@@ -27,7 +27,21 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\" -Recurse -Directory)",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(Sort-Object)",
-      "Read(//dev/**)"
+      "Read(//dev/**)",
+      "Bash(dir \"C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\\" 2>&1)",
+      "Bash(powershell -Command \"Get-ChildItem 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\' 2>&1\")",
+      "Bash(powershell -Command 'Add-Type -Path '\\\\''C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.dll'\\\\''; [System.AppDomain]::CurrentDomain.GetAssemblies\\(\\) | Where-Object { $_.GetName\\(\\).Name -eq '\\\\''Npgsql.EntityFrameworkCore.PostgreSQL'\\\\'' } | ForEach-Object { $_.GetTypes\\(\\) | Where-Object { $_.Name -like '\\\\''*EntityType*'\\\\'' } | Select-Object FullName }')",
+      "Bash(powershell -Command \"Select-String -Path 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml' -Pattern 'UseXmin' | Select-Object -First 10\")",
+      "Bash(powershell -Command \"Select-String -Path 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml' -Pattern 'xmin' -CaseSensitive:0 | Select-Object -First 20\")",
+      "Bash(powershell -Command \"Select-String -Path 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml' -Pattern 'member name.*xmin' -CaseSensitive:0 | Select-Object -First 20\")",
+      "Bash(powershell -Command \"Select-String -Path 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml' -Pattern 'ConcurrencyToken' -CaseSensitive:0 | Select-Object -First 10\")",
+      "Bash(powershell -Command \"Select-String -Path 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml' -Pattern 'Xmin' | Select-Object -First 20\")",
+      "Bash(powershell -Command \"Get-Content 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml' | Select-String -Pattern 'member name' | Select-String -Pattern 'xmin|Xmin|RowVersion|Concurrency' | Select-Object -First 20\")",
+      "Bash(powershell -Command \"Get-Content 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml' | Select-String -Pattern 'member name.*NpgsqlEntityType' | Select-Object -First 20\")",
+      "Bash(powershell -Command \"Get-Content 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml' | Select-String -Pattern 'member name.*NpgsqlProperty|member name.*xmin|UseXmin|RowVersion' | Select-Object -First 20\")",
+      "Bash(powershell -Command \"Get-Content 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml' -TotalCount 200 | Select-String -Pattern 'xmin' -CaseSensitive:0\")",
+      "Bash(powershell -Command *)",
+      "Bash(powershell -Command \"\\(Get-Content 'C:\\\\Users\\\\georgios.mathioudaki\\\\.nuget\\\\packages\\\\npgsql.entityframeworkcore.postgresql\\\\10.0.1\\\\lib\\\\net10.0\\\\Npgsql.EntityFrameworkCore.PostgreSQL.xml'\\) -cmatch 'xmin' | Select-Object -First 20\")"
     ]
   }
 }

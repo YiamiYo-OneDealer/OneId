@@ -15,6 +15,8 @@ using System.Text.Encodings.Web;
 
 namespace OneId.Server.IntegrationTests;
 
+// Same collection as DevSeederIntegrationTests — sequential execution prevents Serilog static logger race.
+[Collection("Integration")]
 public class RegistrationOrderIntegrationTests : IClassFixture<OneIdTestFactory>
 {
     private readonly OneIdTestFactory _factory;

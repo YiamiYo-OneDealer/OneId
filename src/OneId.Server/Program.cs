@@ -69,6 +69,8 @@ try
         await db.Database.MigrateAsync();
     }
 
+    // Must be first — wraps entire pipeline to catch exceptions from any layer
+    app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseHttpsRedirection();
     app.UseAuthentication();
     // AR-5: TenantContextMiddleware MUST precede OpenIddict and EF Core — see architecture.md
