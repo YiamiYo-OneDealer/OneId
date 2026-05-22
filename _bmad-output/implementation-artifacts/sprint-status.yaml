@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-22  # Story 1-5 review
+last_updated: 2026-05-22  # Story 1-6 review
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -52,7 +52,7 @@ development_status:
   1-3b-ef-core-global-query-filters-entity-stubs-and-concurrency-tokens: done
   1-4-observability-pipeline-serilog-otel-seq: done
   1-5-integration-test-infrastructure-testcontainers-respawn-testtokenfactory: review
-  1-6-cicd-pipeline-github-actions: backlog
+  1-6-cicd-pipeline-github-actions: review
   1-7a-archunit-boundary-enforcement-and-cache-abstraction: backlog
   1-7b-devseeder-and-permission-catalog-stub: backlog
   epic-1-retrospective: optional

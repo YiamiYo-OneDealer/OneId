@@ -54,7 +54,9 @@
       "Bash(find ~/.nuget/packages/respawn/7.0.0 -name \"*.dll\" 2>/dev/null | head -5)",
       "Read(//c/Users/georgios.mathioudaki/.nuget/packages/respawn/7.0.0/**)",
       "Bash(dotnet-script -e ' *)",
-      "Bash(mkdir -p \"C:\\\\Temp\\\\TestRespawn\" 2>/dev/null; true)"
+      "Bash(mkdir -p \"C:\\\\Temp\\\\TestRespawn\" 2>/dev/null; true)",
+      "Bash(Select-Object -Property Name, PSIsContainer)",
+      "Bash(Format-Table -AutoSize)"
     ],
     "additionalDirectories": [
       "C:\\Temp"

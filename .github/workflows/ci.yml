@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build
+        run: dotnet build OneId.slnx -c Release
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test
+        run: dotnet test OneId.slnx -c Release
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: 'true'
+
+  migration-bundle:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Install dotnet-ef
+        run: dotnet tool install --global dotnet-ef --version 10.0.8
+      - name: Generate migration bundle
+        run: |
+          dotnet ef migrations bundle \
+            --project src/OneId.Server \
+            --startup-project src/OneId.Server \
+            --output efbundle \
+            --self-contained \
+            --runtime linux-x64
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: efbundle
+          path: efbundle
+
+  migration-validate:
+    needs: migration-bundle
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: oneid_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Download bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: efbundle
+      - name: Apply migration bundle
+        run: |
+          chmod +x ./efbundle
+          ./efbundle --connection "Host=localhost;Port=5432;Database=oneid_ci;Username=postgres;Password=postgres"
+      - name: Verify schema is queryable
+        run: |
+          psql -h localhost -U postgres -d oneid_ci \
+            -c "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;"
+        env:
+          PGPASSWORD: postgres
+
+  playwright-tests:
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder
+        run: echo "Playwright tests activated in Epic 5a"
