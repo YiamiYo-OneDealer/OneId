@@ -8,11 +8,28 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    {
+      name: 'silence-missing-sourcemaps',
+      apply: 'serve' as const,
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url?.endsWith('.map') && req.url.includes('node_modules')) {
+            res.setHeader('Content-Type', 'application/json')
+            res.end('{"version":3,"sources":[],"mappings":""}')
+            return
+          }
+          next()
+        })
+      },
+    },
   ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  server: {
+    sourcemapIgnoreList: (sourcePath) => sourcePath.includes('node_modules'),
   },
   test: {
     environment: 'jsdom',

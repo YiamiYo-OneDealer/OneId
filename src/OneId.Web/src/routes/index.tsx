@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router'
+import { createBrowserRouter, Navigate } from 'react-router'
 import { AuthenticatedLayout } from './_authenticated'
 import { ErrorPage } from './error'
 import { LoginPage } from './login'
@@ -17,6 +17,7 @@ export const router = createBrowserRouter([
     element: <AuthenticatedLayout />,
     errorElement: <ErrorPage />,
     children: [
+      { index: true, element: <Navigate to="/internal" replace /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'suspended', element: <SuspendedPage /> },
       {
