@@ -68,6 +68,15 @@
 
 ## Deferred from: code review of 5c-1c-user-edit-dialog (2026-05-23)
 
+## Deferred from: code review of 5c-4-f-3-tenant-provisioning-stepper (2026-05-24)
+
+- **Admin creation misleading error after tenant created** (`TenantProvisioningPage.tsx:322-332`) — if `mockStore.createUser` throws after `createTenant.mutateAsync` succeeds, the catch block shows "Failed to create tenant" when the tenant was in fact created. Demo scope / mock pattern; split into tenant-success + admin-error messaging when real API is wired.
+- **Email validation accepts `@`, `foo@`, `@bar`** (`TenantProvisioningPage.tsx:298`) — `@`-presence check only; pre-existing pattern from 5c-1b, explicitly deferred to Phase 2 in story dev notes.
+- **`blocker.reset?.()` / `blocker.proceed?.()` optional chaining silently no-ops** (`TenantProvisioningPage.tsx:460-461`) — if RR7 minor removes `reset`/`proceed` from the blocker object, dialog buttons do nothing. Covered by the `unstable_useBlocker` code comment; monitor on RR7 upgrades.
+- **Route order fragility: `tenants/new` before `tenants/:tenantId`** (`routes/index.tsx:36`) — no guard prevents reordering during maintenance. Static segment resolution makes it safe today; add a test assertion or comment guard when route file is next touched.
+- **`parseInt` imprecision for seat counts > `Number.MAX_SAFE_INTEGER`** (`TenantProvisioningPage.tsx:284`) — demo scope; add a max-value guard when the real API enforces seat limits.
+- **Tests use `fireEvent` instead of `userEvent`** (`TenantProvisioningPage.test.tsx`) — blur-triggered validation paths not exercised by the test suite. Pre-existing pattern across all codebase tests; upgrade when `@testing-library/user-event` is adopted project-wide.
+
 - **Stale `editUser` snapshot can clobber concurrent Activate/Deactivate status change** (`TenantUsersPage.tsx`) — `editUser` state is captured at click time; if Activate/Deactivate fires and TanStack Query re-fetches while the dialog is open, saving writes back the old status. Low practical risk in demo with mock data; revisit when pages connect to a real API.
 - **`onOpenChange` silently blocks close while save is in-flight** (`TenantUsersPage.tsx`) — Escape/backdrop close is swallowed with no visual feedback when `updateUser.isPending` is true. Intentional per 5c-1b delete-dialog pattern; consider adding a loading indicator or disabled-X visual for production use.
 - **Weak email validation (`@` presence only)** (`TenantUsersPage.tsx` `validateEmail`) — pre-existing pattern from 5c-1b; upgrade to proper regex or library validation in Phase 2 when real auth is wired.

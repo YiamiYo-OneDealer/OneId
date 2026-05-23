@@ -69,6 +69,9 @@ export function TenantListPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-foreground">Tenants</h1>
+        <Button size="sm" asChild>
+          <Link to="/internal/tenants/new">New Tenant</Link>
+        </Button>
       </div>
 
       {!isLoading && tenants.length === 0 ? (

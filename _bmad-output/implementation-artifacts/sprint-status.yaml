@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-24  # 5c-1c done
+last_updated: 2026-05-24  # 5c-4 done
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -155,7 +155,7 @@ development_status:
   5c-1c-user-edit-dialog: done                                  # Phase 5 patch — user edit dialog (demo gap from 5c-1b)
   5c-2-f-1-new-user-stepper-with-real-time-permissions-preview: backlog  # Phase 8 (requires 4b preview endpoint)
   5c-3-internal-admin-management-pages: done                           # Phase 5 — demo milestone
-  5c-4-f-3-tenant-provisioning-stepper: backlog                        # Phase 5 — demo milestone
+  5c-4-f-3-tenant-provisioning-stepper: done                            # Phase 5 — demo milestone
   5c-5-audit-log-ui: backlog                                           # Phase 5 — demo milestone
   5c-6-commandpalette: backlog                                         # Phase 5 — demo milestone
   5c-7-wcag-aa-audit-automated-accessibility-tests-and-ci-playwright-activation: backlog  # Phase 8

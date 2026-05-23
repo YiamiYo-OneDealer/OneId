@@ -8,6 +8,7 @@ import { InternalDashboard } from './internal/index'
 import { TenantContextLayout } from './internal/tenants/_layout'
 import { TenantDetailPage } from './internal/tenants/TenantDetailPage'
 import { TenantListPage } from './internal/tenants/TenantListPage'
+import { TenantProvisioningPage } from './internal/tenants/TenantProvisioningPage'
 import { TenantUsersPage } from './internal/tenants/TenantUsersPage'
 import { TenantGroupsPage } from './internal/tenants/TenantGroupsPage'
 import { TenantRolesPage } from './internal/tenants/TenantRolesPage'
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <InternalDashboard /> },
           { path: 'tenants', element: <TenantListPage /> },
+          { path: 'tenants/new', element: <TenantProvisioningPage /> },
           { path: 'permissions', element: <PermissionsPage /> },
           {
             path: 'tenants/:tenantId',
