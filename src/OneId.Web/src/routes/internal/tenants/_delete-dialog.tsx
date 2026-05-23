@@ -24,7 +24,7 @@ export function DeleteDialog({
   error?: string | null
 }) {
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !isPending) onClose() }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Delete &ldquo;{entityName}&rdquo;?</DialogTitle>

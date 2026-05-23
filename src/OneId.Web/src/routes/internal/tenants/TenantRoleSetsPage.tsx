@@ -48,13 +48,16 @@ function RoleSelectList({
           <p className="text-sm text-muted-foreground px-1">No matches.</p>
         ) : (
           filtered.map((r) => (
-            <label key={r.id} className="flex items-center gap-2 px-1 py-0.5 cursor-pointer rounded hover:bg-card">
+            <div key={r.id} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-card">
               <Checkbox
+                id={r.id}
                 checked={selected.includes(r.id)}
                 onCheckedChange={() => toggle(r.id)}
               />
-              <span className="text-sm text-foreground">{r.name}</span>
-            </label>
+              <label htmlFor={r.id} className="text-sm text-foreground cursor-pointer flex-1">
+                {r.name}
+              </label>
+            </div>
           ))
         )}
       </div>
@@ -139,10 +142,10 @@ function RoleSetFormDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={mutation.isPending}>
+          <Button variant="outline" onClick={handleClose} disabled={createRoleSet.isPending || updateRoleSet.isPending}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={mutation.isPending}>
+          <Button onClick={handleSubmit} disabled={createRoleSet.isPending || updateRoleSet.isPending}>
             {mutation.isPending ? 'Saving…' : isEditing ? 'Save' : 'Create'}
           </Button>
         </DialogFooter>
@@ -235,13 +238,15 @@ export function TenantRoleSetsPage() {
         tenantId={tenantId}
         roles={roles}
       />
-      <RoleSetFormDialog
-        isOpen={!!editRoleSet}
-        onClose={() => setEditRoleSet(null)}
-        initial={editRoleSet}
-        tenantId={tenantId}
-        roles={roles}
-      />
+      {editRoleSet && (
+        <RoleSetFormDialog
+          isOpen={true}
+          onClose={() => setEditRoleSet(null)}
+          initial={editRoleSet}
+          tenantId={tenantId}
+          roles={roles}
+        />
+      )}
       <DeleteDialog
         entityName={deleteTarget?.name ?? ''}
         isOpen={!!deleteTarget}

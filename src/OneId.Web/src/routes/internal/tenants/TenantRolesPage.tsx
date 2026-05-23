@@ -50,13 +50,17 @@ function PermissionSelect({
           <p className="text-sm text-muted-foreground px-1">No matches.</p>
         ) : (
           filtered.map((p) => (
-            <label key={p.id} className="flex items-center gap-2 px-1 py-0.5 cursor-pointer rounded hover:bg-card">
+            <div key={p.id} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-card">
               <Checkbox
+                id={`perm-${p.id}`}
                 checked={selected.includes(p.id)}
                 onCheckedChange={() => toggle(p.id)}
               />
-              <span className="text-sm text-foreground font-mono">{p.id}</span>
-            </label>
+              <label htmlFor={`perm-${p.id}`} className="flex-1 cursor-pointer">
+                <span className="text-sm text-foreground font-mono">{p.id}</span>
+                <span className="text-xs text-muted-foreground ml-2">{p.description}</span>
+              </label>
+            </div>
           ))
         )}
       </div>
@@ -145,10 +149,10 @@ function RoleFormDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={mutation.isPending}>
+          <Button variant="outline" onClick={handleClose} disabled={createRole.isPending || updateRole.isPending}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={mutation.isPending}>
+          <Button onClick={handleSubmit} disabled={createRole.isPending || updateRole.isPending}>
             {mutation.isPending ? 'Saving…' : isEditing ? 'Save' : 'Create'}
           </Button>
         </DialogFooter>
@@ -241,13 +245,15 @@ export function TenantRolesPage() {
         tenantId={tenantId}
         permissions={permissions}
       />
-      <RoleFormDialog
-        isOpen={!!editRole}
-        onClose={() => setEditRole(null)}
-        initial={editRole}
-        tenantId={tenantId}
-        permissions={permissions}
-      />
+      {editRole && (
+        <RoleFormDialog
+          isOpen={true}
+          onClose={() => setEditRole(null)}
+          initial={editRole}
+          tenantId={tenantId}
+          permissions={permissions}
+        />
+      )}
       <DeleteDialog
         entityName={deleteTarget?.name ?? ''}
         isOpen={!!deleteTarget}

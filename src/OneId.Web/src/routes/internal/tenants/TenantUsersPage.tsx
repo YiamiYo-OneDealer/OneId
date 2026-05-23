@@ -48,13 +48,16 @@ function GroupSelectList({
           <p className="text-sm text-muted-foreground px-1">No matches.</p>
         ) : (
           filtered.map((g) => (
-            <label key={g.id} className="flex items-center gap-2 px-1 py-0.5 cursor-pointer rounded hover:bg-card">
+            <div key={g.id} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-card">
               <Checkbox
+                id={`user-grp-${g.id}`}
                 checked={selected.includes(g.id)}
                 onCheckedChange={() => toggle(g.id)}
               />
-              <span className="text-sm text-foreground">{g.name}</span>
-            </label>
+              <label htmlFor={`user-grp-${g.id}`} className="text-sm text-foreground cursor-pointer flex-1">
+                {g.name}
+              </label>
+            </div>
           ))
         )}
       </div>

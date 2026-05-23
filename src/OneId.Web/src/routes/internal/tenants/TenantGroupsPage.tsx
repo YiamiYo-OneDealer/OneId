@@ -32,11 +32,13 @@ function CheckboxList<T extends { id: string; name: string }>({
   selected,
   onChange,
   placeholder,
+  listId,
 }: {
   items: T[]
   selected: string[]
   onChange: (ids: string[]) => void
   placeholder: string
+  listId: string
 }) {
   const [search, setSearch] = useState('')
   const filtered = items.filter((item) =>
@@ -57,13 +59,16 @@ function CheckboxList<T extends { id: string; name: string }>({
           <p className="text-sm text-muted-foreground px-1">No matches.</p>
         ) : (
           filtered.map((item) => (
-            <label key={item.id} className="flex items-center gap-2 px-1 py-0.5 cursor-pointer rounded hover:bg-card">
+            <div key={item.id} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-card">
               <Checkbox
+                id={`${listId}-${item.id}`}
                 checked={selected.includes(item.id)}
                 onCheckedChange={() => toggle(item.id)}
               />
-              <span className="text-sm text-foreground">{item.name}</span>
-            </label>
+              <label htmlFor={`${listId}-${item.id}`} className="text-sm text-foreground cursor-pointer flex-1">
+                {item.name}
+              </label>
+            </div>
           ))
         )}
       </div>
@@ -166,6 +171,7 @@ function GroupFormDialog({
               selected={selectedRoleIds}
               onChange={setSelectedRoleIds}
               placeholder="Search roles…"
+              listId="group-roles"
             />
           </div>
           <div className="space-y-1">
@@ -175,14 +181,15 @@ function GroupFormDialog({
               selected={selectedRoleSetIds}
               onChange={setSelectedRoleSetIds}
               placeholder="Search role sets…"
+              listId="group-rolesets"
             />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={mutation.isPending}>
+          <Button variant="outline" onClick={handleClose} disabled={createGroup.isPending || updateGroup.isPending}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={mutation.isPending}>
+          <Button onClick={handleSubmit} disabled={createGroup.isPending || updateGroup.isPending}>
             {mutation.isPending ? 'Saving…' : isEditing ? 'Save' : 'Create'}
           </Button>
         </DialogFooter>
@@ -203,6 +210,7 @@ export function TenantGroupsPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [editGroup, setEditGroup] = useState<Group | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Group | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const columns: ColumnDef<Group, unknown>[] = [
     {
@@ -274,23 +282,30 @@ export function TenantGroupsPage() {
         roles={roles}
         roleSets={roleSets}
       />
-      <GroupFormDialog
-        isOpen={!!editGroup}
-        onClose={() => setEditGroup(null)}
-        initial={editGroup}
-        tenantId={tenantId}
-        roles={roles}
-        roleSets={roleSets}
-      />
+      {editGroup && (
+        <GroupFormDialog
+          isOpen={true}
+          onClose={() => setEditGroup(null)}
+          initial={editGroup}
+          tenantId={tenantId}
+          roles={roles}
+          roleSets={roleSets}
+        />
+      )}
       <DeleteDialog
         entityName={deleteTarget?.name ?? ''}
         isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
+        onClose={() => { setDeleteTarget(null); setDeleteError(null) }}
         onConfirm={() => {
           if (!deleteTarget) return
-          deleteGroup.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })
+          setDeleteError(null)
+          deleteGroup.mutate(deleteTarget.id, {
+            onSuccess: () => setDeleteTarget(null),
+            onError: () => setDeleteError('Failed to delete group.'),
+          })
         }}
         isPending={deleteGroup.isPending}
+        error={deleteError}
       />
     </div>
   )

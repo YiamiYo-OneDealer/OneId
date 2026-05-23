@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-23  # 5c-1b ready for review
+last_updated: 2026-05-23  # 5c-1b done
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -151,7 +151,7 @@ development_status:
   # ─────────────────────────────────────────────────────────────────────────
   epic-5c: in-progress
   5c-1-tenant-admin-management-pages: done                             # Phase 5 — demo milestone
-  5c-1b-tenant-management-crud-forms: review                   # Phase 5 — CRUD forms for Roles/RoleSets/Groups/Users
+  5c-1b-tenant-management-crud-forms: done                     # Phase 5 — CRUD forms for Roles/RoleSets/Groups/Users
   5c-2-f-1-new-user-stepper-with-real-time-permissions-preview: backlog  # Phase 8 (requires 4b preview endpoint)
   5c-3-internal-admin-management-pages: done                           # Phase 5 — demo milestone
   5c-4-f-3-tenant-provisioning-stepper: backlog                        # Phase 5 — demo milestone

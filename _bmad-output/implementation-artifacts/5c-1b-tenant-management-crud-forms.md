@@ -1,6 +1,6 @@
 # Story 5c-1b: Tenant Management CRUD Forms
 
-Status: review
+Status: done
 
 ## Story
 
@@ -35,6 +35,28 @@ So that I can demonstrate the full authorization structure management flow using
 - [x] Update `src/routes/internal/tenants/TenantGroupsPage.tsx` — CRUD: create/edit/delete with role + role set multi-select
 - [x] Update `src/routes/internal/tenants/TenantUsersPage.tsx` — create dialog + activate/deactivate button
 - [x] Verify `npm run build`, `npm run lint`, `npm test` pass (AC: #7)
+
+### Review Findings
+
+- [x] [Review][Patch] Orphaned `@/components/ui/checkbox.tsx` committed — `src/OneId.Web/@/components/ui/checkbox.tsx` is a leftover artifact from the Windows path-alias fix (shadcn installer created it in a literal `@/` dir). The correct file is at `src/OneId.Web/src/components/ui/checkbox.tsx`. Delete the `src/OneId.Web/@/` directory and amend/commit. [`src/OneId.Web/@/components/ui/checkbox.tsx`]
+- [x] [Review][Patch] Stale form state + search state on dialog re-open — All three form dialogs (`RoleFormDialog`, `RoleSetFormDialog`, `GroupFormDialog`) initialise state with `useState(initial?.name ?? '')` once at mount; when the parent flips `initial` to a different entity (Edit row A → close → Edit row B), the dialog still shows row A's data. Child search inputs (`PermissionSelect`, `RoleSelectList`, `CheckboxList`) retain stale search text for the same reason (dialogs are always mounted). Fix: conditionally render the edit dialog instance (`{editRole && <RoleFormDialog …/>}`) so it unmounts on close and remounts with fresh state. [`TenantRolesPage.tsx`, `TenantRoleSetsPage.tsx`, `TenantGroupsPage.tsx`]
+- [x] [Review][Patch] Group delete has no error handler — `TenantGroupsPage` passes no `onError` to `deleteGroup.mutate` and no `error` prop to `DeleteDialog`. Any failed delete is silently swallowed. Fix: add `deleteError`/`setDeleteError` state + `onError` handler + pass `error` to `DeleteDialog`, matching the pattern used in Roles and RoleSets pages. [`TenantGroupsPage.tsx`]
+- [x] [Review][Patch] `<label>` wrapping Radix `<Checkbox>` — a11y issue — All four checkbox lists use a native `<label>` wrapping the Radix `<Checkbox>` (which renders as a `<button>`). Native `<label>` does not associate with `<button>` elements and can cause double-activation in some browser/AT combinations. Fix: replace the `<label>` wrapper with `<div>` and use the Radix `Label` component wired via `htmlFor`/`id` props, or keep the wrapper but change to `<div>` and handle click forwarding explicitly. [`TenantRolesPage.tsx`, `TenantRoleSetsPage.tsx`, `TenantGroupsPage.tsx`, `TenantUsersPage.tsx`]
+- [x] [Review][Patch] `PermissionSelect` shows only `p.id`, description searched but not visible — The filter matches on both `p.id` and `p.description`, but the rendered label shows only `p.id font-mono`. A user searching by description (e.g. "read users") sees matching items with no visible reason for the match. Fix: render `p.description` alongside `p.id` in the checkbox label. [`TenantRolesPage.tsx`, `PermissionSelect`]
+- [x] [Review][Patch] `mutation.isPending` watches only one hook — double-submit risk — All three form dialogs compute `const mutation = initial ? updateX : createX` and use `mutation.isPending` to disable buttons. If the user saves an edit (updateX in-flight) then immediately opens the create dialog, the create button is enabled because `createX.isPending` is false. Fix: use `(createX.isPending || updateX.isPending)` for the disabled check. [`TenantRolesPage.tsx`, `TenantRoleSetsPage.tsx`, `TenantGroupsPage.tsx`]
+- [x] [Review][Patch] Delete dialog dismissable via Escape while mutation pending — `_delete-dialog.tsx` `onOpenChange` has no `isPending` guard. Pressing Escape mid-delete closes the dialog while the mutation is in flight, silently discarding any subsequent error. Fix: `onOpenChange={(open) => { if (!open && !isPending) onClose() }}`. [`src/routes/internal/tenants/_delete-dialog.tsx`]
+
+- [x] [Review][Defer] `columns` array defined inside component body — pre-existing pattern needed for closures; should be `useMemo`-wrapped for perf. Defer to a future cleanup pass. [All 4 page files] — deferred, pre-existing
+- [x] [Review][Defer] All row action buttons disabled while any single mutation is pending — shared `updateUser`/`deleteGroup` etc. hook instance blocks all rows. Acceptable for Phase 5 mock demo. [All 4 page files] — deferred, pre-existing
+- [x] [Review][Defer] Email validation uses only `@` presence check — weak for an IDP; upgrade to regex or library validation in Phase 2 when real auth is wired. [`TenantUsersPage.tsx`] — deferred, pre-existing
+- [x] [Review][Defer] `CheckboxList`/`RoleSelectList`/`PermissionSelect`/`GroupSelectList` duplicated 4 times — refactor to shared component. [`All 4 page files`] — deferred, pre-existing
+- [x] [Review][Defer] `deleteGroup` in mockStore is silent no-op for non-existent ID — filter returns empty, `onSuccess` fires, UI shows success. Idempotent in practice; IDs come from the list. [`store.ts`] — deferred, pre-existing
+- [x] [Review][Defer] `deleteRoleSet` 409 error message is unbounded — `assignedTo.join(', ')` has no truncation; harmless with fixture data. [`TenantRoleSetsPage.tsx`, `TenantRolesPage.tsx`] — deferred, pre-existing
+- [x] [Review][Defer] `tenantId` defaults to `''` — pre-existing pattern throughout codebase; routing failure would surface it before query. [All 4 page files] — deferred, pre-existing
+- [x] [Review][Defer] `Date.now()` ID collision across tenants in mockStore — theoretical; pre-existing and not introduced by this story. [`store.ts`] — deferred, pre-existing
+- [x] [Review][Defer] `memberCount` stays stale — explicitly accepted mock limitation in completion notes. [`TenantGroupsPage.tsx`, `store.ts`] — deferred, pre-existing
+- [x] [Review][Defer] `useDeleteGroup` does not invalidate individual group query — no detail view exists yet; list invalidation is sufficient for current UI. [`useGroups.ts`] — deferred, pre-existing
+- [x] [Review][Defer] Inactive permissions surfaced without filtering — `isActive` field exists on `Permission` type but all fixtures are `isActive: true`; no practical impact now. [`TenantRolesPage.tsx`] — deferred, pre-existing
 
 ---
 
