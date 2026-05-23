@@ -107,6 +107,7 @@ public class TenantIsolationServiceFactory : IDisposable
     public TenantIsolationServiceFactory()
     {
         var services = new ServiceCollection();
+        services.AddLogging();
         services.AddScoped<TenantContext>();
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
         services.AddDbContext<AppDbContext>(opt =>

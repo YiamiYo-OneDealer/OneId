@@ -24,9 +24,23 @@ public sealed class EventTypeEnricher : ILogEventEnricher
 {
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
-        var eventType = (uint)logEvent.MessageTemplate.Text.GetHashCode();
+        var eventType = Fnv1a(logEvent.MessageTemplate.Text);
         logEvent.AddPropertyIfAbsent(
             propertyFactory.CreateProperty("EventType", $"{eventType:X8}"));
+    }
+
+    // FNV-1a 32-bit — deterministic across runtimes and deployments, unlike GetHashCode()
+    private static uint Fnv1a(string text)
+    {
+        const uint fnvPrime = 16777619;
+        const uint fnvOffsetBasis = 2166136261;
+        var hash = fnvOffsetBasis;
+        foreach (var c in text)
+        {
+            hash ^= c;
+            hash *= fnvPrime;
+        }
+        return hash;
     }
 }
 
@@ -69,14 +83,21 @@ public sealed class UserIdEnricher(IHttpContextAccessor httpContextAccessor) : I
 {
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
-        var user = httpContextAccessor.HttpContext?.User;
-        if (user?.Identity?.IsAuthenticated != true) return;
-
-        var sub = user.FindFirst("sub")?.Value;
-        if (sub is not null)
+        try
         {
-            logEvent.AddPropertyIfAbsent(
-                propertyFactory.CreateProperty("UserId", sub));
+            var user = httpContextAccessor.HttpContext?.User;
+            if (user?.Identity?.IsAuthenticated != true) return;
+
+            var sub = user.FindFirst("sub")?.Value;
+            if (sub is not null)
+            {
+                logEvent.AddPropertyIfAbsent(
+                    propertyFactory.CreateProperty("UserId", sub));
+            }
+        }
+        catch
+        {
+            // Enrichment must never throw — silently skip on any error
         }
     }
 }
@@ -85,7 +106,8 @@ public sealed class SensitiveDataRedactionEnricher : ILogEventEnricher
 {
     private static readonly HashSet<string> SensitiveNames = new(StringComparer.OrdinalIgnoreCase)
     {
-        "Password", "Pwd", "ClientSecret", "client_secret", "Secret", "Token"
+        "Password", "Pwd", "ClientSecret", "client_secret", "Secret", "Token",
+        "access_token", "refresh_token", "id_token"
     };
 
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)

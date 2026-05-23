@@ -27,3 +27,18 @@
 - **Unauthenticated HTTP path through `TenantContextMiddleware` not integration-tested** (`tests/OneId.Server.IntegrationTests/RegistrationOrderIntegrationTests.cs:86`) — `TestAuthHandler` always returns `Success`; no test covers a real unauthenticated HTTP request through the middleware. Add a negative integration test when anonymous endpoints that access `ITenantContext` are introduced.
 
 - **`#nullable disable` in generated migration file** (`Migrations/20260522064503_InitialCreate.cs`) — EF Core scaffolds migrations with this pragma by default. Removing it may break future `dotnet ef migrations add` output consistency.
+
+## Deferred from: code review of Epic 1 (2026-05-23)
+
+- **Guid.Empty row data-leak vector** (`AppDbContext.cs`) — a row with `tenant_id = '00000000...'` would be visible to all uninitialized `ITenantContext` contexts. Requires actively bad data; `TenantContext.Initialize` rejects Guid.Empty on normal code paths. Revisit if direct-SQL seeding is ever introduced.
+- **No FK constraint `users.tenant_id → tenants.id`** (`UserConfiguration.cs`) — referential integrity not enforced at DB level. May be intentional for multi-tenant flexibility. Revisit in Epic 3 when Tenant lifecycle (suspend/reinstate) is built.
+- **Cross-tenant isolation tests (1.3b AC3) not confirmed in Group 1 diff** — verify presence in Group 2 test file review (`DevSeederIntegrationTests.cs`).
+- **DevSeeder hard-codes `"Admin123!"` in source** (`DevSeeder.cs`) — dev-only by `IsDevelopment()` guard; by spec. Revisit if staging environment ever uses this seeder.
+- **`User.PasswordHash` nullable ambiguity** (`User.cs`) — `null` could mean "federated user (no password)" or "pre-migration user". Auth logic in Epic 2 must define the contract; consider a `HasPassword` flag or sentinel value at that point.
+- **`ICacheService.Set` no default TTL** (`MemoryCacheService.cs`) — entries with `expiry = null` have no expiration and no size limit, risking unbounded memory growth. Enforce TTL policy at first caching consumer (Epic 3/4a).
+- **`DevSeeder` no wrapping transaction** (`DevSeeder.cs`) — stable well-known IDs make re-runs idempotent. Revisit if seeder grows in complexity with inter-dependent records.
+- **`SeedAdminUserAsync` unique-constraint risk** (`DevSeeder.cs`) — checks by `AdminUserId`; a different-ID user with `email = admin@oneid.dev` would abort startup. Dev-only, requires manual DB interference to trigger.
+
+## Deferred from: code review of Epic 1 Group ② tests (2026-05-23)
+
+- **Respawner wipes `HasData()` seed rows** (`Helpers/WebApplicationFactory.cs:39-42`) — `Respawner` truncates all tables (except `__EFMigrationsHistory`) back to post-migration baseline, which also deletes any rows inserted by EF Core `HasData()` calls inside migrations. When Epic 4a adds `PermissionCatalog` seeding via `HasData()`, `ResetDatabaseAsync` will wipe those rows before each test. Fix before Epic 4a: add permission-catalog tables to `TablesToIgnore`, or switch to a dedicated seed method called after Respawn reset.

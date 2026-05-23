@@ -76,14 +76,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: efbundle
+          path: .
       - name: Apply migration bundle
         run: |
           chmod +x ./efbundle
           ./efbundle --connection "Host=localhost;Port=5432;Database=oneid_ci;Username=postgres;Password=postgres"
       - name: Verify schema is queryable
         run: |
-          psql -h localhost -U postgres -d oneid_ci \
-            -c "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;"
+          psql -h localhost -U postgres -d oneid_ci -c "
+            SELECT COUNT(*) FROM information_schema.tables
+            WHERE table_schema = 'public'
+            AND table_name IN ('tenants', 'users');
+          " | grep -q '2'
         env:
           PGPASSWORD: postgres
 

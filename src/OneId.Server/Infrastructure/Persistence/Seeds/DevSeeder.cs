@@ -24,7 +24,11 @@ internal static class DevSeeder
 
     private static async Task SeedDevTenantAsync(AppDbContext db)
     {
-        var exists = await db.Tenants.AnyAsync(t => t.Id == DevTenantId);
+        // IgnoreQueryFilters: Tenant has a soft-delete filter. If the dev tenant was previously
+        // soft-deleted, AnyAsync without this would return false and re-insert would hit the
+        // unique-name constraint, aborting startup.
+        var exists = await db.Tenants.IgnoreQueryFilters()
+            .AnyAsync(t => t.Id == DevTenantId);
         if (exists) return;
 
         db.Tenants.Add(new Tenant

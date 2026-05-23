@@ -428,3 +428,11 @@ None — implementation matched Dev Notes exactly.
 - src/OneId.Server/appsettings.json (modified)
 - src/OneId.Server/appsettings.Development.json (modified)
 - tests/OneId.Server.UnitTests/Infrastructure/SerilogDestructuringTests.cs (new)
+
+## Review Findings
+
+*Source: Epic 1 code review, 2026-05-23*
+
+- [x] [Review][Patch] Replaced `string.GetHashCode()` with FNV-1a 32-bit deterministic hash in `EventTypeEnricher` — stable across runtimes and deployments [SerilogConfiguration.cs:EventTypeEnricher]
+- [x] [Review][Patch] Added `"access_token"`, `"refresh_token"`, `"id_token"` to `SensitiveNames` in `SensitiveDataRedactionEnricher` [SerilogConfiguration.cs:SensitiveDataRedactionEnricher]
+- [x] [Review][Patch] Added `try/catch` to `UserIdEnricher.Enrich` matching `TenantIdEnricher` pattern [SerilogConfiguration.cs:UserIdEnricher]

@@ -4,11 +4,26 @@ using OneId.Server.Domain.Entities;
 
 namespace OneId.Server.Infrastructure.Persistence;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext tenantContext)
+public class AppDbContext(
+    DbContextOptions<AppDbContext> options,
+    ITenantContext tenantContext,
+    ILogger<AppDbContext> logger)
     : DbContext(options)
 {
     public DbSet<Tenant> Tenants => Set<Tenant>();
-    public DbSet<User> Users => Set<User>();
+
+    public DbSet<User> Users
+    {
+        get
+        {
+            if (!tenantContext.IsInitialized)
+                logger.LogWarning(
+                    "[AR-5] AppDbContext.Users accessed with uninitialized ITenantContext — " +
+                    "global filter falls back to Guid.Empty (returns 0 rows). " +
+                    "Call .IgnoreQueryFilters() for intentional cross-tenant access.");
+            return Set<User>();
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

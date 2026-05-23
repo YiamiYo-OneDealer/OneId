@@ -1,6 +1,6 @@
 # Story 1.7b: DevSeeder and Permission Catalog Stub
 
-Status: review
+Status: done
 
 ## Story
 
@@ -325,3 +325,14 @@ claude-sonnet-4-6
 - src/OneId.Server/Infrastructure/Persistence/Seeds/.gitkeep (deleted)
 - src/OneId.Server/Program.cs (modified — added Seeds using + DevSeeder.SeedAsync call)
 - tests/OneId.Server.IntegrationTests/PermissionCatalogSyncTests.cs (new)
+
+## Review Findings
+
+*Source: Epic 1 code review, 2026-05-23*
+
+- [x] [Review][Patch] `AppDbContext.Users` property now emits `LogWarning` when `ITenantContext.IsInitialized == false`, making the Guid.Empty fallback visible in logs [AppDbContext.cs:Users]
+- [x] [Review][Patch] `DevSeeder.SeedDevTenantAsync` now calls `.IgnoreQueryFilters()` on tenant lookup to bypass soft-delete filter [DevSeeder.cs:SeedDevTenantAsync]
+- [x] [Review][Defer] DevSeeder hard-codes `"Admin123!"` in source control — deferred, dev-only seeder by spec design; protected by `IsDevelopment()` guard; well-known pattern for dev seeds [DevSeeder.cs]
+- [x] [Review][Defer] `User.PasswordHash` nullable creates semantic ambiguity between "no password set" vs "federated user" vs "pre-migration user" — deferred, intentional per spec (Epic 6 federated users); auth logic in Epic 2 will define the contract [User.cs]
+- [x] [Review][Defer] `DevSeeder` has no wrapping transaction — deferred, stable well-known IDs make partial-seed re-runs idempotent in practice [DevSeeder.cs]
+- [x] [Review][Defer] `SeedAdminUserAsync` checks by `AdminUserId` but a manually-inserted user with same email + different ID would cause unique-constraint violation at startup — deferred, dev-only, requires manual DB interference [DevSeeder.cs]

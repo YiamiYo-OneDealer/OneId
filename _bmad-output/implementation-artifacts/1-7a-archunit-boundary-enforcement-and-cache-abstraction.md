@@ -1,6 +1,6 @@
 # Story 1.7a: ArchUnit Boundary Enforcement and Cache Abstraction
 
-Status: review
+Status: done
 
 ## Story
 
@@ -429,3 +429,10 @@ claude-sonnet-4-6
 - src/OneId.Server/Program.cs (modified — added AddMemoryCache + ICacheService registration, using for Infrastructure.Caching)
 - tests/OneId.Server.IntegrationTests/Architecture/InternalBoundaryTests.cs (new)
 - tests/OneId.Server.IntegrationTests/OneId.Server.IntegrationTests.csproj (modified — added NetArchTest.Rules 1.3.2)
+
+## Review Findings
+
+*Source: Epic 1 code review, 2026-05-23*
+
+- [x] [Review][Patch] `MemoryCacheService` now injects `IHttpContextAccessor` and auto-prefixes all keys with `{tenantId}:` when inside an HTTP request with initialized tenant context; background services without HTTP context receive un-prefixed global keys [MemoryCacheService.cs]
+- [x] [Review][Defer] `ICacheService.Set` with `expiry = null` creates entries with no expiration and no size limit — deferred, no caching callers exist yet; enforce TTL policy when first consumer is added in Epic 3/4a [MemoryCacheService.cs]

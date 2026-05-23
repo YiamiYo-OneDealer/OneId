@@ -1,6 +1,6 @@
 # Story 1.6: CI/CD Pipeline (GitHub Actions)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -89,6 +89,15 @@ dotnet ef migrations bundle \
 - `--output efbundle`: explicit output name for predictable artifact upload/download
 
 The `Microsoft.EntityFrameworkCore.Design` package is already referenced in `src/OneId.Server/OneId.Server.csproj` with `PrivateAssets=all` (design-time only, not deployed). This is the correct setup for `dotnet ef` tool to work.
+
+## Review Findings
+
+Reviewed 2026-05-23 as part of Epic 1 Group ③ code review.
+
+### Patches applied during review
+
+- [x] **P1 — `download-artifact@v4` path bug** (`.github/workflows/ci.yml:75-78`) — Without `path: .`, the action creates a `./efbundle/` directory and places the file at `./efbundle/efbundle`. The subsequent `chmod +x ./efbundle` would target the directory and `./efbundle` would fail with "Is a directory". Added `path: .` so the binary lands at `./efbundle` directly.
+- [x] **P3 — Schema validation query too permissive** (`.github/workflows/ci.yml:83-87`) — `SELECT table_name FROM information_schema.tables` exits 0 on an empty database. Changed to count specific tables (`tenants`, `users`) and assert `= 2` via `grep -q '2'`, so the step fails if either table is missing.
 
 ### Migration Validate Job — How It Catches Data-Loss Migrations
 

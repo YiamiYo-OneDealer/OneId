@@ -1,6 +1,6 @@
 # Story 1.5: Integration Test Infrastructure (Testcontainers + Respawn + TestTokenFactory)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -354,6 +354,18 @@ tests/OneId.Server.IntegrationTests/
 ├── RegistrationOrderIntegrationTests.cs   ← DO NOT TOUCH
 └── OneId.Server.IntegrationTests.csproj   ← add 2 PackageReferences
 ```
+
+## Review Findings
+
+Reviewed 2026-05-23 as part of Epic 1 Group ② code review.
+
+### Patches applied during review
+
+- [x] **P2 — `WebApplicationFactory.DisposeAsync` missing `base.DisposeAsync`** (`Helpers/WebApplicationFactory.cs:68-71`) — The override only disposed `_dbContainer` and never stopped the ASP.NET host. Added `await base.DisposeAsync()` after container dispose to properly release the host and its Npgsql connection pool.
+
+### Deferred
+
+- Respawner wipes `HasData()` seed rows — logged to `deferred-work.md`. Relevant when Epic 4a adds PermissionCatalog seeding.
 
 ### References
 

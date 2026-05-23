@@ -68,5 +68,6 @@ public sealed class OneIdWebApplicationFactory : WebApplicationFactory<Program>,
     async Task IAsyncLifetime.DisposeAsync()
     {
         await _dbContainer.DisposeAsync();
+        await base.DisposeAsync();
     }
 }

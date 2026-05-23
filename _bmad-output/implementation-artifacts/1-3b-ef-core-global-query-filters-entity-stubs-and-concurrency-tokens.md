@@ -574,6 +574,16 @@ Modified:
 - `tests/OneId.Server.IntegrationTests/RegistrationOrderIntegrationTests.cs`
 - `src/OneId.Server/Infrastructure/Persistence/Migrations/AppDbContextModelSnapshot.cs`
 
+## Review Findings
+
+*Source: Epic 1 code review, 2026-05-23*
+
+- [x] [Review][Patch] Added `catch (Exception ex) when not OperationCanceledException` fallback with `LogError` + 500 Problem Details; extracted `WriteProblemAsync` helper [ExceptionHandlingMiddleware.cs]
+- [x] [Review][Patch] Added `context.Response.HasStarted` guard in both catch blocks [ExceptionHandlingMiddleware.cs:InvokeAsync]
+- [x] [Review][Defer] Guid.Empty row data-leak vector: a row with `tenant_id = '00000000...'` would be visible to all uninitialized contexts — deferred, requires actively bad data; `TenantContext.Initialize` rejects Guid.Empty on normal paths [AppDbContext.cs]
+- [x] [Review][Defer] No FK constraint `users.tenant_id → tenants.id` — deferred, may be intentional design choice for multi-tenant flexibility; revisit in Epic 3 when Tenant lifecycle is built [UserConfiguration.cs]
+- [x] [Review][Defer] Cross-tenant isolation integration tests (AC3) not in Group 1 diff — deferred, verify present in Group 2 test file review [DevSeederIntegrationTests.cs]
+
 ## Change Log
 
 - 2026-05-22: Story 1.3b implemented — entity stubs, global query filters, xmin concurrency tokens, ExceptionHandlingMiddleware, migration, and integration tests. `UseXminAsConcurrencyToken()` replaced with manual property builder (removed in Npgsql v10). All tests pass.
