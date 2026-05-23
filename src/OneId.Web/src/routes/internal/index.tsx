@@ -1,5 +1,3 @@
-import { Link } from 'react-router'
-
 export function InternalDashboard() {
   return (
     <div className="p-8 text-foreground">

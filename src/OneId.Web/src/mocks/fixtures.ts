@@ -1,0 +1,168 @@
+import type { Tenant, User, Group, Role, RoleSet, Permission } from './types'
+
+const ALL_PERMISSION_IDS = [
+  'od.tenants.read',
+  'od.tenants.write',
+  'od.tenants.suspend',
+  'od.users.read',
+  'od.users.write',
+  'od.users.deactivate',
+  'od.groups.read',
+  'od.groups.write',
+  'od.roles.read',
+  'od.roles.write',
+  'od.role-sets.read',
+  'od.role-sets.write',
+  'od.permissions.read',
+  'od.permissions.write',
+  'od.licenses.read',
+  'od.licenses.write',
+  'od.audit-log.read',
+  'od.dimensions.read',
+  'od.dimensions.write',
+  'od.dimension-assignments.read',
+  'od.dimension-assignments.write',
+  'od.user-overrides.read',
+  'od.user-overrides.write',
+  'od.idp.read',
+  'od.idp.write',
+]
+
+const permissions: Permission[] = [
+  { id: 'od.tenants.read', domain: 'tenants', description: 'View tenant list and details', isActive: true },
+  { id: 'od.tenants.write', domain: 'tenants', description: 'Create and edit tenants', isActive: true },
+  { id: 'od.tenants.suspend', domain: 'tenants', description: 'Suspend and reinstate tenants', isActive: true },
+  { id: 'od.users.read', domain: 'users', description: 'View users', isActive: true },
+  { id: 'od.users.write', domain: 'users', description: 'Create and edit users', isActive: true },
+  { id: 'od.users.deactivate', domain: 'users', description: 'Deactivate user accounts', isActive: true },
+  { id: 'od.groups.read', domain: 'groups', description: 'View groups', isActive: true },
+  { id: 'od.groups.write', domain: 'groups', description: 'Create and edit groups', isActive: true },
+  { id: 'od.roles.read', domain: 'roles', description: 'View roles', isActive: true },
+  { id: 'od.roles.write', domain: 'roles', description: 'Create and edit roles', isActive: true },
+  { id: 'od.role-sets.read', domain: 'role-sets', description: 'View role sets', isActive: true },
+  { id: 'od.role-sets.write', domain: 'role-sets', description: 'Create and edit role sets', isActive: true },
+  { id: 'od.permissions.read', domain: 'permissions', description: 'View permission catalog', isActive: true },
+  { id: 'od.permissions.write', domain: 'permissions', description: 'Create and deactivate permissions', isActive: true },
+  { id: 'od.licenses.read', domain: 'licenses', description: 'View license details', isActive: true },
+  { id: 'od.licenses.write', domain: 'licenses', description: 'Create and update licenses', isActive: true },
+  { id: 'od.audit-log.read', domain: 'audit-log', description: 'View audit log', isActive: true },
+  { id: 'od.dimensions.read', domain: 'dimensions', description: 'View dimension reference lists', isActive: true },
+  { id: 'od.dimensions.write', domain: 'dimensions', description: 'Manage dimension values', isActive: true },
+  { id: 'od.dimension-assignments.read', domain: 'dimension-assignments', description: 'View user dimension assignments', isActive: true },
+  { id: 'od.dimension-assignments.write', domain: 'dimension-assignments', description: 'Assign dimensions to users', isActive: true },
+  { id: 'od.user-overrides.read', domain: 'user-overrides', description: 'View permission overrides', isActive: true },
+  { id: 'od.user-overrides.write', domain: 'user-overrides', description: 'Create and remove overrides', isActive: true },
+  { id: 'od.idp.read', domain: 'idp', description: 'View IDP configuration', isActive: true },
+  { id: 'od.idp.write', domain: 'idp', description: 'Configure IDP federation', isActive: true },
+]
+
+const tenants: Tenant[] = [
+  {
+    id: 'acme-corp',
+    name: 'Acme Corp',
+    status: 'active',
+    seatUsage: { used: 8, max: 25 },
+    createdAt: '2025-01-15T09:00:00.000Z',
+  },
+  {
+    id: 'betatech',
+    name: 'BetaTech',
+    status: 'active',
+    seatUsage: { used: 3, max: 10 },
+    createdAt: '2025-03-01T14:30:00.000Z',
+  },
+  {
+    id: 'gamma-industries',
+    name: 'Gamma Industries',
+    status: 'suspended',
+    seatUsage: { used: 12, max: 20 },
+    createdAt: '2024-11-20T11:00:00.000Z',
+  },
+]
+
+const roles: Role[] = [
+  // Acme Corp
+  { id: 'r-acme-user-viewer', tenantId: 'acme-corp', name: 'User Viewer', permissionIds: ['od.users.read'] },
+  { id: 'r-acme-user-manager', tenantId: 'acme-corp', name: 'User Manager', permissionIds: ['od.users.read', 'od.users.write', 'od.users.deactivate'] },
+  { id: 'r-acme-group-manager', tenantId: 'acme-corp', name: 'Group Manager', permissionIds: ['od.groups.read', 'od.groups.write'] },
+  { id: 'r-acme-role-manager', tenantId: 'acme-corp', name: 'Role Manager', permissionIds: ['od.roles.read', 'od.roles.write', 'od.role-sets.read', 'od.role-sets.write'] },
+  { id: 'r-acme-auditor', tenantId: 'acme-corp', name: 'Auditor', permissionIds: ['od.audit-log.read'] },
+  { id: 'r-acme-full-admin', tenantId: 'acme-corp', name: 'Full Admin', permissionIds: ALL_PERMISSION_IDS },
+  // BetaTech
+  { id: 'r-beta-user-viewer', tenantId: 'betatech', name: 'User Viewer', permissionIds: ['od.users.read'] },
+  { id: 'r-beta-user-manager', tenantId: 'betatech', name: 'User Manager', permissionIds: ['od.users.read', 'od.users.write', 'od.users.deactivate'] },
+  { id: 'r-beta-group-manager', tenantId: 'betatech', name: 'Group Manager', permissionIds: ['od.groups.read', 'od.groups.write'] },
+  { id: 'r-beta-role-manager', tenantId: 'betatech', name: 'Role Manager', permissionIds: ['od.roles.read', 'od.roles.write', 'od.role-sets.read', 'od.role-sets.write'] },
+  { id: 'r-beta-auditor', tenantId: 'betatech', name: 'Auditor', permissionIds: ['od.audit-log.read'] },
+  { id: 'r-beta-full-admin', tenantId: 'betatech', name: 'Full Admin', permissionIds: ALL_PERMISSION_IDS },
+  // Gamma Industries
+  { id: 'r-gamma-user-viewer', tenantId: 'gamma-industries', name: 'User Viewer', permissionIds: ['od.users.read'] },
+  { id: 'r-gamma-user-manager', tenantId: 'gamma-industries', name: 'User Manager', permissionIds: ['od.users.read', 'od.users.write', 'od.users.deactivate'] },
+  { id: 'r-gamma-group-manager', tenantId: 'gamma-industries', name: 'Group Manager', permissionIds: ['od.groups.read', 'od.groups.write'] },
+  { id: 'r-gamma-role-manager', tenantId: 'gamma-industries', name: 'Role Manager', permissionIds: ['od.roles.read', 'od.roles.write', 'od.role-sets.read', 'od.role-sets.write'] },
+  { id: 'r-gamma-auditor', tenantId: 'gamma-industries', name: 'Auditor', permissionIds: ['od.audit-log.read'] },
+  { id: 'r-gamma-full-admin', tenantId: 'gamma-industries', name: 'Full Admin', permissionIds: ALL_PERMISSION_IDS },
+]
+
+const roleSets: RoleSet[] = [
+  // Acme Corp
+  { id: 'rs-acme-read-only', tenantId: 'acme-corp', name: 'Read Only Bundle', roleIds: ['r-acme-user-viewer'] },
+  { id: 'rs-acme-managers', tenantId: 'acme-corp', name: 'Managers Bundle', roleIds: ['r-acme-user-manager', 'r-acme-group-manager'] },
+  { id: 'rs-acme-admin', tenantId: 'acme-corp', name: 'Admin Bundle', roleIds: ['r-acme-full-admin'] },
+  // BetaTech
+  { id: 'rs-beta-read-only', tenantId: 'betatech', name: 'Read Only Bundle', roleIds: ['r-beta-user-viewer'] },
+  { id: 'rs-beta-managers', tenantId: 'betatech', name: 'Managers Bundle', roleIds: ['r-beta-user-manager', 'r-beta-group-manager'] },
+  { id: 'rs-beta-admin', tenantId: 'betatech', name: 'Admin Bundle', roleIds: ['r-beta-full-admin'] },
+  // Gamma Industries
+  { id: 'rs-gamma-read-only', tenantId: 'gamma-industries', name: 'Read Only Bundle', roleIds: ['r-gamma-user-viewer'] },
+  { id: 'rs-gamma-managers', tenantId: 'gamma-industries', name: 'Managers Bundle', roleIds: ['r-gamma-user-manager', 'r-gamma-group-manager'] },
+  { id: 'rs-gamma-admin', tenantId: 'gamma-industries', name: 'Admin Bundle', roleIds: ['r-gamma-full-admin'] },
+]
+
+const groups: Group[] = [
+  // Acme Corp
+  { id: 'g-acme-administrators', tenantId: 'acme-corp', name: 'Administrators', memberCount: 2, roleIds: ['r-acme-full-admin'], roleSetIds: [] },
+  { id: 'g-acme-hr-team', tenantId: 'acme-corp', name: 'HR Team', memberCount: 3, roleIds: ['r-acme-user-manager'], roleSetIds: ['rs-acme-read-only'] },
+  { id: 'g-acme-it-staff', tenantId: 'acme-corp', name: 'IT Staff', memberCount: 4, roleIds: [], roleSetIds: ['rs-acme-managers'] },
+  { id: 'g-acme-auditors', tenantId: 'acme-corp', name: 'Auditors', memberCount: 1, roleIds: ['r-acme-auditor'], roleSetIds: [] },
+  // BetaTech
+  { id: 'g-beta-administrators', tenantId: 'betatech', name: 'Administrators', memberCount: 1, roleIds: ['r-beta-full-admin'], roleSetIds: [] },
+  { id: 'g-beta-hr-team', tenantId: 'betatech', name: 'HR Team', memberCount: 2, roleIds: ['r-beta-user-manager'], roleSetIds: ['rs-beta-read-only'] },
+  { id: 'g-beta-it-staff', tenantId: 'betatech', name: 'IT Staff', memberCount: 3, roleIds: [], roleSetIds: ['rs-beta-managers'] },
+  { id: 'g-beta-auditors', tenantId: 'betatech', name: 'Auditors', memberCount: 1, roleIds: ['r-beta-auditor'], roleSetIds: [] },
+  // Gamma Industries
+  { id: 'g-gamma-administrators', tenantId: 'gamma-industries', name: 'Administrators', memberCount: 3, roleIds: ['r-gamma-full-admin'], roleSetIds: [] },
+  { id: 'g-gamma-hr-team', tenantId: 'gamma-industries', name: 'HR Team', memberCount: 4, roleIds: ['r-gamma-user-manager'], roleSetIds: ['rs-gamma-read-only'] },
+  { id: 'g-gamma-it-staff', tenantId: 'gamma-industries', name: 'IT Staff', memberCount: 5, roleIds: [], roleSetIds: ['rs-gamma-managers'] },
+  { id: 'g-gamma-auditors', tenantId: 'gamma-industries', name: 'Auditors', memberCount: 2, roleIds: ['r-gamma-auditor'], roleSetIds: [] },
+]
+
+const users: User[] = [
+  // Acme Corp
+  { id: 'u-acme-alice', tenantId: 'acme-corp', name: 'Alice Johnson', email: 'alice@acme.test', status: 'active', groupIds: ['g-acme-hr-team', 'g-acme-it-staff'], lastLogin: '2026-05-20T08:30:00.000Z', createdAt: '2025-01-20T10:00:00.000Z' },
+  { id: 'u-acme-bob', tenantId: 'acme-corp', name: 'Bob Smith', email: 'bob@acme.test', status: 'active', groupIds: ['g-acme-administrators'], lastLogin: '2026-05-22T14:15:00.000Z', createdAt: '2025-01-20T10:05:00.000Z' },
+  { id: 'u-acme-carol', tenantId: 'acme-corp', name: 'Carol White', email: 'carol@acme.test', status: 'active', groupIds: ['g-acme-hr-team'], lastLogin: '2026-05-18T11:00:00.000Z', createdAt: '2025-02-01T09:00:00.000Z' },
+  { id: 'u-acme-david', tenantId: 'acme-corp', name: 'David Brown', email: 'david@acme.test', status: 'inactive', groupIds: ['g-acme-it-staff'], lastLogin: '2025-12-10T09:00:00.000Z', createdAt: '2025-02-15T08:00:00.000Z' },
+  { id: 'u-acme-eve', tenantId: 'acme-corp', name: 'Eve Davis', email: 'eve@acme.test', status: 'active', groupIds: ['g-acme-auditors'], lastLogin: '2026-05-21T16:45:00.000Z', createdAt: '2025-03-01T11:00:00.000Z' },
+  // BetaTech
+  { id: 'u-beta-alice', tenantId: 'betatech', name: 'Alice Chen', email: 'alice@betatech.test', status: 'active', groupIds: ['g-beta-hr-team', 'g-beta-it-staff'], lastLogin: '2026-05-22T09:00:00.000Z', createdAt: '2025-03-05T10:00:00.000Z' },
+  { id: 'u-beta-bob', tenantId: 'betatech', name: 'Bob Kumar', email: 'bob@betatech.test', status: 'active', groupIds: ['g-beta-administrators'], lastLogin: '2026-05-23T08:00:00.000Z', createdAt: '2025-03-05T10:05:00.000Z' },
+  { id: 'u-beta-carol', tenantId: 'betatech', name: 'Carol Martinez', email: 'carol@betatech.test', status: 'active', groupIds: ['g-beta-hr-team'], lastLogin: '2026-05-19T13:00:00.000Z', createdAt: '2025-03-10T09:00:00.000Z' },
+  { id: 'u-beta-david', tenantId: 'betatech', name: 'David Lee', email: 'david@betatech.test', status: 'active', groupIds: ['g-beta-it-staff'], lastLogin: '2026-05-20T10:30:00.000Z', createdAt: '2025-04-01T08:00:00.000Z' },
+  { id: 'u-beta-eve', tenantId: 'betatech', name: 'Eve Wilson', email: 'eve@betatech.test', status: 'inactive', groupIds: ['g-beta-auditors'], lastLogin: '2026-01-15T12:00:00.000Z', createdAt: '2025-04-15T11:00:00.000Z' },
+  // Gamma Industries
+  { id: 'u-gamma-alice', tenantId: 'gamma-industries', name: 'Alice Rossi', email: 'alice@gamma.test', status: 'active', groupIds: ['g-gamma-hr-team', 'g-gamma-it-staff'], lastLogin: '2026-04-10T08:00:00.000Z', createdAt: '2024-12-01T10:00:00.000Z' },
+  { id: 'u-gamma-bob', tenantId: 'gamma-industries', name: 'Bob Tanaka', email: 'bob@gamma.test', status: 'active', groupIds: ['g-gamma-administrators'], lastLogin: '2026-04-08T14:00:00.000Z', createdAt: '2024-12-01T10:05:00.000Z' },
+  { id: 'u-gamma-carol', tenantId: 'gamma-industries', name: 'Carol Patel', email: 'carol@gamma.test', status: 'inactive', groupIds: ['g-gamma-hr-team'], lastLogin: '2026-03-01T11:00:00.000Z', createdAt: '2024-12-10T09:00:00.000Z' },
+  { id: 'u-gamma-david', tenantId: 'gamma-industries', name: 'David Garcia', email: 'david@gamma.test', status: 'inactive', groupIds: ['g-gamma-it-staff'], lastLogin: '2026-02-20T09:00:00.000Z', createdAt: '2025-01-05T08:00:00.000Z' },
+  { id: 'u-gamma-eve', tenantId: 'gamma-industries', name: 'Eve Nguyen', email: 'eve@gamma.test', status: 'active', groupIds: ['g-gamma-auditors'], lastLogin: '2026-04-05T16:00:00.000Z', createdAt: '2025-01-15T11:00:00.000Z' },
+]
+
+export const fixtures = {
+  tenants,
+  users,
+  groups,
+  roles,
+  roleSets,
+  permissions,
+}

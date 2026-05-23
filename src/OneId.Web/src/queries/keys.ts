@@ -19,4 +19,7 @@ export const queryKeys = {
   effectivePermissionsPreview: () => ['effectivePermissions', { preview: true }] as const,
 
   seatUsage: (tenantId: string) => ['tenants', tenantId, 'seatUsage'] as const,
+
+  permissions: () => ['permissions'] as const,
+  tenantAdmins: (tenantId: string) => ['tenants', tenantId, 'admins'] as const,
 } as const
