@@ -24,10 +24,12 @@ function GroupSelectList({
   groups,
   selected,
   onChange,
+  idPrefix = 'user-grp',
 }: {
   groups: Group[]
   selected: string[]
   onChange: (ids: string[]) => void
+  idPrefix?: string
 }) {
   const [search, setSearch] = useState('')
   const filtered = groups.filter((g) =>
@@ -50,11 +52,11 @@ function GroupSelectList({
           filtered.map((g) => (
             <div key={g.id} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-card">
               <Checkbox
-                id={`user-grp-${g.id}`}
+                id={`${idPrefix}-${g.id}`}
                 checked={selected.includes(g.id)}
                 onCheckedChange={() => toggle(g.id)}
               />
-              <label htmlFor={`user-grp-${g.id}`} className="text-sm text-foreground cursor-pointer flex-1">
+              <label htmlFor={`${idPrefix}-${g.id}`} className="text-sm text-foreground cursor-pointer flex-1">
                 {g.name}
               </label>
             </div>
@@ -197,6 +199,125 @@ function CreateUserDialog({
   )
 }
 
+// ── Edit User Dialog ──────────────────────────────────────────────────────────
+
+function EditUserDialog({
+  user,
+  onClose,
+  groups,
+  updateUser,
+}: {
+  user: User
+  onClose: () => void
+  groups: Group[]
+  updateUser: ReturnType<typeof useUpdateUser>
+}) {
+  const [name, setName] = useState(user.name)
+  const [nameError, setNameError] = useState('')
+  const [email, setEmail] = useState(user.email)
+  const [emailError, setEmailError] = useState('')
+  const [status, setStatus] = useState<'active' | 'inactive'>(user.status)
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>(user.groupIds)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
+  const validateName = () => {
+    if (!name.trim()) { setNameError('Name is required.'); return false }
+    setNameError('')
+    return true
+  }
+
+  const validateEmail = () => {
+    if (!email.trim()) { setEmailError('Email is required.'); return false }
+    if (!email.includes('@')) { setEmailError('Enter a valid email address.'); return false }
+    setEmailError('')
+    return true
+  }
+
+  const handleSubmit = () => {
+    const nameOk = validateName()
+    const emailOk = validateEmail()
+    if (!nameOk || !emailOk) return
+    setSaveError(null)
+    updateUser.mutate(
+      {
+        userId: user.id,
+        patch: { name: name.trim(), email: email.trim(), status, groupIds: selectedGroupIds },
+      },
+      {
+        onSuccess: onClose,
+        onError: () => setSaveError('Failed to save changes. Please try again.'),
+      },
+    )
+  }
+
+  return (
+    <Dialog open onOpenChange={(open) => { if (!open && !updateUser.isPending) onClose() }}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Edit User</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <Label htmlFor="edit-user-name">Name</Label>
+            <Input
+              id="edit-user-name"
+              value={name}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+              onBlur={validateName}
+            />
+            {nameError && <p className="text-sm text-destructive">{nameError}</p>}
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="edit-user-email">Email</Label>
+            <Input
+              id="edit-user-email"
+              type="email"
+              value={email}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+              onBlur={validateEmail}
+            />
+            {emailError && <p className="text-sm text-destructive">{emailError}</p>}
+          </div>
+          <div className="space-y-1">
+            <Label>Status</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={status === 'active' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatus('active')}
+              >
+                Active
+              </Button>
+              <Button
+                type="button"
+                variant={status === 'inactive' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatus('inactive')}
+              >
+                Inactive
+              </Button>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label>Groups</Label>
+            <GroupSelectList groups={groups} selected={selectedGroupIds} onChange={setSelectedGroupIds} idPrefix="edit-user-grp" />
+          </div>
+        </div>
+        {saveError && <p className="text-sm text-destructive">{saveError}</p>}
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={updateUser.isPending}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} disabled={updateUser.isPending}>
+            {updateUser.isPending ? 'Saving…' : 'Save'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export function TenantUsersPage() {
@@ -205,6 +326,7 @@ export function TenantUsersPage() {
   const { data: groups = [] } = useGroups(tenantId)
   const updateUser = useUpdateUser(tenantId)
   const [createOpen, setCreateOpen] = useState(false)
+  const [editUser, setEditUser] = useState<User | null>(null)
 
   const columns: ColumnDef<User, unknown>[] = [
     {
@@ -261,7 +383,15 @@ export function TenantUsersPage() {
         const user = row.original
         const isActive = user.status === 'active'
         return (
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={updateUser.isPending}
+              onClick={() => setEditUser(user)}
+            >
+              Edit
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -304,6 +434,15 @@ export function TenantUsersPage() {
         tenantId={tenantId}
         groups={groups}
       />
+
+      {editUser && (
+        <EditUserDialog
+          user={editUser}
+          onClose={() => setEditUser(null)}
+          groups={groups}
+          updateUser={updateUser}
+        />
+      )}
     </div>
   )
 }

@@ -65,3 +65,10 @@
 - **`memberCount` stays stale** (`TenantGroupsPage.tsx`, `store.ts`) — denormalised counter from fixtures; not updated when users join groups. Explicitly accepted mock limitation per story completion notes.
 - **`useDeleteGroup` does not invalidate individual group query** (`useGroups.ts`) — `onSuccess` only invalidates the list key. No detail view exists yet; add individual key invalidation when a group detail page is introduced.
 - **Inactive permissions surfaced without filtering** (`TenantRolesPage.tsx`) — `Permission.isActive` field exists in types but all fixtures are `isActive: true`. No practical impact now; add `filter(p => p.isActive)` in `PermissionSelect` before any inactive permission is added to fixtures.
+
+## Deferred from: code review of 5c-1c-user-edit-dialog (2026-05-23)
+
+- **Stale `editUser` snapshot can clobber concurrent Activate/Deactivate status change** (`TenantUsersPage.tsx`) — `editUser` state is captured at click time; if Activate/Deactivate fires and TanStack Query re-fetches while the dialog is open, saving writes back the old status. Low practical risk in demo with mock data; revisit when pages connect to a real API.
+- **`onOpenChange` silently blocks close while save is in-flight** (`TenantUsersPage.tsx`) — Escape/backdrop close is swallowed with no visual feedback when `updateUser.isPending` is true. Intentional per 5c-1b delete-dialog pattern; consider adding a loading indicator or disabled-X visual for production use.
+- **Weak email validation (`@` presence only)** (`TenantUsersPage.tsx` `validateEmail`) — pre-existing pattern from 5c-1b; upgrade to proper regex or library validation in Phase 2 when real auth is wired.
+- **`user.groupIds` has no null-fallback in EditUserDialog** (`TenantUsersPage.tsx`) — mock data always provides the array; add `user.groupIds ?? []` when moving to a real API that may return partial user objects.
