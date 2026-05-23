@@ -64,10 +64,16 @@
       "Bash(dir src\\\\OneId.Web\\\\src /s /b)",
       "Bash(Select-Object -First 80)",
       "Bash(dir *)",
-      "Bash(Select-Object *)"
+      "Bash(Select-Object *)",
+      "Bash(find \"c:\\\\\\\\Users\\\\\\\\georgios.mathioudaki\\\\\\\\Dev\\\\\\\\OneId\\\\\\\\src\\\\\\\\OneId.Web\\\\\\\\src\\\\\\\\components\\\\\\\\ui\" -type f -name \"*.tsx\" -o -name \"*.ts\")",
+      "Bash(test -d \"c:\\\\\\\\Users\\\\\\\\georgios.mathioudaki\\\\\\\\Dev\\\\\\\\OneId\\\\\\\\src\\\\\\\\OneId.Web\\\\\\\\src\\\\\\\\components\\\\\\\\ui\")",
+      "Bash(find \"c:\\\\\\\\Users\\\\\\\\georgios.mathioudaki\\\\\\\\Dev\\\\\\\\OneId\\\\\\\\src\\\\\\\\OneId.Web\\\\\\\\src\" -type d -name \"ui\" -o -type d -name \"components\")",
+      "Bash(find \"c:\\\\\\\\Users\\\\\\\\georgios.mathioudaki\\\\\\\\Dev\\\\\\\\OneId\\\\\\\\src\\\\\\\\OneId.Web\\\\\\\\src\" -name \"*.tsx\" -o -name \"*.ts\")",
+      "Bash(mkdir -p src/components/ui && mv @/components/ui/*.tsx src/components/ui/ && rm -rf @/ && ls src/components/ui/)"
     ],
     "additionalDirectories": [
-      "C:\\Temp"
+      "C:\\Temp",
+      "C:\\Users\\georgios.mathioudaki\\Dev\\OneId\\src\\OneId.Web\\@\\components\\ui"
     ]
   }
 }

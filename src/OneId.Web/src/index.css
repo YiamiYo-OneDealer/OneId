@@ -26,6 +26,7 @@
   --color-destructive-fg: hsl(var(--destructive-fg));
   --color-destructive-bg: hsl(var(--destructive-bg));
   --color-admin-banner-bg: hsl(var(--admin-banner-bg));
+  --color-on-admin-banner: hsl(var(--background));
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

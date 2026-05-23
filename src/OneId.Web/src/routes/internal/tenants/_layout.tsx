@@ -8,11 +8,11 @@ export function TenantContextLayout() {
   const queryClient = useQueryClient()
   const previousTenantId = useRef<string | undefined>(undefined)
   const setActiveTenant = useTenantStore((s) => s.setActiveTenantId)
+  const clearTenant = useTenantStore((s) => s.clearTenant)
 
   useEffect(() => {
     if (tenantId && tenantId !== previousTenantId.current) {
       if (previousTenantId.current) {
-        // Invalidate all queries scoped to the previous tenant on tenant switch
         queryClient.invalidateQueries({
           queryKey: ['tenants', previousTenantId.current],
         })
@@ -21,6 +21,12 @@ export function TenantContextLayout() {
       previousTenantId.current = tenantId
     }
   }, [tenantId, queryClient, setActiveTenant])
+
+  useEffect(() => {
+    return () => {
+      clearTenant()
+    }
+  }, [clearTenant])
 
   if (!tenantId) return null
   return <Outlet />
