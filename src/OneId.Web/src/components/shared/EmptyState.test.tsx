@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
+import { axe } from 'vitest-axe'
 import { EmptyState } from './EmptyState'
 
 describe('EmptyState', () => {
@@ -45,5 +46,11 @@ describe('EmptyState', () => {
     const CustomIcon = () => <svg data-testid="custom-icon" />
     render(<EmptyState variant="empty" icon={CustomIcon} title="Custom" />)
     expect(screen.getByTestId('custom-icon')).toBeInTheDocument()
+  })
+
+  it('has no axe violations', async () => {
+    const { container } = render(<EmptyState variant="no-data" title="No users" />)
+    const results = await axe(container)
+    expect(results).toHaveNoViolations()
   })
 })
