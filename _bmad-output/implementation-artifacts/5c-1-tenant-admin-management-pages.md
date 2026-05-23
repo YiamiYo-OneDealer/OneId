@@ -1,6 +1,6 @@
 # Story 5c-1: Tenant Admin Management Pages
 
-Status: review
+Status: done
 
 ## Story
 
@@ -38,6 +38,10 @@ So that I can see the full authorization structure of any tenant from the consol
 - [x] Update `src/routes/index.tsx` — replace four StubPage entries + add imports (AC: #7)
 - [x] Update `src/routes/tenant/index.tsx` — remove stale placeholder text (AC: #8)
 - [x] Verify `npm run build`, `npm run lint`, `npm test` pass (AC: #9)
+
+### Review Follow-ups (AI)
+
+- [x] [AI-Review Low] Remove stale "Tenant list coming in Epic 5c." text from `InternalDashboard` (`src/routes/internal/index.tsx`)
 
 ---
 
@@ -581,3 +585,20 @@ claude-sonnet-4-6
 
 - 2026-05-23: Story created — Tenant management sub-pages (Users, Groups, Roles, Role Sets) under Internal Admin tenant context, scoped for mock-data demo.
 - 2026-05-23: Story implemented — all 8 tasks complete, 38/38 tests pass, build clean.
+- 2026-05-23: Code review patch applied — InternalDashboard stale text removed. 38/38 tests pass.
+
+---
+
+## Senior Developer Review (AI)
+
+**Review Date:** 2026-05-23
+**Outcome:** Changes Requested
+**Severity Summary:** 1 Low — 1 action item, 1 deferred
+
+### Action Items
+
+- [x] [Low] `InternalDashboard` (`src/routes/internal/index.tsx`) still shows stale placeholder text "Tenant list coming in Epic 5c." — replaced with "Select a tenant from the Tenants list to manage." `src/routes/internal/index.tsx`
+
+### Deferred
+
+- Sub-nav Overview tab `end: true` trailing-slash edge case (`/internal/tenants/acme-corp/`) — React Router normalizes trailing slashes; low risk, no action needed.

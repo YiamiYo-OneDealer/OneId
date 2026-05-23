@@ -81,16 +81,21 @@ function LicenseSection({
   currentMax: number | null
   currentUsed: number
 }) {
-  const [maxSeats, setMaxSeats] = useState(currentMax === null ? '' : String(currentMax))
+  // null = not editing; derive from prop so field auto-syncs after save+refetch
+  const [editedMax, setEditedMax] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const updateTenant = useUpdateTenant()
 
+  const maxSeats = editedMax ?? (currentMax === null ? '' : String(currentMax))
+
   const handleSave = () => {
     const parsed = maxSeats.trim() === '' ? null : parseInt(maxSeats, 10)
+    if (parsed !== null && (isNaN(parsed) || parsed < 1)) return
     updateTenant.mutate(
       { tenantId, patch: { seatUsage: { used: currentUsed, max: parsed } } },
       {
         onSuccess: () => {
+          setEditedMax(null)
           setSaved(true)
           setTimeout(() => setSaved(false), 2000)
         },
@@ -109,7 +114,7 @@ function LicenseSection({
             type="number"
             min={1}
             value={maxSeats}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMaxSeats(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditedMax(e.target.value)}
             className="w-40"
             placeholder="Unlimited"
           />
@@ -298,6 +303,7 @@ export function TenantDetailPage() {
         <Button
           variant={tenant.status === 'active' ? 'destructive' : 'default'}
           size="sm"
+          disabled={updateTenant.isPending}
           onClick={() => setSuspendDialogOpen(true)}
         >
           {tenant.status === 'active' ? 'Suspend' : 'Reinstate'}
@@ -310,6 +316,12 @@ export function TenantDetailPage() {
         <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
           <dt className="text-muted-foreground">Tenant ID</dt>
           <dd className="font-mono text-foreground">{tenant.id}</dd>
+          <dt className="text-muted-foreground">Status</dt>
+          <dd>
+            <Badge variant={tenant.status === 'active' ? 'default' : 'destructive'}>
+              {tenant.status === 'active' ? 'Active' : 'Suspended'}
+            </Badge>
+          </dd>
           <dt className="text-muted-foreground">Seat usage</dt>
           <dd className="text-foreground">
             {tenant.seatUsage.used} / {tenant.seatUsage.max === null ? '∞' : tenant.seatUsage.max}
