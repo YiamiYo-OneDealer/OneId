@@ -1,3 +1,4 @@
+@import "@fontsource-variable/inter";
 @import "tailwindcss";
 
 @theme inline {
@@ -20,6 +21,11 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
+  /* OneId design system tokens */
+  --color-sidebar: hsl(var(--sidebar));
+  --color-destructive-fg: hsl(var(--destructive-fg));
+  --color-destructive-bg: hsl(var(--destructive-bg));
+  --color-admin-banner-bg: hsl(var(--admin-banner-bg));
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -28,6 +34,7 @@
 
 @layer base {
   :root {
+    /* shadcn light-mode fallback (inactive — app is always dark via class="dark" on <html>) */
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
@@ -48,28 +55,56 @@
     --input: 240 5.9% 90%;
     --ring: 240 10% 3.9%;
     --radius: 0.5rem;
+    /* OneId tokens (light-mode fallback — not used) */
+    --sidebar: 240 4.8% 95.9%;
+    --destructive-fg: 0 84.2% 60.2%;
+    --destructive-bg: 0 84.2% 95%;
+    --admin-banner-bg: 38 92.3% 47.8%;
+    /* Typography scale */
+    --font-size-page-title: 1.5rem;        /* 24px */
+    --font-size-section-heading: 1.125rem; /* 18px */
+    --font-size-body: 0.875rem;            /* 14px */
+    --font-size-caption: 0.75rem;          /* 12px */
+    --font-size-mono: 0.8125rem;           /* 13px */
   }
 
   .dark {
-    --background: 240 10% 3.9%;
+    /* ── Core backgrounds ── */
+    --background: 240 5.9% 3.9%;   /* zinc-950 */
+    --sidebar: 240 4.9% 10.4%;     /* zinc-900 — OneId custom */
+    --card: 240 3.7% 15.9%;        /* zinc-800 */
+    --popover: 240 3.7% 15.9%;     /* zinc-800 */
+
+    /* ── Foregrounds ── */
     --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+
+    /* ── Primary: indigo-500 ── */
+    --primary: 239 84% 67.1%;      /* indigo-500 */
+    --primary-foreground: 0 0% 100%;
+
+    /* ── Secondary / muted / accent: zinc-800 ── */
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted-foreground: 240 5% 64.9%;  /* zinc-400 */
     --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+
+    /* ── Destructive / DENY ── */
+    --destructive: 0 84.2% 60.2%;         /* red-500 (shadcn compat) */
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --destructive-fg: 0 84.2% 60.2%;      /* red-500 — OneId custom */
+    --destructive-bg: 0 72.2% 16.5%;      /* red-950 — OneId custom */
+
+    /* ── Admin tier banner ── */
+    --admin-banner-bg: 38 92.3% 47.8%;    /* amber-600 — OneId custom */
+
+    /* ── Borders / inputs ── */
+    --border: 240 3.7% 20%;
+    --input: 240 3.7% 20%;
+    --ring: 239 84% 67.1%;   /* indigo-500 focus ring */
   }
 }
 
@@ -79,10 +114,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'InterVariable', 'Inter', sans-serif;
+    font-size: var(--font-size-body);
+    font-variant-numeric: tabular-nums;
   }
 }
-
-/* TODO Epic 5a Story 5a.1: Replace above with semantic CSS variable token system:
-   --background: zinc-950, --sidebar: zinc-900, --card/--popover: zinc-800,
-   --primary: indigo-500, --destructive: red-500/red-950
-   Also add: ESLint rule enforcing no raw Tailwind color utilities on semantic elements */

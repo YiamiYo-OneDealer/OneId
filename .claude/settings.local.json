@@ -60,7 +60,11 @@
       "Bash(Remove-Item \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Server\\\\Infrastructure\\\\Caching\\\\.gitkeep\" -Force)",
       "Bash(find src/OneId.Server/Infrastructure/Persistence/Seeds -type f)",
       "Bash(ls src/OneId.Server/Infrastructure/Persistence/)",
-      "Bash(del \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Server\\\\Infrastructure\\\\Persistence\\\\Seeds\\\\.gitkeep\")"
+      "Bash(del \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Server\\\\Infrastructure\\\\Persistence\\\\Seeds\\\\.gitkeep\")",
+      "Bash(dir src\\\\OneId.Web\\\\src /s /b)",
+      "Bash(Select-Object -First 80)",
+      "Bash(dir *)",
+      "Bash(Select-Object *)"
     ],
     "additionalDirectories": [
       "C:\\Temp"
