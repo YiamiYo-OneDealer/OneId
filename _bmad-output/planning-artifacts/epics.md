@@ -346,14 +346,20 @@ Tenants can configure Okta or Azure AD as an upstream IDP. Federated users authe
 
 ---
 
-**Dependency chain:**
+**Dependency chain (updated 2026-05-23 — UI-first resequencing):**
 ```
-Epic 1 → Epic 2 → Epic 3 → Epic 4a → Epic 4b → Epic 5b → Epic 5c
-                                                ↑
-                                         Epic 5a (parallel with 4a/4b)
-                                         
-Epic 6 ★ (after Epic 3; parallel with 5a–5c if scope permits)
+[Phase 1]  Epic 5a  ← starts first, pure frontend, no backend dependency
+[Phase 2]  Epic 2   ← auth backend, after shell is complete
+[Phase 3]  Epic 3 (non-licensing): 3.1 → 3.2 → 3.4 → 3.6 → 3.8
+[Phase 4]  Epic 4a + Epic 5b.1/5b.2/5b.6 (parallel)
+[Phase 5]  ★ UI DEMO MILESTONE ★  Epic 5c: 5c.1 → 5c.3 → 5c.4 → 5c.5 → 5c.6
+[Phase 6]  Epic 3 licensing: 3.3 → 3.5 → 3.7
+[Phase 7]  Epic 4b: 4b.1 → 4b.2 → 4b.3
+[Phase 8]  Epic 5b.3/5b.4/5b.5 + Epic 5c.2/5c.7
+[Phase 9]  Epic 6 ★ stretch goal
 ```
+
+Hard constraints preserved: 5b.3/5b.4/5b.5 and 5c.2 require Epic 4b (enriched introspection); 5c.1 requires Epic 4a APIs; 3.1 (ITenantContext) must precede all tenant-scoped work.
 
 ---
 
