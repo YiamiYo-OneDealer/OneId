@@ -67,9 +67,14 @@
       "Bash(Select-Object *)",
       "Bash(find \"c:\\\\\\\\Users\\\\\\\\georgios.mathioudaki\\\\\\\\Dev\\\\\\\\OneId\\\\\\\\src\\\\\\\\OneId.Web\\\\\\\\src\\\\\\\\components\\\\\\\\ui\" -type f -name \"*.tsx\" -o -name \"*.ts\")",
       "Bash(test -d \"c:\\\\\\\\Users\\\\\\\\georgios.mathioudaki\\\\\\\\Dev\\\\\\\\OneId\\\\\\\\src\\\\\\\\OneId.Web\\\\\\\\src\\\\\\\\components\\\\\\\\ui\")",
+      "Bash(test *)",
       "Bash(find \"c:\\\\\\\\Users\\\\\\\\georgios.mathioudaki\\\\\\\\Dev\\\\\\\\OneId\\\\\\\\src\\\\\\\\OneId.Web\\\\\\\\src\" -type d -name \"ui\" -o -type d -name \"components\")",
       "Bash(find \"c:\\\\\\\\Users\\\\\\\\georgios.mathioudaki\\\\\\\\Dev\\\\\\\\OneId\\\\\\\\src\\\\\\\\OneId.Web\\\\\\\\src\" -name \"*.tsx\" -o -name \"*.ts\")",
-      "Bash(mkdir -p src/components/ui && mv @/components/ui/*.tsx src/components/ui/ && rm -rf @/ && ls src/components/ui/)"
+      "Bash(find *)",
+      "Bash(mkdir -p src/components/ui && mv @/components/ui/*.tsx src/components/ui/ && rm -rf @/ && ls src/components/ui/)",
+      "Bash(mkdir *)",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(echo *)"
     ],
     "additionalDirectories": [
       "C:\\Temp",
