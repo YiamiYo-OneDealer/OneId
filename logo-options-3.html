@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OneId — A2 vs B4 vs Hybrid</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:     #031C30;
+      --cyan:     #00B5EC;
+      --metallic: #36587D;
+      --platinum: #DCE1E9;
+      --onyx:     #343A40;
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #071828;
+      color: #f0f4f8;
+      padding: 52px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+    }
+    h1 {
+      font-size: 11px; font-weight: 700; letter-spacing: .16em;
+      text-transform: uppercase; color: var(--cyan);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      max-width: 860px;
+      width: 100%;
+    }
+
+    .card {
+      background: #0a1929;
+      border: 1px solid #1a3550;
+      border-radius: 16px;
+      padding: 28px 20px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .card.highlight {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 1px var(--cyan);
+    }
+
+    .card-id {
+      font-size: 10px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--metallic);
+      align-self: flex-start;
+    }
+    .card.highlight .card-id { color: var(--cyan); }
+
+    .hero { display: flex; justify-content: center; }
+
+    .sizes {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+
+    .wordmark-row {
+      display: flex; align-items: center; gap: 9px;
+    }
+    .wm-text { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+    .wm-one  { color: #e8f0f8; }
+    .wm-id   { color: var(--cyan); }
+
+    .light {
+      background: var(--platinum);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex; align-items: center; gap: 8px;
+      width: 100%;
+    }
+    .strip-label {
+      font-size: 9px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--metallic);
+      align-self: flex-start;
+    }
+
+    .desc {
+      font-size: 11px; line-height: 1.65; color: #6a9abf; text-align: center;
+    }
+    .card.highlight .desc { color: #8ec8e8; }
+
+    .tag {
+      font-size: 9px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+    }
+    .tag-ref  { background: #1a3550; color: var(--metallic); }
+    .tag-new  { background: rgba(0,181,236,.15); color: var(--cyan); }
+  </style>
+</head>
+<body>
+
+<h1>A2 vs B4 vs Hybrid</h1>
+
+<div class="row">
+
+  <!-- ─── A2: solid keyhole ─── -->
+  <div class="card">
+    <div class="card-id">A2 <span class="tag tag-ref">reference</span></div>
+
+    <div class="hero">
+      <svg width="80" height="80" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#031C30"/>
+        <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+        <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+        <circle cx="16" cy="12" r="2.8" fill="#031C30"/>
+      </svg>
+    </div>
+
+    <div class="sizes">
+      <svg width="40" height="40" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#031C30"/>
+        <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+        <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+        <circle cx="16" cy="12" r="2.8" fill="#031C30"/>
+      </svg>
+      <svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#031C30"/>
+        <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+        <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+        <circle cx="16" cy="12" r="2.8" fill="#031C30"/>
+      </svg>
+      <svg width="16" height="16" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#031C30"/>
+        <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+        <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+        <circle cx="16" cy="12" r="2.8" fill="#031C30"/>
+      </svg>
+    </div>
+
+    <div class="wordmark-row">
+      <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+        <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+        <circle cx="16" cy="12" r="2.8" fill="#031C30"/>
+      </svg>
+      <span class="wm-text"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+    </div>
+
+    <div>
+      <div class="strip-label" style="margin-bottom:6px">Light sidebar</div>
+      <div class="light">
+        <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+          <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="2.8" fill="#DCE1E9"/>
+        </svg>
+        <span class="wm-text" style="font-size:13px">
+          <span style="color:#343A40">One</span><span style="color:#00B5EC">Id</span>
+        </span>
+      </div>
+    </div>
+
+    <p class="desc">Pure symbol — the keyhole is universally understood as "access". Small pin-hole in center.</p>
+  </div>
+
+  <!-- ─── HYBRID ─── -->
+  <div class="card highlight">
+    <div class="card-id">Hybrid <span class="tag tag-new">new</span></div>
+
+    <div class="hero">
+      <!-- Same keyhole silhouette as A2, but the center hole is larger (donut-sized like B4) -->
+      <svg width="80" height="80" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#031C30"/>
+        <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+        <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+        <!-- Larger donut hole (B4-sized) instead of small pin -->
+        <circle cx="16" cy="12" r="4" fill="#031C30"/>
+      </svg>
+    </div>
+
+    <div class="sizes">
+      <svg width="40" height="40" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#031C30"/>
+        <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+        <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+        <circle cx="16" cy="12" r="4" fill="#031C30"/>
+      </svg>
+      <svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#031C30"/>
+        <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+        <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+        <circle cx="16" cy="12" r="4" fill="#031C30"/>
+      </svg>
+      <svg width="16" height="16" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#031C30"/>
+        <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+        <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+        <circle cx="16" cy="12" r="4" fill="#031C30"/>
+      </svg>
+    </div>
+
+    <div class="wordmark-row">
+      <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+        <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+        <circle cx="16" cy="12" r="4" fill="#031C30"/>
+      </svg>
+      <span class="wm-text"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+    </div>
+
+    <div>
+      <div class="strip-label" style="margin-bottom:6px">Light sidebar</div>
+      <div class="light">
+        <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+          <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="4" fill="#DCE1E9"/>
+        </svg>
+        <span class="wm-text" style="font-size:13px">
+          <span style="color:#343A40">One</span><span style="color:#00B5EC">Id</span>
+        </span>
+      </div>
+    </div>
+
+    <p class="desc">Keyhole shape + donut-ring opening. Keeps the symbolic meaning of A2 while the larger ring hole echoes the OneDealer OD mark from B4.</p>
+  </div>
+
+  <!-- ─── B4: donut + bar ─── -->
+  <div class="card">
+    <div class="card-id">B4 <span class="tag tag-ref">reference</span></div>
+
+    <div class="hero">
+      <svg width="80" height="80" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#031C30"/>
+        <circle cx="11.5" cy="16" r="8" fill="#00B5EC"/>
+        <circle cx="11.5" cy="16" r="4" fill="#031C30"/>
+        <rect x="22" y="9" width="4" height="14" rx="2" fill="#00B5EC"/>
+      </svg>
+    </div>
+
+    <div class="sizes">
+      <svg width="40" height="40" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#031C30"/>
+        <circle cx="11.5" cy="16" r="8" fill="#00B5EC"/>
+        <circle cx="11.5" cy="16" r="4" fill="#031C30"/>
+        <rect x="22" y="9" width="4" height="14" rx="2" fill="#00B5EC"/>
+      </svg>
+      <svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#031C30"/>
+        <circle cx="11.5" cy="16" r="8" fill="#00B5EC"/>
+        <circle cx="11.5" cy="16" r="4" fill="#031C30"/>
+        <rect x="22" y="9" width="4" height="14" rx="2" fill="#00B5EC"/>
+      </svg>
+      <svg width="16" height="16" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#031C30"/>
+        <circle cx="11.5" cy="16" r="8" fill="#00B5EC"/>
+        <circle cx="11.5" cy="16" r="4" fill="#031C30"/>
+        <rect x="22" y="9" width="4" height="14" rx="2" fill="#00B5EC"/>
+      </svg>
+    </div>
+
+    <div class="wordmark-row">
+      <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="11.5" cy="16" r="8" fill="#00B5EC"/>
+        <circle cx="11.5" cy="16" r="4" fill="#031C30"/>
+        <rect x="22" y="9" width="4" height="14" rx="2" fill="#00B5EC"/>
+      </svg>
+      <span class="wm-text"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+    </div>
+
+    <div>
+      <div class="strip-label" style="margin-bottom:6px">Light sidebar</div>
+      <div class="light">
+        <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11.5" cy="16" r="8" fill="#00B5EC"/>
+          <circle cx="11.5" cy="16" r="4" fill="#DCE1E9"/>
+          <rect x="22" y="9" width="4" height="14" rx="2" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text" style="font-size:13px">
+          <span style="color:#343A40">One</span><span style="color:#00B5EC">Id</span>
+        </span>
+      </div>
+    </div>
+
+    <p class="desc">OD-inspired initials — donut ring (O) + vertical bar (I). Direct visual link to the OneDealer brand.</p>
+  </div>
+
+</div>
+
+<p style="font-size:11px;color:#36587D">Sizes shown: 80px · 40px · 20px · 16px (browser tab) — plus wordmark and light sidebar</p>
+
+</body>
+</html>

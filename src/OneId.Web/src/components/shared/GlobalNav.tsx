@@ -2,6 +2,7 @@ import { NavLink, useMatch } from 'react-router'
 import { cn } from '@/lib/utils'
 import { useSidebarState } from '@/hooks/useSidebarState'
 import { TenantSwitcher } from './TenantSwitcher'
+import { OneIdLogo } from './OneIdLogo'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -16,6 +17,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 interface NavConfig {
   to: string
@@ -27,8 +29,8 @@ interface NavConfig {
 const TENANT_ADMIN_NAV: NavConfig[] = [
   { to: '/tenant/users', label: 'Users', icon: Users },
   { to: '/tenant/groups', label: 'Groups', icon: Users2 },
-  { to: '/tenant/roles', label: 'Roles', icon: Shield },
   { to: '/tenant/role-sets', label: 'Role Sets', icon: ShieldPlus },
+  { to: '/tenant/roles', label: 'Roles', icon: Shield },
   { to: '/tenant/audit-log', label: 'Audit Log', icon: ScrollText },
 ]
 
@@ -95,7 +97,7 @@ export function GlobalNav({ tier }: GlobalNavProps) {
             collapsed && 'justify-center',
           )}
         >
-          {!collapsed && <span className="text-sm font-semibold text-foreground">OneId</span>}
+          <OneIdLogo collapsed={collapsed} />
         </div>
 
         <div className="flex flex-1 flex-col gap-1 p-2">
@@ -108,6 +110,7 @@ export function GlobalNav({ tier }: GlobalNavProps) {
 
         <div className="flex flex-col gap-1 p-2">
           {tier === 'internal' && <TenantSwitcher collapsed={collapsed} />}
+          <ThemeToggle collapsed={collapsed} />
           {!collapsed && (
             <div className="px-3 py-2 text-xs text-muted-foreground">Press ⌘K to search</div>
           )}

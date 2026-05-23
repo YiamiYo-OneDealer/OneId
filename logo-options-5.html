@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OneId — The OI·i·Keyhole Mark</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:     #031C30;
+      --cyan:     #00B5EC;
+      --metallic: #36587D;
+      --platinum: #DCE1E9;
+      --onyx:     #343A40;
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #030e1a;
+      color: #e4eef8;
+      padding: 52px 40px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 48px;
+    }
+    header { text-align: center; }
+    header h1 {
+      font-size: 10px; font-weight: 700; letter-spacing: .2em;
+      text-transform: uppercase; color: var(--cyan); margin-bottom: 10px;
+    }
+    header p {
+      font-size: 12px; color: #4a7a9b; line-height: 1.8; max-width: 500px;
+    }
+    header p em { color: var(--cyan); font-style: normal; font-weight: 600; }
+
+    /* ─── main grid ─── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .card {
+      background: #071525;
+      border: 1px solid #0d2035;
+      border-radius: 16px;
+      padding: 26px 16px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+    .card.pick {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 1px var(--cyan), 0 0 32px rgba(0,181,236,.08);
+    }
+
+    .vid {
+      font-size: 9px; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; color: #2a5c7a; align-self: flex-start;
+    }
+    .card.pick .vid { color: var(--cyan); }
+    .vname {
+      font-size: 12px; font-weight: 600; color: #9ac4dc; text-align: center;
+      line-height: 1.4;
+    }
+
+    /* size row */
+    .sizes {
+      display: flex; align-items: flex-end; justify-content: center; gap: 14px;
+      border-top: 1px solid #0d2035; border-bottom: 1px solid #0d2035;
+      padding: 10px 0; width: 100%;
+    }
+    .sz { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .sz-lbl { font-size: 8px; color: #1e4060; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+
+    /* wordmark */
+    .wm { display: flex; align-items: center; gap: 8px; }
+    .wm-t { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
+    .wm-one { color: #ddeef8; }
+    .wm-id  { color: var(--cyan); }
+
+    /* light sidebar */
+    .lt-lbl { font-size: 8px; color: var(--metallic); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 5px; align-self: flex-start; }
+    .light {
+      background: var(--platinum); border-radius: 7px;
+      padding: 9px 12px; display: flex; align-items: center; gap: 7px; width: 100%;
+    }
+    .light .wm-t { font-size: 12px; }
+    .light .wm-one { color: var(--onyx); }
+    .light .wm-id  { color: var(--cyan); }
+
+    .desc { font-size: 10.5px; line-height: 1.7; color: #3a6a8a; text-align: center; }
+    .card.pick .desc { color: #5a9abf; }
+
+    /* ─── anatomy strip ─── */
+    .anatomy {
+      max-width: 900px;
+      width: 100%;
+      background: #071525;
+      border: 1px solid #0d2035;
+      border-radius: 16px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .anatomy svg { flex-shrink: 0; }
+    .anatomy-text { display: flex; flex-direction: column; gap: 14px; }
+    .anatomy-text h2 { font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--cyan); }
+    .reading { display: flex; align-items: flex-start; gap: 10px; }
+    .reading-tag {
+      font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      padding: 2px 7px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; margin-top: 1px;
+    }
+    .tag-key  { background: rgba(0,181,236,.12); color: var(--cyan); }
+    .tag-i    { background: rgba(0,181,236,.07); color: rgba(0,181,236,.7); }
+    .tag-oi   { background: rgba(0,181,236,.05); color: rgba(0,181,236,.5); }
+    .reading p { font-size: 11px; line-height: 1.6; color: #4a7a9b; }
+    .reading strong { color: #8ec8e4; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>The OI · i · Keyhole Mark</h1>
+  <p>One mark, three simultaneous readings:<br>
+  <em>keyhole</em> (circle + drop slot) &nbsp;·&nbsp;
+  <em>lowercase i</em> (oversized dot + stem) &nbsp;·&nbsp;
+  <em>OI</em> (ring + bar = OneId initials).<br>
+  The four variants below tune the balance between the three readings.</p>
+</header>
+
+
+<!-- ═══ VARIANTS GRID ═══ -->
+<div class="grid">
+
+  <!-- V1 — Keyhole dominant: small hole, wide stem, no gap -->
+  <div class="card">
+    <div class="vid">V1</div>
+    <div class="vname">Keyhole<br>dominant</div>
+    <div class="sizes">
+      <div class="sz">
+        <svg width="64" height="64" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="12" r="7"   fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="2.4" fill="#031C30"/>
+          <rect x="12.5" y="19" width="7" height="8.5" rx="2" fill="#00B5EC"/>
+        </svg>
+        <div class="sz-lbl">64px</div>
+      </div>
+      <div class="sz">
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="12" r="7"   fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="2.4" fill="#031C30"/>
+          <rect x="12.5" y="19" width="7" height="8.5" rx="2" fill="#00B5EC"/>
+        </svg>
+        <div class="sz-lbl">32px</div>
+      </div>
+      <div class="sz">
+        <svg width="16" height="16" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="12" r="7"   fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="2.4" fill="#031C30"/>
+          <rect x="12.5" y="19" width="7" height="8.5" rx="2" fill="#00B5EC"/>
+        </svg>
+        <div class="sz-lbl">16px</div>
+      </div>
+    </div>
+    <div class="wm">
+      <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="12" r="7"   fill="#00B5EC"/>
+        <circle cx="16" cy="12" r="2.4" fill="#031C30"/>
+        <rect x="12.5" y="19" width="7" height="8.5" rx="2" fill="#00B5EC"/>
+      </svg>
+      <span class="wm-t"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+    </div>
+    <div style="width:100%">
+      <div class="lt-lbl">Light sidebar</div>
+      <div class="light">
+        <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="12" r="7"   fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="2.4" fill="#DCE1E9"/>
+          <rect x="12.5" y="19" width="7" height="8.5" rx="2" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-t"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+    </div>
+    <p class="desc">Small pin-hole, wide stem, no gap. The keyhole silhouette is unmistakable. The drop reads like a traditional lock key.</p>
+  </div>
+
+  <!-- V2 — i dominant: medium hole, narrow stem, clear gap -->
+  <div class="card">
+    <div class="vid">V2</div>
+    <div class="vname">Lowercase i<br>dominant</div>
+    <div class="sizes">
+      <div class="sz">
+        <svg width="64" height="64" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="11" r="6.5"  fill="#00B5EC"/>
+          <circle cx="16" cy="11" r="3.8"  fill="#031C30"/>
+          <rect x="14.25" y="20" width="3.5" height="8" rx="1.75" fill="#00B5EC"/>
+        </svg>
+        <div class="sz-lbl">64px</div>
+      </div>
+      <div class="sz">
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="11" r="6.5"  fill="#00B5EC"/>
+          <circle cx="16" cy="11" r="3.8"  fill="#031C30"/>
+          <rect x="14.25" y="20" width="3.5" height="8" rx="1.75" fill="#00B5EC"/>
+        </svg>
+        <div class="sz-lbl">32px</div>
+      </div>
+      <div class="sz">
+        <svg width="16" height="16" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="11" r="6.5"  fill="#00B5EC"/>
+          <circle cx="16" cy="11" r="3.8"  fill="#031C30"/>
+          <rect x="14.25" y="20" width="3.5" height="8" rx="1.75" fill="#00B5EC"/>
+        </svg>
+        <div class="sz-lbl">16px</div>
+      </div>
+    </div>
+    <div class="wm">
+      <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="11" r="6.5"  fill="#00B5EC"/>
+        <circle cx="16" cy="11" r="3.8"  fill="#031C30"/>
+        <rect x="14.25" y="20" width="3.5" height="8" rx="1.75" fill="#00B5EC"/>
+      </svg>
+      <span class="wm-t"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+    </div>
+    <div style="width:100%">
+      <div class="lt-lbl">Light sidebar</div>
+      <div class="light">
+        <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="11" r="6.5"  fill="#00B5EC"/>
+          <circle cx="16" cy="11" r="3.8"  fill="#DCE1E9"/>
+          <rect x="14.25" y="20" width="3.5" height="8" rx="1.75" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-t"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+    </div>
+    <p class="desc">Large ring hole, thin stem, clear gap. The gap separates dot from stem the way a proper letter "i" does. The ring is clearly the letter O.</p>
+  </div>
+
+  <!-- V3 — OI letters dominant: large ring, stem same weight as ring, no gap -->
+  <div class="card pick">
+    <div class="vid">V3 ✦</div>
+    <div class="vname">OI letters<br>dominant</div>
+    <div class="sizes">
+      <div class="sz">
+        <svg width="64" height="64" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="12" r="7"   fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="4"   fill="#031C30"/>
+          <rect x="13.75" y="19" width="4.5" height="9" rx="2" fill="#00B5EC"/>
+        </svg>
+        <div class="sz-lbl">64px</div>
+      </div>
+      <div class="sz">
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="12" r="7"   fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="4"   fill="#031C30"/>
+          <rect x="13.75" y="19" width="4.5" height="9" rx="2" fill="#00B5EC"/>
+        </svg>
+        <div class="sz-lbl">32px</div>
+      </div>
+      <div class="sz">
+        <svg width="16" height="16" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="12" r="7"   fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="4"   fill="#031C30"/>
+          <rect x="13.75" y="19" width="4.5" height="9" rx="2" fill="#00B5EC"/>
+        </svg>
+        <div class="sz-lbl">16px</div>
+      </div>
+    </div>
+    <div class="wm">
+      <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="12" r="7"   fill="#00B5EC"/>
+        <circle cx="16" cy="12" r="4"   fill="#031C30"/>
+        <rect x="13.75" y="19" width="4.5" height="9" rx="2" fill="#00B5EC"/>
+      </svg>
+      <span class="wm-t"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+    </div>
+    <div style="width:100%">
+      <div class="lt-lbl">Light sidebar</div>
+      <div class="light">
+        <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="12" r="7"   fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="4"   fill="#DCE1E9"/>
+          <rect x="13.75" y="19" width="4.5" height="9" rx="2" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-t"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+    </div>
+    <p class="desc">Ring stroke weight matches stem weight — the mark reads as a unified OI ligature. The keyhole silhouette and the oversized i-dot both come through clearly.</p>
+  </div>
+
+  <!-- V4 — Balanced: medium hole, medium stem, small gap -->
+  <div class="card">
+    <div class="vid">V4</div>
+    <div class="vname">Balanced<br>split</div>
+    <div class="sizes">
+      <div class="sz">
+        <svg width="64" height="64" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="11.5" r="7"   fill="#00B5EC"/>
+          <circle cx="16" cy="11.5" r="3.5"  fill="#031C30"/>
+          <!-- small gap between ring and stem = 1.5px -->
+          <rect x="13.75" y="20.5" width="4.5" height="8" rx="2" fill="#00B5EC"/>
+        </svg>
+        <div class="sz-lbl">64px</div>
+      </div>
+      <div class="sz">
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="11.5" r="7"   fill="#00B5EC"/>
+          <circle cx="16" cy="11.5" r="3.5"  fill="#031C30"/>
+          <rect x="13.75" y="20.5" width="4.5" height="8" rx="2" fill="#00B5EC"/>
+        </svg>
+        <div class="sz-lbl">32px</div>
+      </div>
+      <div class="sz">
+        <svg width="16" height="16" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="11.5" r="7"   fill="#00B5EC"/>
+          <circle cx="16" cy="11.5" r="3.5"  fill="#031C30"/>
+          <rect x="13.75" y="20.5" width="4.5" height="8" rx="2" fill="#00B5EC"/>
+        </svg>
+        <div class="sz-lbl">16px</div>
+      </div>
+    </div>
+    <div class="wm">
+      <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="11.5" r="7"   fill="#00B5EC"/>
+        <circle cx="16" cy="11.5" r="3.5"  fill="#031C30"/>
+        <rect x="13.75" y="20.5" width="4.5" height="8" rx="2" fill="#00B5EC"/>
+      </svg>
+      <span class="wm-t"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+    </div>
+    <div style="width:100%">
+      <div class="lt-lbl">Light sidebar</div>
+      <div class="light">
+        <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="11.5" r="7"   fill="#00B5EC"/>
+          <circle cx="16" cy="11.5" r="3.5"  fill="#DCE1E9"/>
+          <rect x="13.75" y="20.5" width="4.5" height="8" rx="2" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-t"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+    </div>
+    <p class="desc">Medium hole, 1.5px gap, medium stem. The slight separation emphasises the i-dot reading while keeping the keyhole silhouette intact.</p>
+  </div>
+
+</div><!-- end grid -->
+
+
+<!-- ═══ ANATOMY EXPLAINER ═══ -->
+<div class="anatomy">
+  <!-- Annotated mark (V3) -->
+  <svg width="120" height="120" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+    <rect width="32" height="32" rx="7" fill="#031C30"/>
+    <circle cx="16" cy="12" r="7"   fill="#00B5EC"/>
+    <circle cx="16" cy="12" r="4"   fill="#031C30"/>
+    <rect x="13.75" y="19" width="4.5" height="9" rx="2" fill="#00B5EC"/>
+    <!-- annotation lines -->
+    <line x1="23" y1="8"  x2="30" y2="4"  stroke="#36587D" stroke-width=".6" stroke-dasharray="1.5 1"/>
+    <line x1="16" y1="12" x2="30" y2="12" stroke="#36587D" stroke-width=".6" stroke-dasharray="1.5 1"/>
+    <line x1="16" y1="24" x2="30" y2="24" stroke="#36587D" stroke-width=".6" stroke-dasharray="1.5 1"/>
+  </svg>
+
+  <div class="anatomy-text">
+    <h2>Three simultaneous readings — one mark (showing V3)</h2>
+
+    <div class="reading">
+      <span class="reading-tag tag-key">Keyhole</span>
+      <p><strong>Disc head</strong> (filled ring) reads as the bow of a key. <strong>Stem below</strong> is the drop slot. Together the silhouette is an unmistakable keyhole — access, identity, authentication.</p>
+    </div>
+    <div class="reading">
+      <span class="reading-tag tag-i">lowercase i</span>
+      <p><strong>Oversized ring</strong> functions as the dot — deliberately large to create graphic tension, like the Identity Mark concept. <strong>Stem</strong> is the letter body below it.</p>
+    </div>
+    <div class="reading">
+      <span class="reading-tag tag-oi">O · I</span>
+      <p><strong>Ring (donut)</strong> = the letter O. <strong>Stem</strong> = the letter I. The stroke weight of the ring wall matches the stem — they feel like a unified OI ligature, linking the mark back to OneDealer's OD DNA.</p>
+    </div>
+  </div>
+</div>
+
+
+</body>
+</html>

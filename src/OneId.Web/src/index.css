@@ -1,4 +1,5 @@
-@import "@fontsource-variable/inter";
+@import "@fontsource-variable/montserrat";
+@import "@fontsource-variable/space-grotesk";
 @import "tailwindcss";
 
 @theme inline {
@@ -26,7 +27,18 @@
   --color-destructive-fg: hsl(var(--destructive-fg));
   --color-destructive-bg: hsl(var(--destructive-bg));
   --color-admin-banner-bg: hsl(var(--admin-banner-bg));
-  --color-on-admin-banner: hsl(var(--background));
+  --color-on-admin-banner: hsl(var(--on-admin-banner));
+  /* Brand palette — static, always available */
+  --color-brand-cyan: #00b5ec;
+  --color-brand-navy: #031c30;
+  --color-brand-metallic: #36587d;
+  --color-brand-lime: #ccff00;
+  --color-brand-onyx: #343a40;
+  --color-brand-platinum: #dce1e9;
+  /* Typography */
+  --font-sans: 'MontserratVariable', 'Montserrat', sans-serif;
+  --font-display: 'SpaceGroteskVariable', 'Space Grotesk', sans-serif;
+  /* Radius scale */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -35,32 +47,40 @@
 
 @layer base {
   :root {
-    /* shadcn light-mode fallback (inactive — app is always dark via class="dark" on <html>) */
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    /* ── Light theme: "Main colors on light background" ── */
+    --background: 0 0% 100%;               /* White */
+    --sidebar: 218 7% 89%;                 /* Platinum #DCE1E9 */
+    --card: 0 0% 100%;                     /* White */
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+
+    --foreground: 211 10% 23%;             /* Onyx #343A40 */
+    --card-foreground: 211 10% 23%;
+    --popover-foreground: 211 10% 23%;
+
+    --primary: 194 100% 46%;               /* Cyan #00B5EC */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 218 7% 89%;               /* Platinum */
+    --secondary-foreground: 211 10% 23%;
+    --muted: 218 7% 94%;
+    --muted-foreground: 211 40% 35%;       /* Metallic Blue #36587D */
+
+    --accent: 218 7% 89%;                  /* Platinum — subtle hover surface */
+    --accent-foreground: 211 10% 23%;
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
-    --radius: 0.5rem;
-    /* OneId tokens (light-mode fallback — not used) */
-    --sidebar: 240 4.8% 95.9%;
     --destructive-fg: 0 84.2% 60.2%;
     --destructive-bg: 0 84.2% 95%;
-    --admin-banner-bg: 38 92.3% 47.8%;
+
+    --admin-banner-bg: 207 88% 10%;        /* Maastricht Blue for admin banner */
+    --on-admin-banner: 0 0% 100%;
+
+    --border: 218 7% 85%;
+    --input: 218 7% 85%;
+    --ring: 194 100% 46%;                  /* Cyan focus ring */
+    --radius: 0.5rem;
+
     /* Typography scale */
     --font-size-page-title: 1.5rem;        /* 24px */
     --font-size-section-heading: 1.125rem; /* 18px */
@@ -70,42 +90,38 @@
   }
 
   .dark {
-    /* ── Core backgrounds ── */
-    --background: 240 5.9% 3.9%;   /* zinc-950 */
-    --sidebar: 240 4.9% 10.4%;     /* zinc-900 — OneId custom */
-    --card: 240 3.7% 15.9%;        /* zinc-800 */
-    --popover: 240 3.7% 15.9%;     /* zinc-800 */
+    /* ── Dark theme: "Main colors on dark background" ── */
+    --background: 207 88% 10%;             /* Maastricht Blue #031C30 */
+    --sidebar: 207 62% 13%;                /* slightly elevated navy */
+    --card: 207 45% 17%;                   /* card surface */
+    --popover: 207 45% 17%;
 
-    /* ── Foregrounds ── */
     --foreground: 0 0% 98%;
     --card-foreground: 0 0% 98%;
     --popover-foreground: 0 0% 98%;
 
-    /* ── Primary: indigo-500 ── */
-    --primary: 239 84% 67.1%;      /* indigo-500 */
-    --primary-foreground: 0 0% 100%;
+    --primary: 194 100% 46%;               /* Cyan #00B5EC */
+    --primary-foreground: 207 88% 10%;     /* navy on cyan */
 
-    /* ── Secondary / muted / accent: zinc-800 ── */
-    --secondary: 240 3.7% 15.9%;
+    --secondary: 207 35% 20%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;  /* zinc-400 */
-    --accent: 240 3.7% 15.9%;
+    --muted: 207 40% 15%;
+    --muted-foreground: 218 7% 65%;        /* muted platinum */
+
+    --accent: 207 35% 20%;                 /* subtle hover surface */
     --accent-foreground: 0 0% 98%;
 
-    /* ── Destructive / DENY ── */
-    --destructive: 0 84.2% 60.2%;         /* red-500 (shadcn compat) */
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --destructive-fg: 0 84.2% 60.2%;      /* red-500 — OneId custom */
-    --destructive-bg: 0 72.2% 16.5%;      /* red-950 — OneId custom */
+    --destructive-fg: 0 84.2% 60.2%;
+    --destructive-bg: 0 72.2% 16.5%;
 
-    /* ── Admin tier banner ── */
-    --admin-banner-bg: 38 92.3% 47.8%;    /* amber-600 — OneId custom */
+    --admin-banner-bg: 211 40% 35%;        /* Metallic Blue #36587D */
+    --on-admin-banner: 0 0% 100%;
 
-    /* ── Borders / inputs ── */
-    --border: 240 3.7% 20%;
-    --input: 240 3.7% 20%;
-    --ring: 239 84% 67.1%;   /* indigo-500 focus ring */
+    --border: 207 40% 20%;
+    --input: 207 40% 20%;
+    --ring: 194 100% 46%;                  /* Cyan focus ring */
   }
 }
 
@@ -115,7 +131,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'InterVariable', 'Inter', sans-serif;
+    font-family: 'MontserratVariable', 'Montserrat', sans-serif;
     font-size: var(--font-size-body);
     font-variant-numeric: tabular-nums;
   }

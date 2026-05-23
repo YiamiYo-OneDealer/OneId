@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/montserrat": "^5.2.8",
+    "@fontsource-variable/space-grotesk": "^5.2.10",
     "@tanstack/react-query": "^5.100.13",
     "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",

@@ -10,8 +10,8 @@ const SUB_NAV_TABS = [
   { label: 'Overview', path: '', end: true },
   { label: 'Users', path: '/users', end: false },
   { label: 'Groups', path: '/groups', end: false },
-  { label: 'Roles', path: '/roles', end: false },
   { label: 'Role Sets', path: '/role-sets', end: false },
+  { label: 'Roles', path: '/roles', end: false },
 ]
 
 export function TenantContextLayout() {

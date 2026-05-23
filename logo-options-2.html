@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OneId — Logo Options (Refined)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:     #031C30;
+      --cyan:     #00B5EC;
+      --metallic: #36587D;
+      --platinum: #DCE1E9;
+      --onyx:     #343A40;
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #071828;
+      color: #f0f4f8;
+      padding: 48px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 52px;
+    }
+    h1 { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--cyan); }
+
+    .family {
+      width: 100%;
+      max-width: 880px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .family-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--metallic);
+      padding-bottom: 12px;
+      border-bottom: 1px solid #1a3550;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    .card {
+      background: #0a1929;
+      border: 1px solid #1a3550;
+      border-radius: 14px;
+      padding: 24px 16px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+    .card-id {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--metallic);
+      align-self: flex-start;
+    }
+    .sizes {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .wordmark-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .wordmark-row svg { flex-shrink: 0; }
+    .wm-text { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+    .wm-one  { color: #e8f0f8; }
+    .wm-id   { color: var(--cyan); }
+
+    /* Light sidebar strip */
+    .light {
+      background: var(--platinum);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+    .light .wm-one { color: var(--onyx); }
+    .light .wm-id  { color: var(--cyan); }
+
+    .desc {
+      font-size: 11px;
+      line-height: 1.6;
+      color: #6a9abf;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<h1>OneId — Refined Options</h1>
+
+<!-- ══════════════════════════════════ KEYHOLE FAMILY ══════════════════════════════════ -->
+<div class="family">
+  <div class="family-label">A — Keyhole family</div>
+  <div class="row">
+
+    <!-- A1: stroke ring + dot + filled stem (original reference) -->
+    <div class="card">
+      <div class="card-id">A1 · Original</div>
+      <div class="sizes">
+        <!-- 56px -->
+        <svg width="56" height="56" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="12.5" r="5.5" fill="none" stroke="#00B5EC" stroke-width="2.5"/>
+          <circle cx="16" cy="12.5" r="2.2" fill="#00B5EC"/>
+          <path d="M13.2,16.5 L13.2,24.5 Q13.2,25.8 14.4,25.8 L17.6,25.8 Q18.8,25.8 18.8,24.5 L18.8,16.5 Z" fill="#00B5EC"/>
+        </svg>
+        <!-- 32px -->
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="12.5" r="5.5" fill="none" stroke="#00B5EC" stroke-width="2.5"/>
+          <circle cx="16" cy="12.5" r="2.2" fill="#00B5EC"/>
+          <path d="M13.2,16.5 L13.2,24.5 Q13.2,25.8 14.4,25.8 L17.6,25.8 Q18.8,25.8 18.8,24.5 L18.8,16.5 Z" fill="#00B5EC"/>
+        </svg>
+      </div>
+      <div class="wordmark-row">
+        <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="12.5" r="5.5" fill="none" stroke="#00B5EC" stroke-width="2.5"/>
+          <circle cx="16" cy="12.5" r="2.2" fill="#00B5EC"/>
+          <path d="M13.2,16.5 L13.2,24.5 Q13.2,25.8 14.4,25.8 L17.6,25.8 Q18.8,25.8 18.8,24.5 L18.8,16.5 Z" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <div class="light">
+        <svg width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="12.5" r="5.5" fill="none" stroke="#00B5EC" stroke-width="2.5"/>
+          <circle cx="16" cy="12.5" r="2.2" fill="#00B5EC"/>
+          <path d="M13.2,16.5 L13.2,24.5 Q13.2,25.8 14.4,25.8 L17.6,25.8 Q18.8,25.8 18.8,24.5 L18.8,16.5 Z" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text" style="font-size:13px"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <p class="desc">Reference — circle ring, pin dot, filled drop</p>
+    </div>
+
+    <!-- A2: solid filled disc + stem + navy hole -->
+    <div class="card">
+      <div class="card-id">A2 · Solid fill</div>
+      <div class="sizes">
+        <svg width="56" height="56" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+          <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="2.8" fill="#031C30"/>
+        </svg>
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+          <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="2.8" fill="#031C30"/>
+        </svg>
+      </div>
+      <div class="wordmark-row">
+        <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+          <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="2.8" fill="#031C30"/>
+        </svg>
+        <span class="wm-text"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <div class="light">
+        <svg width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="12" r="7" fill="#00B5EC"/>
+          <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="2.8" fill="#DCE1E9"/>
+        </svg>
+        <span class="wm-text" style="font-size:13px"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <p class="desc">Solid/filled — heavier weight, bolder at small sizes</p>
+    </div>
+
+    <!-- A3: inverted — cyan square bg, navy keyhole shape -->
+    <div class="card">
+      <div class="card-id">A3 · Inverted</div>
+      <div class="sizes">
+        <svg width="56" height="56" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="7" fill="#031C30"/>
+          <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#031C30"/>
+          <circle cx="16" cy="12" r="2.8" fill="#00B5EC"/>
+        </svg>
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="7" fill="#031C30"/>
+          <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#031C30"/>
+          <circle cx="16" cy="12" r="2.8" fill="#00B5EC"/>
+        </svg>
+      </div>
+      <div class="wordmark-row">
+        <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="7" fill="#031C30"/>
+          <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#031C30"/>
+          <circle cx="16" cy="12" r="2.8" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <div class="light">
+        <svg width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#00B5EC"/>
+          <circle cx="16" cy="12" r="7" fill="#031C30"/>
+          <rect x="13" y="17" width="6" height="9.5" rx="2" fill="#031C30"/>
+          <circle cx="16" cy="12" r="2.8" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text" style="font-size:13px"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <p class="desc">Inverted — cyan badge with navy cutout. Pops on both dark and light sidebars</p>
+    </div>
+
+    <!-- A4: outline only (stroke, no fills except dot) -->
+    <div class="card">
+      <div class="card-id">A4 · Outline</div>
+      <div class="sizes">
+        <svg width="56" height="56" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="12" r="6" fill="none" stroke="#00B5EC" stroke-width="2"/>
+          <circle cx="16" cy="12" r="2" fill="#00B5EC"/>
+          <path d="M13,16.5 L13,25 Q13,26.5 14.5,26.5 L17.5,26.5 Q19,26.5 19,25 L19,16.5 Z" fill="none" stroke="#00B5EC" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="12" r="6" fill="none" stroke="#00B5EC" stroke-width="2"/>
+          <circle cx="16" cy="12" r="2" fill="#00B5EC"/>
+          <path d="M13,16.5 L13,25 Q13,26.5 14.5,26.5 L17.5,26.5 Q19,26.5 19,25 L19,16.5 Z" fill="none" stroke="#00B5EC" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="wordmark-row">
+        <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="12" r="6" fill="none" stroke="#00B5EC" stroke-width="2"/>
+          <circle cx="16" cy="12" r="2" fill="#00B5EC"/>
+          <path d="M13,16.5 L13,25 Q13,26.5 14.5,26.5 L17.5,26.5 Q19,26.5 19,25 L19,16.5 Z" fill="none" stroke="#00B5EC" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span class="wm-text"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <div class="light">
+        <svg width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="12" r="6" fill="none" stroke="#00B5EC" stroke-width="2"/>
+          <circle cx="16" cy="12" r="2" fill="#00B5EC"/>
+          <path d="M13,16.5 L13,25 Q13,26.5 14.5,26.5 L17.5,26.5 Q19,26.5 19,25 L19,16.5 Z" fill="none" stroke="#00B5EC" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span class="wm-text" style="font-size:13px"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <p class="desc">Outline only — minimal, lighter weight. More delicate feel</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ RING + BAR FAMILY ══════════════════════════════════ -->
+<div class="family">
+  <div class="family-label">B — Ring &amp; Bar family</div>
+  <div class="row">
+
+    <!-- B1: original — stroke ring + filled bar (side by side) -->
+    <div class="card">
+      <div class="card-id">B1 · Original</div>
+      <div class="sizes">
+        <svg width="56" height="56" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="11" cy="16" r="7" fill="none" stroke="#00B5EC" stroke-width="2.8"/>
+          <rect x="21" y="8" width="4" height="16" rx="2" fill="#00B5EC"/>
+        </svg>
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="11" cy="16" r="7" fill="none" stroke="#00B5EC" stroke-width="2.8"/>
+          <rect x="21" y="8" width="4" height="16" rx="2" fill="#00B5EC"/>
+        </svg>
+      </div>
+      <div class="wordmark-row">
+        <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="16" r="7" fill="none" stroke="#00B5EC" stroke-width="2.8"/>
+          <rect x="21" y="8" width="4" height="16" rx="2" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <div class="light">
+        <svg width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="16" r="7" fill="none" stroke="#00B5EC" stroke-width="2.8"/>
+          <rect x="21" y="8" width="4" height="16" rx="2" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text" style="font-size:13px"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <p class="desc">Reference — stroke ring + separate filled bar</p>
+    </div>
+
+    <!-- B2: bar through ring (centered intersection) -->
+    <div class="card">
+      <div class="card-id">B2 · Bar through ring</div>
+      <div class="sizes">
+        <svg width="56" height="56" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="16" r="9" fill="none" stroke="#00B5EC" stroke-width="2.5"/>
+          <rect x="14.25" y="6" width="3.5" height="20" rx="1.75" fill="#00B5EC"/>
+        </svg>
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="16" cy="16" r="9" fill="none" stroke="#00B5EC" stroke-width="2.5"/>
+          <rect x="14.25" y="6" width="3.5" height="20" rx="1.75" fill="#00B5EC"/>
+        </svg>
+      </div>
+      <div class="wordmark-row">
+        <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="9" fill="none" stroke="#00B5EC" stroke-width="2.5"/>
+          <rect x="14.25" y="6" width="3.5" height="20" rx="1.75" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <div class="light">
+        <svg width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="9" fill="none" stroke="#00B5EC" stroke-width="2.5"/>
+          <rect x="14.25" y="6" width="3.5" height="20" rx="1.75" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text" style="font-size:13px"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <p class="desc">Bar pierces through the ring center — like a targeting reticle or key pin</p>
+    </div>
+
+    <!-- B3: open arc "C" shape + bar -->
+    <div class="card">
+      <div class="card-id">B3 · Open arc + bar</div>
+      <div class="sizes">
+        <svg width="56" height="56" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <!-- C arc: center (11,16) r=8, gap on right ~90°, endpoints at ±45° from right -->
+          <path d="M 16.66,9.34 A 8,8 0 1,0 16.66,22.66" fill="none" stroke="#00B5EC" stroke-width="2.5" stroke-linecap="round"/>
+          <rect x="21" y="9.5" width="4" height="13" rx="2" fill="#00B5EC"/>
+        </svg>
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <path d="M 16.66,9.34 A 8,8 0 1,0 16.66,22.66" fill="none" stroke="#00B5EC" stroke-width="2.5" stroke-linecap="round"/>
+          <rect x="21" y="9.5" width="4" height="13" rx="2" fill="#00B5EC"/>
+        </svg>
+      </div>
+      <div class="wordmark-row">
+        <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 16.66,9.34 A 8,8 0 1,0 16.66,22.66" fill="none" stroke="#00B5EC" stroke-width="2.5" stroke-linecap="round"/>
+          <rect x="21" y="9.5" width="4" height="13" rx="2" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <div class="light">
+        <svg width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 16.66,9.34 A 8,8 0 1,0 16.66,22.66" fill="none" stroke="#00B5EC" stroke-width="2.5" stroke-linecap="round"/>
+          <rect x="21" y="9.5" width="4" height="13" rx="2" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text" style="font-size:13px"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <p class="desc">Open "C" arc + bar — dynamic, slightly asymmetric, modern feel</p>
+    </div>
+
+    <!-- B4: filled donut (like OneDealer O) + bar -->
+    <div class="card">
+      <div class="card-id">B4 · Donut + bar</div>
+      <div class="sizes">
+        <svg width="56" height="56" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <!-- Filled donut: big fill + navy hole (closest to actual OD logo) -->
+          <circle cx="11.5" cy="16" r="8" fill="#00B5EC"/>
+          <circle cx="11.5" cy="16" r="4" fill="#031C30"/>
+          <rect x="22" y="9" width="4" height="14" rx="2" fill="#00B5EC"/>
+        </svg>
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#031C30"/>
+          <circle cx="11.5" cy="16" r="8" fill="#00B5EC"/>
+          <circle cx="11.5" cy="16" r="4" fill="#031C30"/>
+          <rect x="22" y="9" width="4" height="14" rx="2" fill="#00B5EC"/>
+        </svg>
+      </div>
+      <div class="wordmark-row">
+        <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11.5" cy="16" r="8" fill="#00B5EC"/>
+          <circle cx="11.5" cy="16" r="4" fill="#031C30"/>
+          <rect x="22" y="9" width="4" height="14" rx="2" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <div class="light">
+        <svg width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11.5" cy="16" r="8" fill="#00B5EC"/>
+          <circle cx="11.5" cy="16" r="4" fill="#DCE1E9"/>
+          <rect x="22" y="9" width="4" height="14" rx="2" fill="#00B5EC"/>
+        </svg>
+        <span class="wm-text" style="font-size:13px"><span class="wm-one">One</span><span class="wm-id">Id</span></span>
+      </div>
+      <p class="desc">Filled donut ring + bar — closest to the actual OneDealer OD mark style</p>
+    </div>
+
+  </div>
+</div>
+
+<p style="font-size:11px;color:#36587D">Sizes shown: 56px · 32px (favicon) · 28px with wordmark · light sidebar</p>
+
+</body>
+</html>
