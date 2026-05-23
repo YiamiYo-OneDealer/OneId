@@ -8,6 +8,10 @@ import { InternalDashboard } from './internal/index'
 import { TenantContextLayout } from './internal/tenants/_layout'
 import { TenantDetailPage } from './internal/tenants/TenantDetailPage'
 import { TenantListPage } from './internal/tenants/TenantListPage'
+import { TenantUsersPage } from './internal/tenants/TenantUsersPage'
+import { TenantGroupsPage } from './internal/tenants/TenantGroupsPage'
+import { TenantRolesPage } from './internal/tenants/TenantRolesPage'
+import { TenantRoleSetsPage } from './internal/tenants/TenantRoleSetsPage'
 import { PermissionsPage } from './internal/permissions'
 import { TenantAdminLayout } from './tenant/_layout'
 import { TenantAdminDashboard } from './tenant/index'
@@ -34,10 +38,10 @@ export const router = createBrowserRouter([
             element: <TenantContextLayout />,
             children: [
               { index: true, element: <TenantDetailPage /> },
-              { path: 'users', element: <StubPage title="Users" /> },
-              { path: 'groups', element: <StubPage title="Groups" /> },
-              { path: 'roles', element: <StubPage title="Roles" /> },
-              { path: 'role-sets', element: <StubPage title="Role Sets" /> },
+              { path: 'users', element: <TenantUsersPage /> },
+              { path: 'groups', element: <TenantGroupsPage /> },
+              { path: 'roles', element: <TenantRolesPage /> },
+              { path: 'role-sets', element: <TenantRoleSetsPage /> },
             ],
           },
         ],
