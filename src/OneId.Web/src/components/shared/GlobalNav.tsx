@@ -55,7 +55,7 @@ function NavItem({ item, collapsed }: { item: NavConfig; collapsed: boolean }) {
         'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
         collapsed && 'justify-center px-2',
         isActive
-          ? 'border-l-2 border-primary bg-sidebar text-foreground'
+          ? 'border-l-2 border-primary bg-card text-foreground'
           : 'text-muted-foreground hover:bg-card hover:text-foreground',
       )}
     >

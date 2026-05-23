@@ -684,3 +684,11 @@ claude-sonnet-4-6 (dev-story implementation, 2026-05-23)
 - `src/OneId.Web/package.json` — MODIFIED: react-router, @tanstack/react-query, zustand added; vitest + testing-library devDeps; test/test:watch scripts
 - `src/OneId.Web/tsconfig.app.json` — MODIFIED: added vitest/globals to types
 - `src/OneId.Web/package-lock.json` — MODIFIED: updated lockfile
+
+### Review Findings
+
+- [x] [Review][Dismiss] Sorting dual-state when manualSorting=true — intentional; `setSorting` updates sort icons optimistically while server fetch is in flight; correct UX pattern for server-side sort
+- [x] [Review][Patch] Navigating back to a previously-visited tenant serves stale cache — fixed: `_layout.tsx` now also invalidates the entering tenant's queries [`src/OneId.Web/src/routes/internal/tenants/_layout.tsx`]
+- [x] [Review][Patch] Tenant switch invalidation uses raw key literal instead of `queryKeys.tenant()` — fixed: replaced with `queryKeys.tenant(previousTenantId.current)` [`src/OneId.Web/src/routes/internal/tenants/_layout.tsx`]
+- [x] [Review][Patch] `effectivePermissionsPreview` key collides with `effectivePermissions('preview')` — fixed: preview key now uses object discriminant `{ preview: true }` [`src/OneId.Web/src/queries/keys.ts`]
+- [x] [Review][Defer] TenantSwitchQueryInvalidationTest tests the key factory directly but not the layout-driven URL-change path — deferred, pre-existing

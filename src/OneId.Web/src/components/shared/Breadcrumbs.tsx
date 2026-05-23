@@ -12,6 +12,8 @@ interface RouteHandle {
   breadcrumb?: () => string
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 function segmentToLabel(segment: string): string {
   return segment
     .split('-')
@@ -27,10 +29,12 @@ export function Breadcrumbs() {
     .map((m) => {
       const handle = m.handle as RouteHandle | undefined
       const segments = m.pathname.split('/').filter(Boolean)
-      const label = handle?.breadcrumb?.() ?? segmentToLabel(segments[segments.length - 1] ?? '')
-      return { label, to: m.pathname }
+      const lastSegment = segments[segments.length - 1] ?? ''
+      const label = handle?.breadcrumb?.() ?? segmentToLabel(lastSegment)
+      return { label, to: m.pathname, lastSegment }
     })
-    .filter((c) => c.label && !c.label.match(/^[0-9a-f-]{36}$/))
+    .filter((c) => c.label && !UUID_RE.test(c.lastSegment))
+    .map(({ label, to }) => ({ label, to }))
 
   if (crumbs.length === 0) return null
 

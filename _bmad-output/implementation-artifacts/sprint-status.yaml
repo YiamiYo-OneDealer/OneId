@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-23  # Story 5a-5 review
+last_updated: 2026-05-23  # Epic 5a code review complete
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -117,12 +117,12 @@ development_status:
   # [PHASE 1] Epic 5a: Frontend Shell & Core Components
   # ★ STARTS FIRST — pure frontend, no backend dependency ★
   # ─────────────────────────────────────────────────────────────────────────
-  epic-5a: in-progress
+  epic-5a: done
   5a-1-design-system-foundation: done
-  5a-2-app-shell-routing-tenant-context-and-query-key-factory: review
-  5a-3-globalnav-and-admintierbanner: review
-  5a-4-datatable-and-emptystate-components: review
-  5a-5-ci-playwright-stub-and-playwright-configuration: review
+  5a-2-app-shell-routing-tenant-context-and-query-key-factory: done
+  5a-3-globalnav-and-admintierbanner: done
+  5a-4-datatable-and-emptystate-components: done
+  5a-5-ci-playwright-stub-and-playwright-configuration: done
   epic-5a-retrospective: optional
 
   # ─────────────────────────────────────────────────────────────────────────

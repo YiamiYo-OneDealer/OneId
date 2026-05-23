@@ -877,3 +877,12 @@ claude-sonnet-4-6 (create-story workflow, 2026-05-23)
 ## Change Log
 
 - 2026-05-23: Story implemented — GlobalNav, AdminTierBanner, TenantSwitcher stub, Breadcrumbs; layout updates for InternalLayout and TenantAdminLayout; TenantContextLayout cleanup; shadcn components installed; 17 tests pass, build and lint clean.
+
+### Review Findings
+
+- [x] [Review][Defer] No Audit Log route under `internal/tenants/:tenantId` — intentional pre-wiring; route to be built in a later epic
+- [x] [Review][Patch] `activeTenantId` substring match in blocker — fixed: replaced `String.includes` with exact segment check via `pathname.split('/').filter(Boolean)` [`src/OneId.Web/src/components/shared/AdminTierBanner.tsx`]
+- [x] [Review][Patch] `TenantContextLayout` cleanup does not reset `isFormDirty` — fixed: `setFormDirty(false)` added to unmount cleanup [`src/OneId.Web/src/routes/internal/tenants/_layout.tsx`]
+- [x] [Review][Patch] Active nav item uses `bg-sidebar` instead of `bg-card` — fixed [`src/OneId.Web/src/components/shared/GlobalNav.tsx`]
+- [x] [Review][Patch] `AdminTierBanner.test.tsx` `afterEach` does not reset `ui-store` — fixed: `useUiStore.setState({ isFormDirty: false })` added [`src/OneId.Web/src/components/shared/AdminTierBanner.test.tsx`]
+- [x] [Review][Defer] ESLint `globalIgnores` on `src/components/ui/**` disables all rules (not just design-token rule) on shadcn components — pragmatic workaround for react-refresh conflict; deferred, pre-existing

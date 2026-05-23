@@ -29,6 +29,7 @@ interface DataTableProps<TData extends object, TValue> {
   pagination?: PaginationConfig
   onSortingChange?: OnChangeFn<SortingState>
   manualSorting?: boolean
+  'aria-label'?: string
 }
 
 export function DataTable<TData extends object, TValue>({
@@ -38,6 +39,7 @@ export function DataTable<TData extends object, TValue>({
   pagination,
   onSortingChange,
   manualSorting = false,
+  'aria-label': ariaLabel,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -62,7 +64,7 @@ export function DataTable<TData extends object, TValue>({
     onSortingChange: handleSortingChange,
     ...(pagination && {
       manualPagination: true,
-      pageCount: Math.ceil(pagination.total / pagination.pageSize),
+      pageCount: pagination.pageSize > 0 ? Math.ceil(pagination.total / pagination.pageSize) : 0,
       onPaginationChange: pagination.onPaginationChange,
     }),
     getCoreRowModel: getCoreRowModel(),
@@ -73,6 +75,7 @@ export function DataTable<TData extends object, TValue>({
     <div className="w-full overflow-auto rounded-md border border-border">
       <table
         aria-busy={isLoading || undefined}
+        aria-label={ariaLabel}
         className="w-full caption-bottom text-sm"
       >
         <thead className="border-b border-border bg-card">

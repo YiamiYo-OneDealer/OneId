@@ -269,3 +269,8 @@ claude-sonnet-4-6 (dev-story workflow, 2026-05-23)
 ## Change Log
 
 - 2026-05-23: Story implemented — CI playwright-tests job wired (if: false), playwright.config.ts updated (testDir/baseURL/Chromium), tests/.gitkeep created, vitest-axe installed with custom toHaveNoViolations matcher, axe smoke test on EmptyState passes. 33/33 tests green.
+
+### Review Findings
+
+- [x] [Review][Patch] `.gitignore` guards only `src/OneId.Web/node_modules/` — fixed: added `/node_modules` and `/package-lock.json` root-level guards [`.gitignore`]
+- [x] [Review][Defer] Frontend vitest tests (33 passing) not wired in CI — no job runs `npm test`; the only frontend CI job is `playwright-tests` which is `if: false`; deferred to Epic 5c when Playwright is enabled — add a `vitest-tests` job alongside [`.github/workflows/ci.yml`]

@@ -32,7 +32,9 @@ export function AdminTierBanner() {
   const currentSection = useCurrentSection()
 
   const blocker = useBlocker(({ nextLocation }) => {
-    return isFormDirty && !nextLocation.pathname.includes(activeTenantId ?? '__never__')
+    if (!isFormDirty || !activeTenantId) return false
+    const segments = nextLocation.pathname.split('/').filter(Boolean)
+    return !segments.includes(activeTenantId)
   })
 
   if (!activeTenantId) return null

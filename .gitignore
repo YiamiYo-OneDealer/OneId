@@ -28,6 +28,8 @@ appsettings.*.local.json
 secrets.json
 
 # Node / frontend
+/node_modules
+/package-lock.json
 src/OneId.Web/node_modules/
 src/OneId.Web/dist/
 src/OneId.Web/.vite/

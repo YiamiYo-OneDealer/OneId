@@ -651,3 +651,14 @@ claude-sonnet-4-6 (create-story workflow, 2026-05-23)
 ## Change Log
 
 - 2026-05-23: Story implemented — DataTable (TanStack Table v8) and EmptyState components; shadcn Skeleton installed; 32 tests pass, build and lint clean.
+
+### Review Findings
+
+- [x] [Review][Dismiss] DataTable renders empty `<tbody>` when `!isLoading && data.length === 0` — consumer responsibility; each list view has different copy/CTA; consumers render `EmptyState` when needed
+- [x] [Review][Patch] `<table>` has no `aria-label` — fixed: added `aria-label?: string` prop, forwarded to `<table>` element [`src/OneId.Web/src/components/shared/DataTable.tsx`]
+- [x] [Review][Patch] `pageCount` division by zero when `pageSize=0` — fixed: guarded with `pagination.pageSize > 0 ? Math.ceil(...) : 0` [`src/OneId.Web/src/components/shared/DataTable.tsx`]
+- [x] [Review][Dismiss] `handleSortingChange` calls `setSorting` when `manualSorting=true` — same root as D1; dual-state is intentional (optimistic sort-icon update)
+- [x] [Review][Patch] Breadcrumbs UUID filter applied to computed label, not raw segment — fixed: UUID regex now tested against `lastSegment` before `segmentToLabel()` transformation [`src/OneId.Web/src/components/shared/Breadcrumbs.tsx`]
+- [x] [Review][Defer] `getSortedRowModel()` unconditionally included even with `manualSorting=true` — runs a row model registration each render for rows that won't be client-sorted; intentional per spec note; deferred until server-side sort is actively used in Epic 5c [`src/OneId.Web/src/components/shared/DataTable.tsx:69`]
+- [x] [Review][Defer] `Breadcrumbs.tsx` has no test file — `Breadcrumbs.test.tsx` does not exist; no coverage of UUID filter logic, breadcrumb rendering, or separator placement; deferred, add alongside P6 patch [`src/OneId.Web/src/components/shared/Breadcrumbs.tsx`]
+- [x] [Review][Defer] Custom `toHaveNoViolations` matcher in `test-setup.ts` may conflict when `vitest-axe` ships an official one — defined manually because `vitest-axe@0.1.0` does not export it; monitor on `vitest-axe` upgrade [`src/OneId.Web/src/test-setup.ts`]

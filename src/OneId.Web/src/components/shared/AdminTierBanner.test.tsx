@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { useTenantStore } from '@/store/tenant-store'
+import { useUiStore } from '@/store/ui-store'
 import { AdminTierBanner } from './AdminTierBanner'
 
 function renderBanner(path = '/internal/tenants/test-tenant/users') {
@@ -20,6 +21,7 @@ function renderBanner(path = '/internal/tenants/test-tenant/users') {
 describe('AdminTierBanner', () => {
   afterEach(() => {
     useTenantStore.setState({ activeTenantId: null })
+    useUiStore.setState({ isFormDirty: false })
   })
 
   it('renders when activeTenantId is set in store', () => {
