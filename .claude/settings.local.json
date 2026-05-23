@@ -74,11 +74,13 @@
       "Bash(mkdir -p src/components/ui && mv @/components/ui/*.tsx src/components/ui/ && rm -rf @/ && ls src/components/ui/)",
       "Bash(mkdir *)",
       "Bash(echo \"Exit code: $?\")",
-      "Bash(echo *)"
+      "Bash(echo *)",
+      "Bash(mkdir -p \"c:/Users/georgios.mathioudaki/Dev/OneId/.vscode\")"
     ],
     "additionalDirectories": [
       "C:\\Temp",
-      "C:\\Users\\georgios.mathioudaki\\Dev\\OneId\\src\\OneId.Web\\@\\components\\ui"
+      "C:\\Users\\georgios.mathioudaki\\Dev\\OneId\\src\\OneId.Web\\@\\components\\ui",
+      "c:\\Users\\georgios.mathioudaki\\Dev\\OneId"
     ]
   }
 }
