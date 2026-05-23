@@ -71,6 +71,9 @@ export const mockStore = {
     state.groups[idx] = { ...state.groups[idx], ...patch }
     return state.groups[idx]
   },
+  deleteGroup: (tenantId: string, groupId: string): void => {
+    state.groups = state.groups.filter((g) => !(g.id === groupId && g.tenantId === tenantId))
+  },
 
   // ── Roles ────────────────────────────────────────────────────────────────
   getRoles: (tenantId: string): Role[] => state.roles.filter((r) => r.tenantId === tenantId),
@@ -122,6 +125,18 @@ export const mockStore = {
     return state.roleSets[idx]
   },
   deleteRoleSet: (tenantId: string, roleSetId: string): void => {
+    const usedByGroup = state.groups.some(
+      (g) => g.tenantId === tenantId && g.roleSetIds.includes(roleSetId),
+    )
+    if (usedByGroup) {
+      const groups = state.groups.filter(
+        (g) => g.tenantId === tenantId && g.roleSetIds.includes(roleSetId),
+      )
+      throw Object.assign(new Error('RoleSet is assigned to groups'), {
+        status: 409,
+        assignedTo: groups.map((g) => g.name),
+      })
+    }
     state.roleSets = state.roleSets.filter(
       (rs) => !(rs.id === roleSetId && rs.tenantId === tenantId),
     )

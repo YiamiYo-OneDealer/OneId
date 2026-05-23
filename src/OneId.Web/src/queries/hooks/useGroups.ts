@@ -53,3 +53,16 @@ export function useUpdateGroup(tenantId: string) {
     },
   })
 }
+
+export function useDeleteGroup(tenantId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (groupId: string) => {
+      await mockDelay(200)
+      mockStore.deleteGroup(tenantId, groupId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups(tenantId) })
+    },
+  })
+}
