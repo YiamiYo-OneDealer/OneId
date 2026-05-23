@@ -33,7 +33,7 @@ const TENANT_ADMIN_NAV: NavConfig[] = [
 ]
 
 const INTERNAL_ADMIN_NAV: NavConfig[] = [
-  { to: '/internal', label: 'Tenants', icon: Building2, exact: true },
+  { to: '/internal/tenants', label: 'Tenants', icon: Building2 },
   { to: '/internal/permissions', label: 'Permissions', icon: Key },
   { to: '/internal/licenses', label: 'Licenses', icon: CreditCard },
 ]

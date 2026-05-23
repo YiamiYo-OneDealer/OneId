@@ -6,7 +6,9 @@ import { SuspendedPage } from './suspended'
 import { InternalLayout } from './internal/_layout'
 import { InternalDashboard } from './internal/index'
 import { TenantContextLayout } from './internal/tenants/_layout'
-import { TenantDashboardStub } from './internal/tenants/index'
+import { TenantDetailPage } from './internal/tenants/TenantDetailPage'
+import { TenantListPage } from './internal/tenants/TenantListPage'
+import { PermissionsPage } from './internal/permissions'
 import { TenantAdminLayout } from './tenant/_layout'
 import { TenantAdminDashboard } from './tenant/index'
 import { StubPage } from './_stub-page'
@@ -17,7 +19,7 @@ export const router = createBrowserRouter([
     element: <AuthenticatedLayout />,
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <Navigate to="/internal" replace /> },
+      { index: true, element: <Navigate to="/internal/tenants" replace /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'suspended', element: <SuspendedPage /> },
       {
@@ -25,11 +27,13 @@ export const router = createBrowserRouter([
         element: <InternalLayout />,
         children: [
           { index: true, element: <InternalDashboard /> },
+          { path: 'tenants', element: <TenantListPage /> },
+          { path: 'permissions', element: <PermissionsPage /> },
           {
             path: 'tenants/:tenantId',
             element: <TenantContextLayout />,
             children: [
-              { index: true, element: <TenantDashboardStub /> },
+              { index: true, element: <TenantDetailPage /> },
               { path: 'users', element: <StubPage title="Users" /> },
               { path: 'groups', element: <StubPage title="Groups" /> },
               { path: 'roles', element: <StubPage title="Roles" /> },
