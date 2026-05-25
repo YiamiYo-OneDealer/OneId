@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-25  # 2-3 story created
+last_updated: 2026-05-25  # 2-4 story created
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -65,7 +65,7 @@ development_status:
   2-1-openiddict-configuration-and-oidc-discovery: review
   2-2-password-authentication-and-account-lockout: review
   2-3-totp-mfa-enrollment-and-challenge: review
-  2-4-jwt-issuance-with-itokenclaimsenricher-pipeline: backlog
+  2-4-jwt-issuance-with-itokenclaimsenricher-pipeline: review
   2-5-token-introspection-and-jti-revocation-store: backlog
   2-6-role-change-jti-invalidation-fr-5a: backlog
   2-7-password-reset-via-email-link: backlog

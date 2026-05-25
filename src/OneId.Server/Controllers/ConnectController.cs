@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
+using OneId.Server.Application.TokenPipeline;
 using OneId.Server.Domain.Entities;
 using OneId.Server.Infrastructure.Persistence;
 using OtpNet;
@@ -20,7 +21,8 @@ namespace OneId.Server.Controllers;
 public class ConnectController(
     AppDbContext db,
     IPasswordHasher<User> hasher,
-    IDataProtectionProvider dp) : ControllerBase
+    IDataProtectionProvider dp,
+    IEnumerable<ITokenClaimsEnricher> enrichers) : ControllerBase
 {
     private IDataProtector TotpProtector => dp.CreateProtector("totp.secret.v1");
     private ITimeLimitedDataProtector MfaSessionProtector =>
@@ -189,6 +191,13 @@ public class ConnectController(
 
         principal.SetScopes(request.GetScopes());
 
+        // Run the ITokenClaimsEnricher pipeline — adds roles[], permissions[], etc. in future epics.
+        // Enrichers are registered in DI in execution order (Epic 2: RoleClaimsEnricher only).
+        var enrichmentContext = new TokenEnrichmentContext(user.Id, user.TenantId, request.GrantType);
+        foreach (var enricher in enrichers)
+            await enricher.EnrichAsync(identity, enrichmentContext, ct);
+
+        // Destination sweep MUST remain after the enricher pipeline so enricher-added claims are included.
         foreach (var claim in identity.Claims)
             claim.SetDestinations(Destinations.AccessToken);
 

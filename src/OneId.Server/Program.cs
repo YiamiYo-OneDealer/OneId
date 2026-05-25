@@ -9,6 +9,7 @@ using OneId.Server.Infrastructure.Logging;
 using OneId.Server.Infrastructure.Middleware;
 using OneId.Server.Infrastructure.Persistence;
 using OneId.Server.Infrastructure.Persistence.Seeds;
+using OneId.Server.Infrastructure.OpenIddict;
 using OpenIddict.Abstractions;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -66,6 +67,7 @@ try
     builder.Services.AddMemoryCache();
     builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
     builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
+    builder.Services.AddTokenPipeline();
 
     // AR-5: ITenantContext MUST precede OpenIddict and EF Core — see architecture.md
     builder.Services.AddScoped<TenantContext>();
