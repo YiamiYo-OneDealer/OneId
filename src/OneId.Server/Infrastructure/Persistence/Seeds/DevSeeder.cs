@@ -6,7 +6,7 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OneId.Server.Infrastructure.Persistence.Seeds;
 
-internal static class DevSeeder
+public static class DevSeeder
 {
     // Stable well-known IDs — idempotency and TestTokenFactory alignment.
     public static readonly Guid DevTenantId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
@@ -64,9 +64,7 @@ internal static class DevSeeder
 
     private static async Task SeedOpenIddictClientAsync(IOpenIddictApplicationManager manager)
     {
-        if (await manager.FindByClientIdAsync("oneid-dev-client") is not null) return;
-
-        await manager.CreateAsync(new OpenIddictApplicationDescriptor
+        var descriptor = new OpenIddictApplicationDescriptor
         {
             ClientId = "oneid-dev-client",
             ClientType = ClientTypes.Public,
@@ -77,17 +75,25 @@ internal static class DevSeeder
                 Permissions.Endpoints.Authorization,
                 Permissions.Endpoints.Token,
                 Permissions.GrantTypes.AuthorizationCode,
+                Permissions.GrantTypes.Password,
                 Permissions.GrantTypes.RefreshToken,
                 Permissions.ResponseTypes.Code,
                 Permissions.Scopes.Email,
                 Permissions.Scopes.Profile,
                 Permissions.Scopes.Roles,
+                $"{Permissions.Prefixes.Scope}offline_access",
                 $"{Permissions.Prefixes.Scope}openid",
             },
             Requirements =
             {
                 Requirements.Features.ProofKeyForCodeExchange,
             },
-        });
+        };
+
+        var existing = await manager.FindByClientIdAsync("oneid-dev-client");
+        if (existing is null)
+            await manager.CreateAsync(descriptor);
+        else
+            await manager.UpdateAsync(existing, descriptor);
     }
 }

@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OneId.Server.Application.Common;
+using OneId.Server.Domain.Entities;
 using OneId.Server.Infrastructure.Caching;
 using OneId.Server.Infrastructure.Logging;
 using OneId.Server.Infrastructure.Middleware;
@@ -62,6 +64,7 @@ try
     // outside Infrastructure/Caching/ and is enforced by InternalBoundaryTests.cs.
     builder.Services.AddMemoryCache();
     builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
+    builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 
     // AR-5: ITenantContext MUST precede OpenIddict and EF Core — see architecture.md
     builder.Services.AddScoped<TenantContext>();
@@ -95,13 +98,15 @@ try
             options.AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange();
             options.AllowClientCredentialsFlow();
             options.AllowRefreshTokenFlow();
+            options.AllowPasswordFlow();
 
             // Scopes
             options.RegisterScopes(
                 OpenIddictConstants.Scopes.OpenId,
                 OpenIddictConstants.Scopes.Email,
                 OpenIddictConstants.Scopes.Profile,
-                OpenIddictConstants.Scopes.Roles);
+                OpenIddictConstants.Scopes.Roles,
+                OpenIddictConstants.Scopes.OfflineAccess);
 
             // Token lifetimes: access 15 min (NFR-2 budget), refresh 7 days minimum
             options.SetAccessTokenLifetime(TimeSpan.FromMinutes(15));

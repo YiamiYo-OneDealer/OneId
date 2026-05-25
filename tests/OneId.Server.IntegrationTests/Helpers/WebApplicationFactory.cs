@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using OneId.Server.Infrastructure.Persistence;
+using OneId.Server.Infrastructure.Persistence.Seeds;
+using OpenIddict.Abstractions;
 using Respawn;
 using Respawn.Graph;
 using Testcontainers.PostgreSql;
@@ -69,6 +71,12 @@ public sealed class OneIdWebApplicationFactory : WebApplicationFactory<Program>,
         await using var conn = new NpgsqlConnection(_dbContainer.GetConnectionString());
         await conn.OpenAsync();
         await _respawner.ResetAsync(conn);
+
+        // Re-seed dev data (Tenant + User) after each reset so tests always have a known starting state.
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+        await DevSeeder.SeedAsync(db, manager);
     }
 
     async Task IAsyncLifetime.DisposeAsync()
