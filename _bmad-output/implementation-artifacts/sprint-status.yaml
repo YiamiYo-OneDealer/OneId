@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-24  # 5c-4 done
+last_updated: 2026-05-25  # 2-1 review
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -61,8 +61,8 @@ development_status:
   # [PHASE 2] Epic 2: Working Authentication
   # (after Epic 5a — auth connects to the already-built shell)
   # ─────────────────────────────────────────────────────────────────────────
-  epic-2: backlog
-  2-1-openiddict-configuration-and-oidc-discovery: backlog
+  epic-2: in-progress
+  2-1-openiddict-configuration-and-oidc-discovery: review
   2-2-password-authentication-and-account-lockout: backlog
   2-3-totp-mfa-enrollment-and-challenge: backlog
   2-4-jwt-issuance-with-itokenclaimsenricher-pipeline: backlog

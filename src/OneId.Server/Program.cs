@@ -1,18 +1,30 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OneId.Server.Application.Common;
 using OneId.Server.Infrastructure.Caching;
 using OneId.Server.Infrastructure.Logging;
 using OneId.Server.Infrastructure.Middleware;
 using OneId.Server.Infrastructure.Persistence;
 using OneId.Server.Infrastructure.Persistence.Seeds;
+using OpenIddict.Abstractions;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Formatting.Json;
+using System.Security.Cryptography;
 
-// Bootstrap logger: captures startup logs before host is built
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .CreateBootstrapLogger();
+// Bootstrap logger: captures startup logs before host is built.
+// Wrapped in try-catch: in-process test scenarios may start multiple Program instances,
+// and Serilog's static logger can only be initialized once per process.
+try
+{
+    Log.Logger = new LoggerConfiguration()
+        .WriteTo.Console()
+        .CreateBootstrapLogger();
+}
+catch (InvalidOperationException)
+{
+    // Logger already frozen — proceeding with existing logger
+}
 
 try
 {
@@ -61,10 +73,76 @@ try
         options
             .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured."))
-            .UseSnakeCaseNamingConvention());
+            .UseSnakeCaseNamingConvention()
+            .UseOpenIddict()); // AR-5 STEP 2.5: registers OpenIddict entity configurations in AppDbContext
 
-    // AR-5 STEP 3: OpenIddict registered AFTER EF Core — Story 2.1 wires this
-    // TODO Story 2.1: builder.Services.AddOpenIddict()...
+    // AR-5 STEP 3: OpenIddict registered AFTER EF Core and ITenantContext — see architecture.md
+    builder.Services.AddOpenIddict()
+        .AddCore(options =>
+        {
+            options.UseEntityFrameworkCore()
+                   .UseDbContext<AppDbContext>();
+        })
+        .AddServer(options =>
+        {
+            // Endpoints
+            options.SetAuthorizationEndpointUris("/connect/authorize")
+                   .SetTokenEndpointUris("/connect/token")
+                   .SetIntrospectionEndpointUris("/connect/introspect")
+                   .SetUserInfoEndpointUris("/connect/userinfo");
+
+            // Flows
+            options.AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange();
+            options.AllowClientCredentialsFlow();
+            options.AllowRefreshTokenFlow();
+
+            // Scopes
+            options.RegisterScopes(
+                OpenIddictConstants.Scopes.OpenId,
+                OpenIddictConstants.Scopes.Email,
+                OpenIddictConstants.Scopes.Profile,
+                OpenIddictConstants.Scopes.Roles);
+
+            // Token lifetimes: access 15 min (NFR-2 budget), refresh 7 days minimum
+            options.SetAccessTokenLifetime(TimeSpan.FromMinutes(15));
+            options.SetRefreshTokenLifetime(TimeSpan.FromDays(7));
+
+            // File-based stable RS256 signing key — survives app restarts (enforced by DevSigningKeyStabilityTest)
+            var keysDir = Path.Combine(builder.Environment.ContentRootPath, "keys");
+            Directory.CreateDirectory(keysDir);
+            var keyPath = Path.Combine(keysDir, "dev-signing.key");
+
+            if (!File.Exists(keyPath))
+            {
+                using var newRsa = RSA.Create(2048);
+                File.WriteAllText(keyPath, Convert.ToBase64String(newRsa.ExportRSAPrivateKey()));
+            }
+
+            // Load into a long-lived RSA instance — must NOT be in a 'using' block:
+            // OpenIddict holds a reference for the application lifetime.
+            var persistedRsa = RSA.Create();
+            persistedRsa.ImportRSAPrivateKey(Convert.FromBase64String(File.ReadAllText(keyPath)), out _);
+            options.AddSigningKey(new RsaSecurityKey(persistedRsa) { KeyId = "dev-rs256-key" });
+
+            // Dev encryption: ephemeral (refresh tokens are short-lived; no cross-restart persistence needed in dev)
+            options.AddEphemeralEncryptionKey();
+
+            // Standard JWT format (not JWE) — required for OneDealer v2 introspection compatibility
+            options.DisableAccessTokenEncryption();
+
+            // Passthrough: Stories 2.2+ add controllers for auth/token.
+            // Discovery (/.well-known/openid-configuration) and JWKS are fully served by OpenIddict.
+            // DisableTransportSecurityRequirement: allows HTTP in dev/test — production must use HTTPS.
+            options.UseAspNetCore()
+                   .EnableAuthorizationEndpointPassthrough()
+                   .EnableTokenEndpointPassthrough()
+                   .DisableTransportSecurityRequirement();
+        })
+        .AddValidation(options =>
+        {
+            options.UseLocalServer();
+            options.UseAspNetCore();
+        });
 
     builder.Services.AddHealthChecks();
     builder.Services.AddProblemDetails();
@@ -77,8 +155,9 @@ try
 
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
         await db.Database.MigrateAsync();
-        await DevSeeder.SeedAsync(db);
+        await DevSeeder.SeedAsync(db, manager);
     }
 
     // Must be first — wraps entire pipeline to catch exceptions from any layer

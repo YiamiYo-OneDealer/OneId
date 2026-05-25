@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.Abstractions;
 using OneId.Server.Domain.Entities;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OneId.Server.Infrastructure.Persistence.Seeds;
 
@@ -11,15 +13,12 @@ internal static class DevSeeder
     public static readonly Guid AdminUserId  = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000002");
 
     // AR-6: Runs only after global query filters are active.
-    // Called from Program.cs inside the IsDevelopment block, after db.Database.MigrateAsync().
-    public static async Task SeedAsync(AppDbContext db)
+    // Called from Program.cs inside the IsDevelopment/Docker block, after db.Database.MigrateAsync().
+    public static async Task SeedAsync(AppDbContext db, IOpenIddictApplicationManager manager)
     {
         await SeedDevTenantAsync(db);
         await SeedAdminUserAsync(db);
-        // TODO Story 2.1: after AddOpenIddict() is registered, inject IOpenIddictApplicationManager
-        // here and call SeedOpenIddictClientAsync(manager).
-        // Registration: client_id = "oneid-dev-client", redirect_uri = "http://localhost:3000/callback"
-        // Use OpenIddictApplicationDescriptor with ClientType = Public (SPA PKCE flow).
+        await SeedOpenIddictClientAsync(manager);
     }
 
     private static async Task SeedDevTenantAsync(AppDbContext db)
@@ -61,5 +60,34 @@ internal static class DevSeeder
 
         db.Users.Add(user);
         await db.SaveChangesAsync();
+    }
+
+    private static async Task SeedOpenIddictClientAsync(IOpenIddictApplicationManager manager)
+    {
+        if (await manager.FindByClientIdAsync("oneid-dev-client") is not null) return;
+
+        await manager.CreateAsync(new OpenIddictApplicationDescriptor
+        {
+            ClientId = "oneid-dev-client",
+            ClientType = ClientTypes.Public,
+            DisplayName = "OneId Dev SPA Client",
+            RedirectUris = { new Uri("http://localhost:3000/callback") },
+            Permissions =
+            {
+                Permissions.Endpoints.Authorization,
+                Permissions.Endpoints.Token,
+                Permissions.GrantTypes.AuthorizationCode,
+                Permissions.GrantTypes.RefreshToken,
+                Permissions.ResponseTypes.Code,
+                Permissions.Scopes.Email,
+                Permissions.Scopes.Profile,
+                Permissions.Scopes.Roles,
+                $"{Permissions.Prefixes.Scope}openid",
+            },
+            Requirements =
+            {
+                Requirements.Features.ProofKeyForCodeExchange,
+            },
+        });
     }
 }

@@ -38,7 +38,12 @@ public sealed class OneIdWebApplicationFactory : WebApplicationFactory<Program>,
         await conn.OpenAsync();
         _respawner = await Respawner.CreateAsync(conn, new RespawnerOptions
         {
-            TablesToIgnore = [new Table("__EFMigrationsHistory")]
+            TablesToIgnore =
+            [
+                new Table("__EFMigrationsHistory"),
+                new Table("OpenIddictApplications"), // client registrations are reference data
+                new Table("OpenIddictScopes"),        // scope registrations are reference data
+            ]
         });
     }
 
@@ -54,7 +59,8 @@ public sealed class OneIdWebApplicationFactory : WebApplicationFactory<Program>,
             services.RemoveAll<DbContextOptions<AppDbContext>>();
             services.AddDbContext<AppDbContext>(opt =>
                 opt.UseNpgsql(_dbContainer.GetConnectionString())
-                   .UseSnakeCaseNamingConvention());
+                   .UseSnakeCaseNamingConvention()
+                   .UseOpenIddict());
         });
     }
 

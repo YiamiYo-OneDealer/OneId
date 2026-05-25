@@ -63,7 +63,8 @@ public class OneIdTestFactory : WebApplicationFactory<Program>
             // Replace PostgreSQL DbContext with InMemory — no real DB needed for ordering tests
             services.RemoveAll<DbContextOptions<AppDbContext>>();
             services.AddDbContext<AppDbContext>(opt =>
-                opt.UseInMemoryDatabase("TestDb_RegistrationOrder"));
+                opt.UseInMemoryDatabase("TestDb_RegistrationOrder")
+                   .UseOpenIddict());
 
             // Test auth scheme — injects tid Guid claim without a real JWT
             services.AddAuthentication(defaultScheme: "Test")
