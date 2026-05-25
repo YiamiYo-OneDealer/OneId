@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
@@ -8,14 +9,23 @@ using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using OneId.Server.Domain.Entities;
 using OneId.Server.Infrastructure.Persistence;
+using OtpNet;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OneId.Server.Controllers;
 
 [ApiController]
-public class ConnectController(AppDbContext db, IPasswordHasher<User> hasher) : ControllerBase
+public class ConnectController(
+    AppDbContext db,
+    IPasswordHasher<User> hasher,
+    IDataProtectionProvider dp) : ControllerBase
 {
+    private IDataProtector TotpProtector => dp.CreateProtector("totp.secret.v1");
+    private ITimeLimitedDataProtector MfaSessionProtector =>
+        dp.CreateProtector("mfa.session.v1").ToTimeLimitedDataProtector();
+
     [HttpPost("~/connect/token")]
     [Consumes("application/x-www-form-urlencoded")]
     [IgnoreAntiforgeryToken]
@@ -24,11 +34,19 @@ public class ConnectController(AppDbContext db, IPasswordHasher<User> hasher) : 
         var request = HttpContext.GetOpenIddictServerRequest()
             ?? throw new InvalidOperationException("OpenIddict server request is null.");
 
-        if (!request.IsPasswordGrantType())
-            return Forbid(
-                BuildForbidProperties("unsupported_grant_type", "The grant type is not supported."),
-                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        if (request.IsPasswordGrantType())
+            return await HandlePasswordGrantAsync(request, ct);
 
+        if (request.GrantType == "urn:oneid:mfa")
+            return await HandleMfaGrantAsync(request, ct);
+
+        return Forbid(
+            BuildForbidProperties("unsupported_grant_type", "The grant type is not supported."),
+            OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    }
+
+    private async Task<IActionResult> HandlePasswordGrantAsync(OpenIddictRequest request, CancellationToken ct)
+    {
         var username = request.Username ?? string.Empty;
 
         // Look up user ignoring tenant filter — tenant context not yet available during password grant
@@ -56,10 +74,107 @@ public class ConnectController(AppDbContext db, IPasswordHasher<User> hasher) : 
             return ForbidInvalidGrant();
         }
 
-        // Success — reset lockout counters
+        // Reset lockout counters on successful password check
         user.AccessFailedCount = 0;
         user.LockoutEnd = null;
         await db.SaveChangesAsync(ct);
+
+        // MFA gate: if enrolled (or not yet enrolled), require a TOTP challenge step
+        var mfaToken = MfaSessionProtector.Protect(user.Id.ToString(), TimeSpan.FromMinutes(5));
+
+        if (user.IsTotpEnrolled)
+        {
+            return Ok(new
+            {
+                mfa_required = true,
+                mfa_session_token = mfaToken,
+            });
+        }
+
+        // Not enrolled yet — return enrollment URI so client can set up authenticator
+        var secretBytes = KeyGeneration.GenerateRandomKey(20);
+        var base32Secret = Base32Encoding.ToString(secretBytes);
+
+        // Persist the unprotected secret (will be confirmed + protected in MFA grant step)
+        // Store base32 plaintext temporarily protected so we can read it back in MFA step
+        user.TotpSecret = TotpProtector.Protect(base32Secret);
+        await db.SaveChangesAsync(ct);
+
+        var enrollmentUri = $"otpauth://totp/OneId:{Uri.EscapeDataString(user.Email)}?secret={base32Secret}&issuer=OneId";
+
+        return Ok(new
+        {
+            mfa_required = true,
+            mfa_session_token = mfaToken,
+            totp_enrollment_uri = enrollmentUri,
+        });
+    }
+
+    private async Task<IActionResult> HandleMfaGrantAsync(OpenIddictRequest request, CancellationToken ct)
+    {
+        var mfaSessionToken = (string?)request.GetParameter("mfa_session_token");
+        var totpCode = (string?)request.GetParameter("totp_code");
+
+        if (string.IsNullOrEmpty(mfaSessionToken) || string.IsNullOrEmpty(totpCode))
+            return ForbidInvalidGrant();
+
+        // Validate the time-limited session token (expires in 5 min)
+        string userId;
+        try
+        {
+            userId = MfaSessionProtector.Unprotect(mfaSessionToken);
+        }
+        catch (CryptographicException)
+        {
+            return ForbidInvalidGrant();
+        }
+
+        if (!Guid.TryParse(userId, out var userGuid))
+            return ForbidInvalidGrant();
+
+        var user = await db.Users.IgnoreQueryFilters()
+            .Where(u => u.Id == userGuid && u.DeletedAt == null)
+            .FirstOrDefaultAsync(ct);
+
+        if (user is null || string.IsNullOrEmpty(user.TotpSecret))
+            return ForbidInvalidGrant();
+
+        // Decrypt TOTP secret and verify code
+        string base32Secret;
+        try
+        {
+            base32Secret = TotpProtector.Unprotect(user.TotpSecret);
+        }
+        catch (CryptographicException)
+        {
+            return ForbidInvalidGrant();
+        }
+
+        var totp = new Totp(Base32Encoding.ToBytes(base32Secret));
+        var isValid = totp.VerifyTotp(
+            totpCode,
+            out long timeStepMatched,
+            new VerificationWindow(previous: 1, future: 0));
+
+        if (!isValid)
+            return ForbidInvalidGrant();
+
+        // Replay prevention: reject if same time step was already used
+        if (user.TotpLastUsedTimeStep.HasValue && user.TotpLastUsedTimeStep.Value == timeStepMatched)
+            return ForbidInvalidGrant();
+
+        // Mark enrolled (first-time enrollment completes here) and record used time step
+        user.IsTotpEnrolled = true;
+        user.TotpLastUsedTimeStep = timeStepMatched;
+
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Accept optimistic loss — replay prevention still triggers on subsequent requests
+        }
 
         var identity = new ClaimsIdentity(
             authenticationType: TokenValidationParameters.DefaultAuthenticationType,

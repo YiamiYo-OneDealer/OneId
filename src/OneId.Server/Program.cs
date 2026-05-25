@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -99,6 +100,7 @@ try
             options.AllowClientCredentialsFlow();
             options.AllowRefreshTokenFlow();
             options.AllowPasswordFlow();
+            options.AllowCustomFlow("urn:oneid:mfa");
 
             // Scopes
             options.RegisterScopes(
@@ -161,8 +163,9 @@ try
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+        var dp = app.Services.GetRequiredService<IDataProtectionProvider>();
         await db.Database.MigrateAsync();
-        await DevSeeder.SeedAsync(db, manager);
+        await DevSeeder.SeedAsync(db, manager, dp);
     }
 
     // Must be first — wraps entire pipeline to catch exceptions from any layer

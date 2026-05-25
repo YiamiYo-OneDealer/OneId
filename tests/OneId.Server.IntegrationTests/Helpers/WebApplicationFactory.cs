@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -76,7 +77,8 @@ public sealed class OneIdWebApplicationFactory : WebApplicationFactory<Program>,
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
-        await DevSeeder.SeedAsync(db, manager);
+        var dp = scope.ServiceProvider.GetRequiredService<IDataProtectionProvider>();
+        await DevSeeder.SeedAsync(db, manager, dp);
     }
 
     async Task IAsyncLifetime.DisposeAsync()

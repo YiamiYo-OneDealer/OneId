@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
@@ -9,15 +10,20 @@ namespace OneId.Server.Infrastructure.Persistence.Seeds;
 public static class DevSeeder
 {
     // Stable well-known IDs — idempotency and TestTokenFactory alignment.
-    public static readonly Guid DevTenantId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
+    public static readonly Guid DevTenantId  = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
     public static readonly Guid AdminUserId  = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000002");
+    public static readonly Guid TotpUserId   = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000003");
+    public static readonly string TotpUserEmail = "totp@oneid.dev";
+    // Standard OtpNet test vector — stable base32 secret for pre-enrolled integration test user.
+    public const string TotpUserTotpSecret = "JBSWY3DPEHPK3PXP";
 
     // AR-6: Runs only after global query filters are active.
     // Called from Program.cs inside the IsDevelopment/Docker block, after db.Database.MigrateAsync().
-    public static async Task SeedAsync(AppDbContext db, IOpenIddictApplicationManager manager)
+    public static async Task SeedAsync(AppDbContext db, IOpenIddictApplicationManager manager, IDataProtectionProvider dp)
     {
         await SeedDevTenantAsync(db);
         await SeedAdminUserAsync(db);
+        await SeedTotpUserAsync(db, dp);
         await SeedOpenIddictClientAsync(manager);
     }
 
@@ -62,6 +68,28 @@ public static class DevSeeder
         await db.SaveChangesAsync();
     }
 
+    private static async Task SeedTotpUserAsync(AppDbContext db, IDataProtectionProvider dp)
+    {
+        var exists = await db.Users.IgnoreQueryFilters()
+            .AnyAsync(u => u.Id == TotpUserId);
+        if (exists) return;
+
+        var user = new User
+        {
+            Id = TotpUserId,
+            TenantId = DevTenantId,
+            Email = TotpUserEmail,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+            IsTotpEnrolled = true,
+            TotpSecret = dp.CreateProtector("totp.secret.v1").Protect(TotpUserTotpSecret),
+        };
+        user.PasswordHash = new PasswordHasher<User>().HashPassword(user, "Admin123!");
+
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+    }
+
     private static async Task SeedOpenIddictClientAsync(IOpenIddictApplicationManager manager)
     {
         var descriptor = new OpenIddictApplicationDescriptor
@@ -77,6 +105,7 @@ public static class DevSeeder
                 Permissions.GrantTypes.AuthorizationCode,
                 Permissions.GrantTypes.Password,
                 Permissions.GrantTypes.RefreshToken,
+                $"{Permissions.Prefixes.GrantType}urn:oneid:mfa",
                 Permissions.ResponseTypes.Code,
                 Permissions.Scopes.Email,
                 Permissions.Scopes.Profile,

@@ -18,6 +18,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.PasswordHash).HasMaxLength(500);
         builder.Property(u => u.AccessFailedCount).IsRequired().HasDefaultValue(0);
         builder.Property(u => u.LockoutEnd);
+        builder.Property(u => u.TotpSecret).HasMaxLength(500);
+        builder.Property(u => u.IsTotpEnrolled).IsRequired().HasDefaultValue(false);
+        builder.Property(u => u.TotpLastUsedTimeStep);
 
         // Unique email per tenant (not globally — same email can exist across tenants)
         builder.HasIndex(u => new { u.TenantId, u.Email })

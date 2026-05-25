@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OneId.Server.Infrastructure.Persistence;
+using OneId.Server.Infrastructure.Persistence.Seeds;
 using OneId.Server.IntegrationTests.Helpers;
+using OtpNet;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -26,10 +28,33 @@ public class PasswordAuthTests(OneIdWebApplicationFactory factory) : Integration
     [Fact]
     public async Task ValidCredentials_ReturnsAccessTokenAndRefreshToken()
     {
-        var response = await Client.PostAsync("/connect/token", ValidTokenRequest());
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        // Story 2.3: all password grants go through MFA gate — use the pre-enrolled TOTP user.
+        // Step 1: password grant → mfa_required response with session token
+        var step1 = await Client.PostAsync("/connect/token", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["grant_type"] = "password",
+            ["username"] = DevSeeder.TotpUserEmail,
+            ["password"] = "Admin123!",
+            ["client_id"] = "oneid-dev-client",
+            ["scope"] = "openid email profile offline_access",
+        }));
+        Assert.Equal(HttpStatusCode.OK, step1.StatusCode);
+        var step1Body = await step1.Content.ReadFromJsonAsync<JsonElement>();
+        var mfaToken = step1Body.GetProperty("mfa_session_token").GetString()!;
 
-        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        // Step 2: MFA grant with a valid TOTP code → access token
+        var totpCode = new Totp(Base32Encoding.ToBytes(DevSeeder.TotpUserTotpSecret)).ComputeTotp(DateTime.UtcNow);
+        var step2 = await Client.PostAsync("/connect/token", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["grant_type"] = "urn:oneid:mfa",
+            ["mfa_session_token"] = mfaToken,
+            ["totp_code"] = totpCode,
+            ["client_id"] = "oneid-dev-client",
+            ["scope"] = "openid email profile offline_access",
+        }));
+        Assert.Equal(HttpStatusCode.OK, step2.StatusCode);
+
+        var body = await step2.Content.ReadFromJsonAsync<JsonElement>();
         Assert.True(body.TryGetProperty("access_token", out _), "access_token missing");
         Assert.True(body.TryGetProperty("refresh_token", out _), "refresh_token missing");
         Assert.True(body.TryGetProperty("expires_in", out _), "expires_in missing");

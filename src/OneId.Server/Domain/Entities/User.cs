@@ -11,4 +11,7 @@ public class User
     public string? PasswordHash { get; set; }
     public int AccessFailedCount { get; set; }
     public DateTimeOffset? LockoutEnd { get; set; }
+    public string? TotpSecret { get; set; }
+    public bool IsTotpEnrolled { get; set; }
+    public long? TotpLastUsedTimeStep { get; set; }
 }
