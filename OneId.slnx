@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/OneId.SampleClient/OneId.SampleClient.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/OneId.Server/OneId.Server.csproj" />
   </Folder>

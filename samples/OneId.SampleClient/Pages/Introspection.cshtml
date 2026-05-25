@@ -1,0 +1,44 @@
+@page
+@model IntrospectionModel
+
+@{
+    ViewData["Title"] = "Token Introspection";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Token Introspection</h4>
+    <a asp-page="/Claims" class="btn btn-outline-secondary btn-sm">← Back to Claims</a>
+</div>
+
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-warning">
+        <strong>⚠️ Introspection unavailable</strong><br />
+        @Model.ErrorMessage
+    </div>
+    <p class="text-muted small">
+        The introspection endpoint (<code>/connect/introspect</code>) is registered but may not yet have a
+        backing controller. Once implemented, this page will display the full introspection response
+        confirming the token's active status, subject, scopes, and expiry.
+    </p>
+}
+
+@if (Model.ResultJson is not null)
+{
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between">
+            <span>Response from <code>POST /connect/introspect</code></span>
+            @if (Model.IsActive)
+            {
+                <span class="badge bg-success">active: true</span>
+            }
+            else
+            {
+                <span class="badge bg-danger">active: false</span>
+            }
+        </div>
+        <div class="card-body p-0">
+            <pre class="json-output mb-0 rounded-0 rounded-bottom">@Model.ResultJson</pre>
+        </div>
+    </div>
+}

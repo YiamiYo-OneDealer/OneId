@@ -25,6 +25,7 @@ public static class DevSeeder
         await SeedAdminUserAsync(db);
         await SeedTotpUserAsync(db, dp);
         await SeedOpenIddictClientAsync(manager);
+        await SeedSampleAppClientAsync(manager);
     }
 
     private static async Task SeedDevTenantAsync(AppDbContext db)
@@ -120,6 +121,31 @@ public static class DevSeeder
         };
 
         var existing = await manager.FindByClientIdAsync("oneid-dev-client");
+        if (existing is null)
+            await manager.CreateAsync(descriptor);
+        else
+            await manager.UpdateAsync(existing, descriptor);
+    }
+
+    /// <summary>
+    /// Confidential client used by the sample app to call the introspection endpoint.
+    /// Acts as a resource server — no user-facing grants, only introspection permission.
+    /// </summary>
+    private static async Task SeedSampleAppClientAsync(IOpenIddictApplicationManager manager)
+    {
+        var descriptor = new OpenIddictApplicationDescriptor
+        {
+            ClientId = "oneid-sample-app",
+            ClientSecret = "sample-app-secret",
+            ClientType = ClientTypes.Confidential,
+            DisplayName = "OneId Sample App (resource server)",
+            Permissions =
+            {
+                Permissions.Endpoints.Introspection,
+            },
+        };
+
+        var existing = await manager.FindByClientIdAsync("oneid-sample-app");
         if (existing is null)
             await manager.CreateAsync(descriptor);
         else

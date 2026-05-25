@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- No extra packages needed — session, HttpClient, and Razor Pages ship with the SDK. -->
+
+</Project>

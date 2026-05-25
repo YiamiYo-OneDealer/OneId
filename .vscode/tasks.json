@@ -52,6 +52,28 @@
       }
     },
     {
+      "label": "dotnet: build sample",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/samples/OneId.SampleClient/OneId.SampleClient.csproj",
+        "--configuration",
+        "Debug"
+      ],
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "start: server + sample deps",
+      "dependsOn": ["docker: start deps", "dotnet: build", "dotnet: build sample"],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
       "label": "start: all deps",
       "dependsOn": ["docker: start deps", "npm: dev server", "dotnet: build"],
       "dependsOrder": "parallel",

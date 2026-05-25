@@ -1,0 +1,42 @@
+@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="card-title mb-4">Sign In</h4>
+
+                @if (Model.ErrorMessage is not null)
+                {
+                    <div class="alert alert-danger">@Model.ErrorMessage</div>
+                }
+
+                <form method="post">
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">Email</label>
+                        <input asp-for="Email" class="form-control" type="email" autocomplete="username" required />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Password</label>
+                        <input asp-for="Password" class="form-control" type="password" autocomplete="current-password" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Sign In</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3 border-secondary">
+            <div class="card-body small text-muted">
+                <strong>Dev credentials</strong><br />
+                <code>admin@oneid.dev</code> / <code>Admin123!</code> — TOTP enrollment on first login<br />
+                <code>totp@oneid.dev</code> / <code>Admin123!</code> — TOTP pre-enrolled
+                (<a href="https://totp.danhersam.com/" target="_blank">use secret <code>JBSWY3DPEHPK3PXP</code></a>)
+            </div>
+        </div>
+    </div>
+</div>
