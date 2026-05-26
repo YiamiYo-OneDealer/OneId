@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using OpenIddict.Abstractions;
 using OneId.Server.Domain.Entities;
+using OneId.Server.Domain.Enums;
+using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OneId.Server.Infrastructure.Persistence.Seeds;
@@ -26,6 +27,29 @@ public static class DevSeeder
         await SeedTotpUserAsync(db, dp);
         await SeedOpenIddictClientAsync(manager);
         await SeedSampleAppClientAsync(manager);
+        await SeedPermissionsAsync(db);
+    }
+
+    internal static async Task SeedPermissionsAsync(AppDbContext db)
+    {
+        foreach (var entry in PermissionCatalog.SeedEntries)
+        {
+            var exists = await db.Permissions
+                .AnyAsync(p => p.PermissionId == entry.PermissionId);
+            if (exists) continue;
+
+            db.Permissions.Add(new Permission
+            {
+                Id = Guid.NewGuid(),
+                PermissionId = entry.PermissionId,
+                Label = entry.Label,
+                Status = PermissionStatus.Active,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+        }
+
+        await db.SaveChangesAsync();
     }
 
     private static async Task SeedDevTenantAsync(AppDbContext db)
@@ -84,6 +108,7 @@ public static class DevSeeder
             UpdatedAt = DateTimeOffset.UtcNow,
             IsTotpEnrolled = true,
             IsTenantAdmin = true,
+            IsInternalAdmin = true,
             TotpSecret = dp.CreateProtector("totp.secret.v1").Protect(TotpUserTotpSecret),
         };
         user.PasswordHash = new PasswordHasher<User>().HashPassword(user, "Admin123!");

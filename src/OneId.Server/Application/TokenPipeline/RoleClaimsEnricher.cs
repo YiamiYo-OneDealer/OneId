@@ -24,5 +24,14 @@ public sealed class RoleClaimsEnricher(AppDbContext db) : ITokenClaimsEnricher
                 ClaimValueTypes.String,
                 "OpenIddict"));
         }
+
+        if (user?.IsInternalAdmin == true)
+        {
+            identity.AddClaim(new Claim(
+                OpenIddictConstants.Claims.Role,
+                "InternalAdmin",
+                ClaimValueTypes.String,
+                "OpenIddict"));
+        }
     }
 }

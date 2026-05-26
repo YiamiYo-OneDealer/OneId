@@ -12,6 +12,7 @@ public class AppDbContext(
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<User> Users => Set<User>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<Permission> Permissions => Set<Permission>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -39,7 +40,8 @@ public class AppDbContext(
         // Each epic that introduces a new mutable entity is responsible for adding it here.
         // Story 1.3b adds: Tenant, User
         // Epic 3 adds: License, IdpConfiguration, AuditLog
-        // Epic 4a adds: Role, RoleSet, Group, Permission, DimensionValue, UserDimensionAssignment
+        // Story 4a.1 adds: Permission (via PermissionConfiguration)
+        // Epic 4a adds: Role, RoleSet, Group, DimensionValue, UserDimensionAssignment
         // Note: xmin is a PostgreSQL system column. No migration column is needed. In-memory provider ignores it.
     }
 }

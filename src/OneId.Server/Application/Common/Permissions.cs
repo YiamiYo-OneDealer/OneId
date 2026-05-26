@@ -1,8 +1,69 @@
-// Populated in Story 4a.1 — see architecture.md (AR-9)
-// All permission ID constants live here. No inline string literals for permission IDs anywhere in application code.
 namespace OneId.Server.Application.Common;
 
 public static class Permissions
 {
-    // TODO Story 4a.1: Add all od.* permission constants here
+    // Internal Admin — Tenant management (FR-12, FR-14)
+    public const string AdminTenantsView    = "od.admin.tenants.view";
+    public const string AdminTenantsCreate  = "od.admin.tenants.create";
+    public const string AdminTenantsUpdate  = "od.admin.tenants.update";
+    public const string AdminTenantsSuspend = "od.admin.tenants.suspend";
+
+    // Internal Admin — Permission catalog management (FR-6)
+    public const string AdminPermissionsView       = "od.admin.permissions.view";
+    public const string AdminPermissionsCreate     = "od.admin.permissions.create";
+    public const string AdminPermissionsUpdate     = "od.admin.permissions.update";
+    public const string AdminPermissionsDeactivate = "od.admin.permissions.deactivate";
+
+    // Internal Admin — License management (FR-15, FR-19)
+    public const string AdminLicensesView   = "od.admin.licenses.view";
+    public const string AdminLicensesCreate = "od.admin.licenses.create";
+    public const string AdminLicensesUpdate = "od.admin.licenses.update";
+
+    // Internal Admin — IDP federation configuration (FR-16, FR-17)
+    public const string AdminIdpView      = "od.admin.idp.view";
+    public const string AdminIdpConfigure = "od.admin.idp.configure";
+
+    // Tenant Admin — User lifecycle management (FR-14, FR-21)
+    public const string AdminUsersView       = "od.admin.users.view";
+    public const string AdminUsersCreate     = "od.admin.users.create";
+    public const string AdminUsersUpdate     = "od.admin.users.update";
+    public const string AdminUsersDeactivate = "od.admin.users.deactivate";
+    public const string AdminUsersRevoke     = "od.admin.users.revoke";
+
+    // Tenant Admin — Role management (FR-7)
+    public const string AdminRolesView   = "od.admin.roles.view";
+    public const string AdminRolesCreate = "od.admin.roles.create";
+    public const string AdminRolesUpdate = "od.admin.roles.update";
+    public const string AdminRolesDelete = "od.admin.roles.delete";
+
+    // Tenant Admin — Role Set management (FR-8)
+    public const string AdminRoleSetsView   = "od.admin.rolesets.view";
+    public const string AdminRoleSetsCreate = "od.admin.rolesets.create";
+    public const string AdminRoleSetsUpdate = "od.admin.rolesets.update";
+    public const string AdminRoleSetsDelete = "od.admin.rolesets.delete";
+
+    // Tenant Admin — Group management (FR-9)
+    public const string AdminGroupsView          = "od.admin.groups.view";
+    public const string AdminGroupsCreate        = "od.admin.groups.create";
+    public const string AdminGroupsUpdate        = "od.admin.groups.update";
+    public const string AdminGroupsDelete        = "od.admin.groups.delete";
+    public const string AdminGroupsMembersManage = "od.admin.groups.members.manage";
+
+    // Tenant Admin — Dimensional Attribute management (FR-10)
+    public const string AdminDimensionsView   = "od.admin.dimensions.view";
+    public const string AdminDimensionsAssign = "od.admin.dimensions.assign";
+
+    // Audit log read (FR-22)
+    public const string AdminAuditView = "od.admin.audit.view";
+
+    // Business permissions — CRM module
+    public const string CrmRead           = "od.crm.read";
+    public const string CrmWrite          = "od.crm.write";
+    public const string CrmInvoiceCreate  = "od.crm.invoice.create";
+    public const string CrmInvoiceApprove = "od.crm.invoice.approve";
+
+    // Business permissions — Finance module
+    public const string FinanceRead    = "od.finance.read";
+    public const string FinanceWrite   = "od.finance.write";
+    public const string FinanceApprove = "od.finance.approve";
 }

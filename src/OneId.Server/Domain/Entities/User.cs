@@ -17,4 +17,5 @@ public class User
     public string? PasswordResetToken { get; set; }
     public DateTimeOffset? PasswordResetTokenExpiry { get; set; }
     public bool IsTenantAdmin { get; set; }
+    public bool IsInternalAdmin { get; set; }
 }

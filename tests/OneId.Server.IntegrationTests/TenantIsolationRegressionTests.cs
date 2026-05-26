@@ -5,6 +5,11 @@ using OneId.Server.Infrastructure.Persistence;
 using OneId.Server.Infrastructure.Persistence.Seeds;
 using OneId.Server.IntegrationTests.Helpers;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+using OtpNet;
 
 namespace OneId.Server.IntegrationTests;
 
@@ -58,6 +63,55 @@ public class TenantIsolationRegressionTests : TenantIsolationTestBase
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => db.Users.ToListAsync());
+    }
+
+    // AC9: Permission records are global — readable by Internal Admin regardless of tenant context
+    [Fact]
+    public async Task Permissions_AreGlobal_InternalAdminCanReadAllRegardlessOfTenantContext()
+    {
+        var client = await AuthInternalAdminClientAsync();
+        var response = await client.GetAsync("/api/internal/permissions?status=All&pageSize=100");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var totalCount = body.GetProperty("totalCount").GetInt32();
+        // DevSeeder seeds all PermissionCatalog entries — must be present after reset
+        Assert.True(totalCount > 0, "Expected seeded permissions to be visible to Internal Admin");
+    }
+
+    private async Task<HttpClient> AuthInternalAdminClientAsync()
+    {
+        var step1 = await Client.PostAsync("/connect/token",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "password",
+                ["username"] = DevSeeder.TotpUserEmail,
+                ["password"] = "Admin123!",
+                ["client_id"] = "oneid-dev-client",
+                ["scope"] = "openid",
+            }));
+        step1.EnsureSuccessStatusCode();
+        var mfaToken = (await step1.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("mfa_session_token").GetString()!;
+
+        var step2 = await Client.PostAsync("/connect/token",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "urn:oneid:mfa",
+                ["mfa_session_token"] = mfaToken,
+                ["totp_code"] = new Totp(Base32Encoding.ToBytes(DevSeeder.TotpUserTotpSecret))
+                                    .ComputeTotp(DateTime.UtcNow),
+                ["client_id"] = "oneid-dev-client",
+                ["scope"] = "openid",
+            }));
+        step2.EnsureSuccessStatusCode();
+        var token = (await step2.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("access_token").GetString()!;
+
+        var client = Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", token);
+        return client;
     }
 }
 
