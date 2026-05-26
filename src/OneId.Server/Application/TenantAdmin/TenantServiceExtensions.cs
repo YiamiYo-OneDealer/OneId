@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using OneId.Server.Application.TenantAdmin.Dimensions.Commands;
+using OneId.Server.Application.TenantAdmin.Dimensions.Queries;
 using OneId.Server.Application.TenantAdmin.Groups.Commands;
 using OneId.Server.Application.TenantAdmin.Groups.Queries;
 using OneId.Server.Application.TenantAdmin.Roles.Commands;
@@ -29,6 +31,9 @@ public static class TenantServiceExtensions
         services.AddScoped<DeleteGroupHandler>();
         services.AddScoped<AddGroupMemberHandler>();
         services.AddScoped<RemoveGroupMemberHandler>();
+        services.AddScoped<ListDimensionValuesHandler>();
+        services.AddScoped<AddDimensionValueHandler>();
+        services.AddScoped<DeactivateDimensionValueHandler>();
         return services;
     }
 }

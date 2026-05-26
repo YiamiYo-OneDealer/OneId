@@ -303,6 +303,77 @@ public class GroupIsolationRegressionTests(OneIdWebApplicationFactory factory) :
 }
 
 /// <summary>
+/// Story 4a.5: DimensionValue isolation regression tests.
+/// </summary>
+[Collection("IntegrationTests")]
+[Trait("Category", "TenantIsolation")]
+public class DimensionValueIsolationRegressionTests(OneIdWebApplicationFactory factory) : TenantIsolationTestBase(factory)
+{
+    [Fact]
+    public async Task DimensionValue_IsNotVisible_FromOtherTenant()
+    {
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var tenantCtx = scope.ServiceProvider.GetRequiredService<TenantContext>();
+            tenantCtx.Initialize(DevSeeder.DevTenantId);
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.DimensionValues.Add(new OneId.Server.Domain.Entities.DimensionValue
+            {
+                Id = Guid.NewGuid(),
+                TenantId = DevSeeder.DevTenantId,
+                Axis = OneId.Server.Domain.Enums.DimensionAxis.Company,
+                Value = $"IsolationTestCompany-{Guid.NewGuid():N}",
+                IsActive = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var tenantBId = await SeedSecondTenantAsync();
+
+        using var scope2 = Factory.Services.CreateScope();
+        var tenantCtx2 = scope2.ServiceProvider.GetRequiredService<TenantContext>();
+        tenantCtx2.Initialize(tenantBId);
+        var db2 = scope2.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var values = await db2.DimensionValues.ToListAsync();
+        Assert.Empty(values);
+    }
+
+    [Fact]
+    public async Task DimensionValue_IsVisible_FromOwningTenant()
+    {
+        var valueId = Guid.NewGuid();
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var tenantCtx = scope.ServiceProvider.GetRequiredService<TenantContext>();
+            tenantCtx.Initialize(DevSeeder.DevTenantId);
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.DimensionValues.Add(new OneId.Server.Domain.Entities.DimensionValue
+            {
+                Id = valueId,
+                TenantId = DevSeeder.DevTenantId,
+                Axis = OneId.Server.Domain.Enums.DimensionAxis.Location,
+                Value = $"VisibleLocation-{Guid.NewGuid():N}",
+                IsActive = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        using var scope2 = Factory.Services.CreateScope();
+        var tenantCtx2 = scope2.ServiceProvider.GetRequiredService<TenantContext>();
+        tenantCtx2.Initialize(DevSeeder.DevTenantId);
+        var db2 = scope2.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var values = await db2.DimensionValues.Where(d => d.Id == valueId).ToListAsync();
+        Assert.NotEmpty(values);
+    }
+}
+
+/// <summary>
 /// Base class for tenant isolation regression tests.
 /// Provides seed helpers and scoped context factory for Epic 4a extension.
 /// </summary>

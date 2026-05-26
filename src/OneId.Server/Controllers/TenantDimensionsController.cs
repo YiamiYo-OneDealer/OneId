@@ -1,0 +1,60 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using OneId.Server.Application.TenantAdmin.Dimensions.Commands;
+using OneId.Server.Application.TenantAdmin.Dimensions.Queries;
+using OneId.Server.Domain.Enums;
+using OpenIddict.Validation.AspNetCore;
+
+namespace OneId.Server.Controllers;
+
+[ApiController]
+[Route("api/tenant/dimensions/{axis}/values")]
+[Authorize(
+    AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme,
+    Roles = "TenantAdmin")]
+public class TenantDimensionsController(
+    ListDimensionValuesHandler listHandler,
+    AddDimensionValueHandler addHandler,
+    DeactivateDimensionValueHandler deactivateHandler) : ControllerBase
+{
+    private static bool TryParseAxis(string raw, out DimensionAxis axis)
+        => Enum.TryParse(raw, ignoreCase: true, out axis);
+
+    [HttpGet]
+    public async Task<IActionResult> List(string axis, CancellationToken ct)
+    {
+        if (!TryParseAxis(axis, out var parsedAxis))
+            return BadRequest(new { error = "invalid_axis" });
+        var result = await listHandler.HandleAsync(parsedAxis, ct);
+        return Ok(result);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Add(string axis, [FromBody] AddDimensionValueBody body, CancellationToken ct)
+    {
+        if (!TryParseAxis(axis, out var parsedAxis))
+            return BadRequest(new { error = "invalid_axis" });
+        if (string.IsNullOrWhiteSpace(body.Value))
+            return BadRequest(new { error = "invalid_value" });
+        try
+        {
+            var dto = await addHandler.HandleAsync(parsedAxis, body.Value, ct);
+            return CreatedAtAction(nameof(List), new { axis }, dto);
+        }
+        catch (DuplicateDimensionValueException)
+        {
+            return Conflict(new { error = "duplicate_value" });
+        }
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Deactivate(string axis, Guid id, CancellationToken ct)
+    {
+        if (!TryParseAxis(axis, out _))
+            return BadRequest(new { error = "invalid_axis" });
+        var found = await deactivateHandler.HandleAsync(id, ct);
+        return found ? NoContent() : NotFound();
+    }
+}
+
+public sealed record AddDimensionValueBody(string Value);
