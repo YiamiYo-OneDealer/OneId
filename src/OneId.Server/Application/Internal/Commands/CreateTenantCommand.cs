@@ -34,6 +34,6 @@ public sealed class CreateTenantHandler(InternalAdminContext internalAdminContex
         }
 
         var version = db.Entry(tenant).Property<uint>("xmin").CurrentValue;
-        return new TenantDto(tenant.Id, tenant.Name, tenant.CreatedAt, tenant.UpdatedAt, version);
+        return new TenantDto(tenant.Id, tenant.Name, tenant.Status, tenant.CreatedAt, tenant.UpdatedAt, version);
     }
 }

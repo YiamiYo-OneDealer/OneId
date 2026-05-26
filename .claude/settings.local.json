@@ -80,7 +80,10 @@
       "Read(//c/Users/georgios.mathioudaki/.nuget/packages/openiddict.server/7.5.0/**)",
       "Bash(Remove-Item -Recurse -Force src/OneId.Server/obj -ErrorAction SilentlyContinue)",
       "Bash(Sort-Object FullName)",
-      "Bash(ConvertTo-Json)"
+      "Bash(ConvertTo-Json)",
+      "Bash(xargs grep -l \"RevokeAsync\\\\|RevokedTokenStore\\\\|RevocationHandler\\\\|JtiRevocation\")",
+      "Bash(xargs grep -l \"Suspend\\\\|suspend\")",
+      "Bash(xargs cat)"
     ],
     "additionalDirectories": [
       "C:\\Temp",

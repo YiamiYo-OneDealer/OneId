@@ -9,6 +9,7 @@ using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using OneId.Server.Application.TokenPipeline;
 using OneId.Server.Domain.Entities;
+using OneId.Server.Domain.Enums;
 using OneId.Server.Infrastructure.Persistence;
 using OtpNet;
 using System.Security.Claims;
@@ -71,6 +72,11 @@ public class ConnectController(
         if (tenant is null || tenant.DeletedAt.HasValue)
             return Forbid(
                 BuildForbidProperties(Errors.AccessDenied, "Tenant account has been deactivated."),
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
+        if (tenant.Status == TenantStatus.Suspended)
+            return Forbid(
+                BuildForbidProperties("tenant_suspended", "This tenant account has been suspended. Contact your administrator."),
                 OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
 
         // Check lockout before verifying password

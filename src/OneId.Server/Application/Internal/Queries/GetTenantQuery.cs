@@ -15,6 +15,7 @@ public sealed class GetTenantHandler(InternalAdminContext internalAdminContext, 
             .Select(t => new TenantDto(
                 t.Id,
                 t.Name,
+                t.Status,
                 t.CreatedAt,
                 t.UpdatedAt,
                 EF.Property<uint>(t, "xmin")))

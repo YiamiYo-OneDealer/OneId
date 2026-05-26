@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OneId.Server.Domain.Entities;
+using OneId.Server.Domain.Enums;
 
 namespace OneId.Server.Infrastructure.Persistence.Configurations;
 
@@ -13,6 +14,11 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
         builder.Property(t => t.Name)
             .IsRequired()
             .HasMaxLength(200);
+
+        builder.Property(t => t.Status)
+            .IsRequired()
+            .HasDefaultValue(TenantStatus.Active)
+            .HasConversion<int>();
 
         builder.Property(t => t.CreatedAt).IsRequired();
         builder.Property(t => t.UpdatedAt).IsRequired();

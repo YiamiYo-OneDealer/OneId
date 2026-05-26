@@ -36,6 +36,6 @@ public sealed class UpdateTenantHandler(InternalAdminContext internalAdminContex
         // DbUpdateConcurrencyException propagates to the controller (stale version → 409)
 
         var version = db.Entry(tenant).Property<uint>("xmin").CurrentValue;
-        return new TenantDto(tenant.Id, tenant.Name, tenant.CreatedAt, tenant.UpdatedAt, version);
+        return new TenantDto(tenant.Id, tenant.Name, tenant.Status, tenant.CreatedAt, tenant.UpdatedAt, version);
     }
 }

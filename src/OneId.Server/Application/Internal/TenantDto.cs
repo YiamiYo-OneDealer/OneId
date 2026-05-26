@@ -1,8 +1,11 @@
+using OneId.Server.Domain.Enums;
+
 namespace OneId.Server.Application.Internal;
 
 public sealed record TenantDto(
     Guid Id,
     string Name,
+    TenantStatus Status,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     uint Version);

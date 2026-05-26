@@ -18,6 +18,8 @@ public static class InternalServiceExtensions
         services.AddScoped<DeactivateTenantHandler>();
         services.AddScoped<DesignateTenantAdminHandler>();
         services.AddScoped<RemoveTenantAdminHandler>();
+        services.AddScoped<SuspendTenantHandler>();
+        services.AddScoped<ReinstateTenantHandler>();
         return services;
     }
 }
