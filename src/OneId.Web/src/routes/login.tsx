@@ -19,6 +19,7 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
 
   const returnTo = searchParams.get('returnTo')
+  const sessionExpired = searchParams.get('session_expired') === '1'
   const safeReturnTo =
     returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')
       ? returnTo
@@ -56,6 +57,14 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-8">
+      {sessionExpired && (
+        <div
+          role="status"
+          className="fixed top-4 left-1/2 -translate-x-1/2 bg-blue-50 border border-blue-200 text-blue-800 rounded px-4 py-2 text-sm"
+        >
+          Your session has expired. Please sign in again.
+        </div>
+      )}
       {step === 'credentials' ? (
         <form onSubmit={handleCredentials} className="flex flex-col gap-4 w-80">
           <h1 className="text-2xl font-semibold">Sign in</h1>

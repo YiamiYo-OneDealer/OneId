@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-26  # 2-8 story implemented
+last_updated: 2026-05-26  # 2-9 story implemented
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -70,7 +70,7 @@ development_status:
   2-6-role-change-jti-invalidation-fr-5a: review
   2-7-password-reset-via-email-link: review
   2-8-refresh-token-rotation-and-spa-token-lifecycle: review
-  2-9-session-expiry-ux: backlog
+  2-9-session-expiry-ux: review
   epic-2-retrospective: optional
 
   # ─────────────────────────────────────────────────────────────────────────

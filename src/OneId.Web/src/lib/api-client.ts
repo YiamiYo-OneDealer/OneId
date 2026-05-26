@@ -22,7 +22,8 @@ export const apiClient = ky.create({
         const { refreshToken, setTokens, clearTokens } = useAuthStore.getState()
         if (!refreshToken) {
           clearTokens()
-          window.location.href = '/login'
+          const returnTo = encodeURIComponent(window.location.pathname + window.location.search)
+          window.location.href = `/login?returnTo=${returnTo}&session_expired=1`
           return response
         }
 
@@ -36,7 +37,8 @@ export const apiClient = ky.create({
           return ky.retry({ request: new Request(request, { headers }) })
         } catch {
           clearTokens()
-          window.location.href = '/login'
+          const returnTo = encodeURIComponent(window.location.pathname + window.location.search)
+          window.location.href = `/login?returnTo=${returnTo}&session_expired=1`
           return response
         }
       },
