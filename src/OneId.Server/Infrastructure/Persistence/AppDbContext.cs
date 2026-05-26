@@ -6,24 +6,12 @@ namespace OneId.Server.Infrastructure.Persistence;
 
 public class AppDbContext(
     DbContextOptions<AppDbContext> options,
-    ITenantContext tenantContext,
-    ILogger<AppDbContext> logger)
+    ITenantContext tenantContext)
     : DbContext(options)
 {
     public DbSet<Tenant> Tenants => Set<Tenant>();
 
-    public DbSet<User> Users
-    {
-        get
-        {
-            if (!tenantContext.IsInitialized)
-                logger.LogWarning(
-                    "[AR-5] AppDbContext.Users accessed with uninitialized ITenantContext — " +
-                    "global filter falls back to Guid.Empty (returns 0 rows). " +
-                    "Call .IgnoreQueryFilters() for intentional cross-tenant access.");
-            return Set<User>();
-        }
-    }
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -35,12 +23,12 @@ public class AppDbContext(
         // Apply all IEntityTypeConfiguration<T> classes from this assembly
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
-        // AR-5 STEP 2: Tenant-isolation global query filter for User
-        // Uses IsInitialized guard — prevents guard exception during startup/DevSeeder/IgnoreQueryFilters paths.
-        // InternalAdminContext and DevSeeder must call .IgnoreQueryFilters() for cross-tenant access.
+        // AR-5 STEP 2: Tenant-isolation global query filter for User.
+        // Calls tenantContext.TenantId directly — throws InvalidOperationException if context is
+        // uninitialized. Cross-tenant access (DevSeeder, InternalAdmin) must use .IgnoreQueryFilters().
         builder.Entity<User>().HasQueryFilter(u =>
             !u.DeletedAt.HasValue &&
-            u.TenantId == (tenantContext.IsInitialized ? tenantContext.TenantId : Guid.Empty));
+            u.TenantId == tenantContext.TenantId);
 
         // AR-14: UseXminAsConcurrencyToken applied to all mutable entities.
         // Each epic that introduces a new mutable entity is responsible for adding it here.

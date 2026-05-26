@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-26  # 5c-5 + 5c-6 done — all review patches applied
+last_updated: 2026-05-26  # 3-1 implementation complete, ready for review
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -79,8 +79,8 @@ development_status:
   # Phase 6 (licensing):     3.3 → 3.5 → 3.7  (after UI demo milestone)
   # Note: 3.1 must be first — all tenant-scoped work depends on ITenantContext
   # ─────────────────────────────────────────────────────────────────────────
-  epic-3: backlog
-  3-1-itenant-context-middleware-and-tenant-isolation-regression-tests: backlog  # Phase 3 — first
+  epic-3: in-progress
+  3-1-itenant-context-middleware-and-tenant-isolation-regression-tests: review  # Phase 3 — first
   3-2-tenant-crud-internal-admin: backlog                                         # Phase 3
   3-3-seat-count-license-management-internal-admin: backlog                       # Phase 6 (deferred)
   3-4-tenant-admin-designation-internal-admin: backlog                            # Phase 3
