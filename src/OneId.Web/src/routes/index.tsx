@@ -17,6 +17,8 @@ import { PermissionsPage } from './internal/permissions'
 import { TenantAdminLayout } from './tenant/_layout'
 import { TenantAdminDashboard } from './tenant/index'
 import { StubPage } from './_stub-page'
+import { ForgotPasswordPage } from './forgot-password'
+import { ResetPasswordPage } from './reset-password'
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +29,8 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/internal/tenants" replace /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'suspended', element: <SuspendedPage /> },
+      { path: 'forgot-password', element: <ForgotPasswordPage /> },
+      { path: 'reset-password', element: <ResetPasswordPage /> },
       {
         path: 'internal',
         element: <InternalLayout />,

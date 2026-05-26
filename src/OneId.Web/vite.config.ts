@@ -30,6 +30,10 @@ export default defineConfig({
   },
   server: {
     sourcemapIgnoreList: (sourcePath) => sourcePath.includes('node_modules'),
+    proxy: {
+      '/account': 'http://localhost:5000',
+      '/connect': 'http://localhost:5000',
+    },
   },
   test: {
     environment: 'jsdom',

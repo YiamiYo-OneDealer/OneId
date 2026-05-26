@@ -14,4 +14,6 @@ public class User
     public string? TotpSecret { get; set; }
     public bool IsTotpEnrolled { get; set; }
     public long? TotpLastUsedTimeStep { get; set; }
+    public string? PasswordResetToken { get; set; }
+    public DateTimeOffset? PasswordResetTokenExpiry { get; set; }
 }

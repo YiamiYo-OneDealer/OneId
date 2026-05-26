@@ -9,6 +9,7 @@ using OneId.Server.Infrastructure.Logging;
 using OneId.Server.Infrastructure.Middleware;
 using OneId.Server.Infrastructure.Persistence;
 using OneId.Server.Infrastructure.Persistence.Seeds;
+using OneId.Server.Infrastructure.Email;
 using OneId.Server.Infrastructure.OpenIddict;
 using OpenIddict.Abstractions;
 using OpenTelemetry.Trace;
@@ -69,6 +70,7 @@ try
     builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
     builder.Services.AddTokenPipeline();
     builder.Services.AddRevocationHandler();
+    builder.Services.AddEmailSender();
 
     // AR-5: ITenantContext MUST precede OpenIddict and EF Core — see architecture.md
     builder.Services.AddScoped<TenantContext>();
