@@ -16,4 +16,5 @@ public class User
     public long? TotpLastUsedTimeStep { get; set; }
     public string? PasswordResetToken { get; set; }
     public DateTimeOffset? PasswordResetTokenExpiry { get; set; }
+    public bool IsTenantAdmin { get; set; }
 }

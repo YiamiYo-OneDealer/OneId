@@ -17,7 +17,9 @@ public class InternalTenantsController(
     GetTenantHandler getHandler,
     CreateTenantHandler createHandler,
     UpdateTenantHandler updateHandler,
-    DeactivateTenantHandler deactivateHandler) : ControllerBase
+    DeactivateTenantHandler deactivateHandler,
+    DesignateTenantAdminHandler designateAdminHandler,
+    RemoveTenantAdminHandler removeAdminHandler) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List(CancellationToken ct)
@@ -81,5 +83,32 @@ public class InternalTenantsController(
     {
         var found = await deactivateHandler.HandleAsync(id, ct);
         return found ? NoContent() : NotFound();
+    }
+
+    [HttpPost("{tenantId:guid}/admins/{userId:guid}")]
+    public async Task<IActionResult> DesignateAdmin(Guid tenantId, Guid userId, CancellationToken ct)
+    {
+        var result = await designateAdminHandler.HandleAsync(new DesignateTenantAdminRequest(tenantId, userId), ct);
+        return result is null ? NotFound() : Ok(result);
+    }
+
+    [HttpDelete("{tenantId:guid}/admins/{userId:guid}")]
+    public async Task<IActionResult> RemoveAdmin(Guid tenantId, Guid userId, CancellationToken ct)
+    {
+        try
+        {
+            var result = await removeAdminHandler.HandleAsync(tenantId, userId, ct);
+            return result is null ? NotFound() : NoContent();
+        }
+        catch (LastTenantAdminException)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Conflict",
+                Detail = "Cannot remove the last Tenant Admin from a tenant.",
+                Status = StatusCodes.Status409Conflict,
+                Extensions = { ["error"] = "last_tenant_admin" },
+            });
+        }
     }
 }
