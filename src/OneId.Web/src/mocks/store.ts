@@ -1,10 +1,11 @@
-import type { Tenant, User, Group, Role, RoleSet, Permission } from './types'
+import type { Tenant, User, Group, Role, RoleSet, Permission, AuditLogEntry, Paginated } from './types'
 import { fixtures } from './fixtures'
 
 export const mockDelay = (ms = 400): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms))
 
 const state = {
+  auditLog: [...fixtures.auditLog],
   tenants: fixtures.tenants.map((t) => ({ ...t, seatUsage: { ...t.seatUsage } })),
   users: fixtures.users.map((u) => ({ ...u, groupIds: [...u.groupIds] })),
   groups: fixtures.groups.map((g) => ({
@@ -144,4 +145,23 @@ export const mockStore = {
 
   // ── Permissions ──────────────────────────────────────────────────────────
   getPermissions: (): Permission[] => state.permissions,
+
+  // ── Audit Log ────────────────────────────────────────────────────────────
+  getAuditLog: (
+    tenantId: string | null,
+    pageIndex: number,
+    pageSize: number,
+  ): Paginated<AuditLogEntry> => {
+    const filtered = tenantId
+      ? state.auditLog.filter((e) => e.tenantId === tenantId)
+      : [...state.auditLog]
+    filtered.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+    const start = pageIndex * pageSize
+    return {
+      items: filtered.slice(start, start + pageSize),
+      totalCount: filtered.length,
+      pageIndex,
+      pageSize,
+    }
+  },
 }

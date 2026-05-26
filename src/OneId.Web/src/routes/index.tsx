@@ -17,6 +17,8 @@ import { PermissionsPage } from './internal/permissions'
 import { TenantAdminLayout } from './tenant/_layout'
 import { TenantAdminDashboard } from './tenant/index'
 import { StubPage } from './_stub-page'
+import { TenantAuditLogPage } from './tenant/audit-log'
+import { InternalAuditLogPage } from './internal/audit-log'
 import { ForgotPasswordPage } from './forgot-password'
 import { ResetPasswordPage } from './reset-password'
 
@@ -39,6 +41,7 @@ export const router = createBrowserRouter([
           { path: 'tenants', element: <TenantListPage /> },
           { path: 'tenants/new', element: <TenantProvisioningPage /> },
           { path: 'permissions', element: <PermissionsPage /> },
+          { path: 'audit-log', element: <InternalAuditLogPage /> },
           {
             path: 'tenants/:tenantId',
             element: <TenantContextLayout />,
@@ -61,7 +64,7 @@ export const router = createBrowserRouter([
           { path: 'groups', element: <StubPage title="Groups" /> },
           { path: 'roles', element: <StubPage title="Roles" /> },
           { path: 'role-sets', element: <StubPage title="Role Sets" /> },
-          { path: 'audit-log', element: <StubPage title="Audit Log" /> },
+          { path: 'audit-log', element: <TenantAuditLogPage /> },
         ],
       },
     ],

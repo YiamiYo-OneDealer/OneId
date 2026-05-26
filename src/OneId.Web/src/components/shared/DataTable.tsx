@@ -29,6 +29,7 @@ interface DataTableProps<TData extends object, TValue> {
   pagination?: PaginationConfig
   onSortingChange?: OnChangeFn<SortingState>
   manualSorting?: boolean
+  onRowClick?: (row: TData) => void
   'aria-label'?: string
 }
 
@@ -39,6 +40,7 @@ export function DataTable<TData extends object, TValue>({
   pagination,
   onSortingChange,
   manualSorting = false,
+  onRowClick,
   'aria-label': ariaLabel,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
@@ -129,7 +131,11 @@ export function DataTable<TData extends object, TValue>({
             : table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="border-b border-border transition-colors hover:bg-card"
+                  onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+                  className={cn(
+                    'border-b border-border transition-colors hover:bg-card',
+                    onRowClick && 'cursor-pointer',
+                  )}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-foreground">

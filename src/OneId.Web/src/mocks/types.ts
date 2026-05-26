@@ -68,6 +68,19 @@ export interface License {
   effectiveDate: string
 }
 
+export interface AuditLogEntry {
+  id: string
+  tenantId: string
+  actorUserId: string | null
+  actorName: string | null
+  actorEmail: string | null
+  action: string
+  entityType: string
+  entityId: string
+  payload: Record<string, unknown> | null
+  timestamp: string
+}
+
 export interface Paginated<T> {
   items: T[]
   totalCount: number

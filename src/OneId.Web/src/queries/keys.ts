@@ -22,4 +22,6 @@ export const queryKeys = {
 
   permissions: () => ['permissions'] as const,
   tenantAdmins: (tenantId: string) => ['tenants', tenantId, 'admins'] as const,
+
+  auditLog: (tenantId: string | null) => ['audit-log', tenantId] as const,
 } as const
