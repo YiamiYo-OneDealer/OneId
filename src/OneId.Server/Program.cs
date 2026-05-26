@@ -6,6 +6,7 @@ using OneId.Server.Application.Common;
 using OneId.Server.Domain.Entities;
 using OneId.Server.Infrastructure.Caching;
 using OneId.Server.Infrastructure.Logging;
+using OneId.Server.Application.Internal;
 using OneId.Server.Infrastructure.Middleware;
 using OneId.Server.Infrastructure.Persistence;
 using OneId.Server.Infrastructure.Persistence.Seeds;
@@ -75,6 +76,9 @@ try
     // AR-5: ITenantContext MUST precede OpenIddict and EF Core — see architecture.md
     builder.Services.AddScoped<TenantContext>();
     builder.Services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
+
+    // Story 3.2: Internal Admin tenant CRUD handlers (AR-8: boundary enforced in AddInternalAdminHandlers)
+    builder.Services.AddInternalAdminHandlers();
 
     // AR-5 STEP 2: EF Core with global query filters referencing ITenantContext
     // Global query filters are added in Story 1.3b once ITenantContext is wired

@@ -63,6 +63,16 @@ public class ConnectController(
         if (user is null)
             return ForbidInvalidGrant();
 
+        // Story 3.2: Block token issuance for users whose tenant has been deactivated
+        var tenant = await db.Tenants
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Id == user.TenantId, ct);
+
+        if (tenant is null || tenant.DeletedAt.HasValue)
+            return Forbid(
+                BuildForbidProperties(Errors.AccessDenied, "Tenant account has been deactivated."),
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
         // Check lockout before verifying password
         if (IsLockedOut(user))
             return ForbidInvalidGrant();

@@ -78,7 +78,9 @@
       "Bash(mkdir -p \"c:/Users/georgios.mathioudaki/Dev/OneId/.vscode\")",
       "Bash(find \"/c/Users/georgios.mathioudaki/.nuget/packages/openiddict.server/7.5.0\" -type f 2>/dev/null | head -10)",
       "Read(//c/Users/georgios.mathioudaki/.nuget/packages/openiddict.server/7.5.0/**)",
-      "Bash(Remove-Item -Recurse -Force src/OneId.Server/obj -ErrorAction SilentlyContinue)"
+      "Bash(Remove-Item -Recurse -Force src/OneId.Server/obj -ErrorAction SilentlyContinue)",
+      "Bash(Sort-Object FullName)",
+      "Bash(ConvertTo-Json)"
     ],
     "additionalDirectories": [
       "C:\\Temp",

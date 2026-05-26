@@ -167,4 +167,61 @@ public class PasswordAuthTests(OneIdWebApplicationFactory factory) : Integration
         Assert.DoesNotContain("minutes", desc, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("locked", desc, StringComparison.OrdinalIgnoreCase);
     }
+
+    // AC6 (Story 3.2): Token issuance blocked for users belonging to a deactivated tenant
+    [Fact]
+    public async Task PasswordGrant_DeactivatedTenant_ReturnsAccessDenied()
+    {
+        // Seed a second tenant + user, then deactivate the tenant
+        var tenantId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        const string email = "user@deactivated.test";
+        const string password = "Test1234!";
+
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var hasher = scope.ServiceProvider
+                .GetRequiredService<Microsoft.AspNetCore.Identity.IPasswordHasher<OneId.Server.Domain.Entities.User>>();
+
+            db.Tenants.Add(new OneId.Server.Domain.Entities.Tenant
+            {
+                Id = tenantId,
+                Name = "Deactivated Co",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+                DeletedAt = DateTimeOffset.UtcNow, // already deactivated
+            });
+
+            var user = new OneId.Server.Domain.Entities.User
+            {
+                Id = userId,
+                TenantId = tenantId,
+                Email = email,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            };
+            user.PasswordHash = hasher.HashPassword(user, password);
+            db.Users.Add(user);
+
+            await db.SaveChangesAsync();
+        }
+
+        var response = await Client.PostAsync("/connect/token",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "password",
+                ["username"] = email,
+                ["password"] = password,
+                ["client_id"] = "oneid-dev-client",
+                ["scope"] = "openid",
+            }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("access_denied", body.GetProperty("error").GetString());
+        Assert.Equal(
+            "Tenant account has been deactivated.",
+            body.GetProperty("error_description").GetString());
+    }
 }
