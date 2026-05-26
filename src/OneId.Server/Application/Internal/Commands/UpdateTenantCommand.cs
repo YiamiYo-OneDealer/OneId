@@ -1,13 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using OneId.Server.Application.Audit;
 using OneId.Server.Application.Common;
 using OneId.Server.Infrastructure.Persistence;
+using System.Text.Json;
 
 namespace OneId.Server.Application.Internal.Commands;
 
 public sealed record UpdateTenantRequest(string Name, uint Version);
 
-public sealed class UpdateTenantHandler(InternalAdminContext internalAdminContext, AppDbContext db)
+public sealed class UpdateTenantHandler(InternalAdminContext internalAdminContext, AppDbContext db, IAuditService auditService)
 {
     private readonly InternalAdminContext _ctx = internalAdminContext; // AR-8 boundary marker
 
@@ -24,6 +26,13 @@ public sealed class UpdateTenantHandler(InternalAdminContext internalAdminContex
 
         tenant.Name = request.Name;
         tenant.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await auditService.AppendAsync(new AuditLogEntry(
+            tenant.Id,
+            "tenant.updated",
+            "Tenant",
+            tenant.Id,
+            JsonSerializer.Serialize(new { name = request.Name })), ct);
 
         try
         {

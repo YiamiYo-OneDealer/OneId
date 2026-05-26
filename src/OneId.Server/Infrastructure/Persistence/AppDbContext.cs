@@ -10,8 +10,8 @@ public class AppDbContext(
     : DbContext(options)
 {
     public DbSet<Tenant> Tenants => Set<Tenant>();
-
     public DbSet<User> Users => Set<User>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -29,6 +29,11 @@ public class AppDbContext(
         builder.Entity<User>().HasQueryFilter(u =>
             !u.DeletedAt.HasValue &&
             u.TenantId == tenantContext.TenantId);
+
+        // Tenant-isolation filter for AuditLog reads.
+        // InternalAdmin handlers use .IgnoreQueryFilters() for cross-tenant reads.
+        builder.Entity<AuditLog>().HasQueryFilter(a =>
+            a.TenantId == tenantContext.TenantId);
 
         // AR-14: UseXminAsConcurrencyToken applied to all mutable entities.
         // Each epic that introduces a new mutable entity is responsible for adding it here.

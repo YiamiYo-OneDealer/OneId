@@ -83,7 +83,8 @@
       "Bash(ConvertTo-Json)",
       "Bash(xargs grep -l \"RevokeAsync\\\\|RevokedTokenStore\\\\|RevocationHandler\\\\|JtiRevocation\")",
       "Bash(xargs grep -l \"Suspend\\\\|suspend\")",
-      "Bash(xargs cat)"
+      "Bash(xargs cat)",
+      "Bash(xargs grep -l -i \"audit\")"
     ],
     "additionalDirectories": [
       "C:\\Temp",

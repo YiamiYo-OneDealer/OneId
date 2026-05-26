@@ -1,14 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using OneId.Server.Application.Audit;
 using OneId.Server.Application.Common;
 using OneId.Server.Domain.Entities;
 using OneId.Server.Infrastructure.Persistence;
+using System.Text.Json;
 
 namespace OneId.Server.Application.Internal.Commands;
 
 public sealed record CreateTenantRequest(string Name);
 
-public sealed class CreateTenantHandler(InternalAdminContext internalAdminContext, AppDbContext db)
+public sealed class CreateTenantHandler(InternalAdminContext internalAdminContext, AppDbContext db, IAuditService auditService)
 {
     private readonly InternalAdminContext _ctx = internalAdminContext; // AR-8 boundary marker
 
@@ -23,6 +25,13 @@ public sealed class CreateTenantHandler(InternalAdminContext internalAdminContex
         };
 
         db.Tenants.Add(tenant);
+
+        await auditService.AppendAsync(new AuditLogEntry(
+            tenant.Id,
+            "tenant.created",
+            "Tenant",
+            tenant.Id,
+            JsonSerializer.Serialize(new { name = tenant.Name })), ct);
 
         try
         {

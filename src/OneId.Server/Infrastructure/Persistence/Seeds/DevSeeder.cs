@@ -83,6 +83,7 @@ public static class DevSeeder
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
             IsTotpEnrolled = true,
+            IsTenantAdmin = true,
             TotpSecret = dp.CreateProtector("totp.secret.v1").Protect(TotpUserTotpSecret),
         };
         user.PasswordHash = new PasswordHasher<User>().HashPassword(user, "Admin123!");

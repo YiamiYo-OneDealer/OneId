@@ -6,6 +6,7 @@ using OneId.Server.Application.Common;
 using OneId.Server.Domain.Entities;
 using OneId.Server.Infrastructure.Caching;
 using OneId.Server.Infrastructure.Logging;
+using OneId.Server.Application.Audit;
 using OneId.Server.Application.Internal;
 using OneId.Server.Infrastructure.Middleware;
 using OneId.Server.Infrastructure.Persistence;
@@ -79,6 +80,9 @@ try
 
     // Story 3.2: Internal Admin tenant CRUD handlers (AR-8: boundary enforced in AddInternalAdminHandlers)
     builder.Services.AddInternalAdminHandlers();
+
+    // Story 3.8: Audit log service
+    builder.Services.AddScoped<IAuditService, AuditService>();
 
     // AR-5 STEP 2: EF Core with global query filters referencing ITenantContext
     // Global query filters are added in Story 1.3b once ITenantContext is wired
