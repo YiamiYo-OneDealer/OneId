@@ -16,6 +16,9 @@ public class AppDbContext(
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<GroupRole> GroupRoles => Set<GroupRole>();
+    public DbSet<RoleSet> RoleSets => Set<RoleSet>();
+    public DbSet<RoleSetRole> RoleSetRoles => Set<RoleSetRole>();
+    public DbSet<GroupRoleSet> GroupRoleSets => Set<GroupRoleSet>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -41,6 +44,9 @@ public class AppDbContext(
 
         // Story 4a.2: Role tenant isolation.
         builder.Entity<Role>().HasQueryFilter(r => r.TenantId == tenantContext.TenantId);
+
+        // Story 4a.3: RoleSet tenant isolation.
+        builder.Entity<RoleSet>().HasQueryFilter(rs => rs.TenantId == tenantContext.TenantId);
 
         // AR-14: UseXminAsConcurrencyToken applied to all mutable entities.
         // Each epic that introduces a new mutable entity is responsible for adding it here.
