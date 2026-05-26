@@ -1,6 +1,6 @@
 # Story 3.1: ITenantContext Middleware and Tenant Isolation Regression Tests
 
-Status: review
+Status: done
 
 ## Story
 
@@ -207,3 +207,8 @@ claude-sonnet-4-6
 - src/OneId.Server/Infrastructure/Persistence/AppDbContext.cs (MODIFIED — removed IsInitialized guard, removed Users property override, removed ILogger constructor param)
 - tests/OneId.Server.IntegrationTests/TenantResolutionIntegrationTests.cs (NEW — AC1, AC2)
 - tests/OneId.Server.IntegrationTests/TenantIsolationRegressionTests.cs (NEW — AC3, TenantIsolationTestBase)
+
+### Review Findings
+
+- [x] [Review][Defer] `SeedSecondTenantAsync` seeds `Tenant` without initialized `TenantContext` [TenantIsolationRegressionTests.cs:SeedSecondTenantAsync] — deferred, pre-existing. Safe today because `Tenant` has no query filter and EF Core applies `HasQueryFilter` only to SELECTs not INSERTs. Fragile if Epic 4a adds a tenant-scoped filter to `Tenant` — add `.IgnoreQueryFilters()` at that point.
+- [x] [Review][Defer] Unauthenticated request reaching downstream EF code (without `IgnoreQueryFilters`) throws 500 instead of 401 [TenantContextMiddleware / AppDbContext] — deferred, pre-existing architectural concern. The throw-on-access guard is correct per AC4; callers doing cross-tenant DB work must use `.IgnoreQueryFilters()`. Document at the middleware level if this pattern causes confusion in future epics.

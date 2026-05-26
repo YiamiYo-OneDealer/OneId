@@ -1,5 +1,10 @@
 # Deferred Work Log
 
+## Deferred from: code review of 3-1-itenant-context-middleware-and-tenant-isolation-regression-tests (2026-05-26)
+
+- **`SeedSecondTenantAsync` seeds `Tenant` without initialized `TenantContext`** (`TenantIsolationRegressionTests.cs:SeedSecondTenantAsync`) — safe today because `Tenant` has no query filter and EF Core applies `HasQueryFilter` only to SELECTs, not INSERTs. Fragile if Epic 4a adds a tenant-scoped filter to `Tenant`. Add `.IgnoreQueryFilters()` on any future entity seeds that run without a tenant context.
+- **Unauthenticated request reaching downstream EF code (without `IgnoreQueryFilters`) throws 500 instead of 401** (`TenantContextMiddleware` / `AppDbContext`) — architectural concern: if any middleware or authorization policy handler touches `AppDbContext.Users` on an unauthenticated path, the guard fires with `InvalidOperationException` (500) rather than returning 401. Document at the middleware level when adding new protected routes that could reach EF before auth short-circuits.
+
 ## Deferred from: code review of 5c-5-audit-log-ui + 5c-6-commandpalette (2026-05-26)
 
 - **No error state for audit log pages** (`routes/tenant/audit-log.tsx`, `routes/internal/audit-log.tsx`) — consistent with all other pages in the app; all use mock data with no real failure path. Revisit when real API is wired.

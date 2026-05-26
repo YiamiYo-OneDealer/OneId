@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-26  # 3-1 implementation complete, ready for review
+last_updated: 2026-05-26  # 3-1 done
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -80,7 +80,7 @@ development_status:
   # Note: 3.1 must be first — all tenant-scoped work depends on ITenantContext
   # ─────────────────────────────────────────────────────────────────────────
   epic-3: in-progress
-  3-1-itenant-context-middleware-and-tenant-isolation-regression-tests: review  # Phase 3 — first
+  3-1-itenant-context-middleware-and-tenant-isolation-regression-tests: done    # Phase 3 — first
   3-2-tenant-crud-internal-admin: backlog                                         # Phase 3
   3-3-seat-count-license-management-internal-admin: backlog                       # Phase 6 (deferred)
   3-4-tenant-admin-designation-internal-admin: backlog                            # Phase 3
