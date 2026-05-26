@@ -11,15 +11,14 @@ public sealed class DeleteRoleSetHandler(AppDbContext db, ITenantContext tenantC
     {
         var roleSet = await db.RoleSets
             .Include(rs => rs.GroupRoleSets)
+                .ThenInclude(grs => grs.Group)
             .FirstOrDefaultAsync(rs => rs.Id == id, ct);
 
         if (roleSet is null) return false;
 
         if (roleSet.GroupRoleSets.Count > 0)
         {
-            // Until Story 4a.4 adds the Group entity, GroupId is returned as string.
-            // Story 4a.4 will replace this with actual Group.Name values.
-            var groupNames = roleSet.GroupRoleSets.Select(grs => grs.GroupId.ToString()).ToList();
+            var groupNames = roleSet.GroupRoleSets.Select(grs => grs.Group.Name).ToList();
             throw new RoleSetInUseException(groupNames);
         }
 

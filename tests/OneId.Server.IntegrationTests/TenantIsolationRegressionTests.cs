@@ -236,6 +236,73 @@ public class TenantIsolationRegressionTests : TenantIsolationTestBase
 }
 
 /// <summary>
+/// Story 4a.4: Group isolation regression tests.
+/// </summary>
+[Collection("IntegrationTests")]
+[Trait("Category", "TenantIsolation")]
+public class GroupIsolationRegressionTests(OneIdWebApplicationFactory factory) : TenantIsolationTestBase(factory)
+{
+    [Fact]
+    public async Task Group_IsNotVisible_FromOtherTenant()
+    {
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var tenantCtx = scope.ServiceProvider.GetRequiredService<TenantContext>();
+            tenantCtx.Initialize(DevSeeder.DevTenantId);
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Groups.Add(new Group
+            {
+                Id = Guid.NewGuid(),
+                TenantId = DevSeeder.DevTenantId,
+                Name = $"IsolationTestGroup-{Guid.NewGuid():N}",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var tenantBId = await SeedSecondTenantAsync();
+
+        using var scope2 = Factory.Services.CreateScope();
+        var tenantCtx2 = scope2.ServiceProvider.GetRequiredService<TenantContext>();
+        tenantCtx2.Initialize(tenantBId);
+        var db2 = scope2.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var groups = await db2.Groups.ToListAsync();
+        Assert.Empty(groups);
+    }
+
+    [Fact]
+    public async Task Group_IsVisible_FromOwningTenant()
+    {
+        var groupId = Guid.NewGuid();
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var tenantCtx = scope.ServiceProvider.GetRequiredService<TenantContext>();
+            tenantCtx.Initialize(DevSeeder.DevTenantId);
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Groups.Add(new Group
+            {
+                Id = groupId,
+                TenantId = DevSeeder.DevTenantId,
+                Name = $"VisibleGroup-{Guid.NewGuid():N}",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        using var scope2 = Factory.Services.CreateScope();
+        var tenantCtx2 = scope2.ServiceProvider.GetRequiredService<TenantContext>();
+        tenantCtx2.Initialize(DevSeeder.DevTenantId);
+        var db2 = scope2.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var groups = await db2.Groups.Where(g => g.Id == groupId).ToListAsync();
+        Assert.NotEmpty(groups);
+    }
+}
+
+/// <summary>
 /// Base class for tenant isolation regression tests.
 /// Provides seed helpers and scoped context factory for Epic 4a extension.
 /// </summary>

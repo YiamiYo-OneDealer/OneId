@@ -88,7 +88,13 @@
       "Bash(grep -rn \"Application.Tenant\\\\.\" src/OneId.Server/Application/TenantAdmin/)",
       "Bash(grep -rn \"Application\\\\.Tenant;\" src/OneId.Server/Application/TenantAdmin/)",
       "Bash(xargs sed -i 's/Application\\\\.Tenant\\\\./Application.TenantAdmin./g')",
-      "Bash(xargs sed -i 's/namespace OneId\\\\.Server\\\\.Application\\\\.Tenant;/namespace OneId.Server.Application.TenantAdmin;/')"
+      "Bash(xargs sed -i 's/namespace OneId\\\\.Server\\\\.Application\\\\.Tenant;/namespace OneId.Server.Application.TenantAdmin;/')",
+      "Bash(find /mnt/c/Users/georgios.mathioudaki/Dev/OneId/src/OneId.Server/Infrastructure/Persistence/Configurations -name \"GroupRole*\" -o -name \"GroupRoleSet*\" 2>/dev/null)",
+      "Read(//mnt/c/Users/georgios.mathioudaki/Dev/OneId/src/OneId.Server/Infrastructure/Persistence/**)",
+      "Bash(grep -n \"DevTenantId\\\\|TotpUserEmail\\\\|SeedSecondTenant\\\\|GroupId\\\\|GroupRole\\\\|class IntegrationTestBase\" /mnt/c/Users/georgios.mathioudaki/Dev/OneId/tests/OneId.Server.IntegrationTests/TenantRoleSetsIntegrationTests.cs | head -30)",
+      "Read(//mnt/c/Users/georgios.mathioudaki/Dev/OneId/tests/OneId.Server.IntegrationTests/**)",
+      "Bash(grep -rn \"SeedSecondTenant\\\\|DevSeeder\\\\.\" /mnt/c/Users/georgios.mathioudaki/Dev/OneId/tests/OneId.Server.IntegrationTests/ --include=\"*.cs\" | head -20)",
+      "Read(//mnt/c/Users/georgios.mathioudaki/Dev/OneId/tests/**)"
     ],
     "additionalDirectories": [
       "C:\\Temp",
