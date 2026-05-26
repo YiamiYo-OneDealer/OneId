@@ -374,6 +374,70 @@ public class DimensionValueIsolationRegressionTests(OneIdWebApplicationFactory f
 }
 
 /// <summary>
+/// Story 4a.6: UserDimensionAssignment isolation regression tests.
+/// </summary>
+[Collection("IntegrationTests")]
+[Trait("Category", "TenantIsolation")]
+public class UserDimensionAssignmentIsolationRegressionTests(OneIdWebApplicationFactory factory) : TenantIsolationTestBase(factory)
+{
+    [Fact]
+    public async Task UserDimensionAssignment_IsNotVisible_FromOtherTenant()
+    {
+        // Seed a DimensionValue and User in DevTenant, then create an assignment
+        var dimValueId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var assignmentId = Guid.NewGuid();
+
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var tenantCtx = scope.ServiceProvider.GetRequiredService<TenantContext>();
+            tenantCtx.Initialize(DevSeeder.DevTenantId);
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            db.DimensionValues.Add(new OneId.Server.Domain.Entities.DimensionValue
+            {
+                Id = dimValueId,
+                TenantId = DevSeeder.DevTenantId,
+                Axis = OneId.Server.Domain.Enums.DimensionAxis.Make,
+                Value = $"IsolationTestMake-{Guid.NewGuid():N}",
+                IsActive = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            db.Users.Add(new OneId.Server.Domain.Entities.User
+            {
+                Id = userId,
+                TenantId = DevSeeder.DevTenantId,
+                Email = $"isolation-test-{Guid.NewGuid():N}@test.com",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+
+            db.UserDimensionAssignments.Add(new OneId.Server.Domain.Entities.UserDimensionAssignment
+            {
+                Id = assignmentId,
+                UserId = userId,
+                DimensionValueId = dimValueId,
+                AssignedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var tenantBId = await SeedSecondTenantAsync();
+
+        using var scope2 = Factory.Services.CreateScope();
+        var tenantCtx2 = scope2.ServiceProvider.GetRequiredService<TenantContext>();
+        tenantCtx2.Initialize(tenantBId);
+        var db2 = scope2.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        // The global query filter on UserDimensionAssignment goes through DimensionValue.TenantId
+        var assignments = await db2.UserDimensionAssignments.ToListAsync();
+        Assert.Empty(assignments);
+    }
+}
+
+/// <summary>
 /// Base class for tenant isolation regression tests.
 /// Provides seed helpers and scoped context factory for Epic 4a extension.
 /// </summary>

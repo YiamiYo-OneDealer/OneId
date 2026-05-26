@@ -22,6 +22,7 @@ public class AppDbContext(
     public DbSet<Group> Groups => Set<Group>();
     public DbSet<UserGroup> UserGroups => Set<UserGroup>();
     public DbSet<DimensionValue> DimensionValues => Set<DimensionValue>();
+    public DbSet<UserDimensionAssignment> UserDimensionAssignments => Set<UserDimensionAssignment>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -56,6 +57,10 @@ public class AppDbContext(
 
         // Story 4a.5: DimensionValue tenant isolation.
         builder.Entity<DimensionValue>().HasQueryFilter(d => d.TenantId == tenantContext.TenantId);
+
+        // Story 4a.6: UserDimensionAssignment tenant isolation (via DimensionValue navigation).
+        builder.Entity<UserDimensionAssignment>().HasQueryFilter(a =>
+            a.DimensionValue.TenantId == tenantContext.TenantId);
 
         // AR-14: UseXminAsConcurrencyToken applied to all mutable entities.
         // Each epic that introduces a new mutable entity is responsible for adding it here.
