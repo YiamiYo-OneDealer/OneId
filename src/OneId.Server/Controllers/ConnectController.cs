@@ -160,6 +160,15 @@ public class ConnectController(
         if (user is null || string.IsNullOrEmpty(user.TotpSecret))
             return ForbidInvalidGrant();
 
+        var mfaTenant = await db.Tenants
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Id == user.TenantId, ct);
+
+        if (mfaTenant?.Status == TenantStatus.Suspended)
+            return Forbid(
+                BuildForbidProperties("tenant_suspended", "This tenant account has been suspended. Contact your administrator."),
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
         // Decrypt TOTP secret and verify code
         string base32Secret;
         try

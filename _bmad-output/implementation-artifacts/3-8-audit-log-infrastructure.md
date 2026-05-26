@@ -1,6 +1,6 @@
 # Story 3.8: Audit Log Infrastructure
 
-Status: review
+Status: done
 
 ## Story
 
@@ -532,6 +532,12 @@ None — clean implementation.
 - DevSeeder `TotpUser` now has `IsTenantAdmin = true` — required for integration tests calling `GET /api/tenant/audit`.
 - Unit tests use a hand-written `FakeAuditService` stub (no mocking library in unit test project).
 - Integration tests require Docker (Testcontainers) — verified build and skip count (2) in the absence of Docker.
+
+### Review Findings (2026-05-26)
+
+**No patch required.** All AC verified. `AuditService.AppendAsync` correctly stages without `SaveChangesAsync`; atomic commit via calling handler confirmed. Query filter, pagination, and role auth look correct.
+
+**F1 — DEFERRED:** `AppDbContext.cs` comment L41 incorrectly lists `AuditLog` in the `UseXminAsConcurrencyToken` group. Cosmetic; AuditLog is append-only by design and correctly has no xmin call.
 
 ### File List
 

@@ -1,6 +1,6 @@
 # Story 3.6: Tenant Suspension with jti Revocation (FR-12)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -408,6 +408,14 @@ claude-sonnet-4-6
 - 5 new integration tests in `TenantSuspensionIntegrationTests.cs` covering all 4 ACs
 - Final: 75 passed (+5 new), 2 skipped (unchanged), 1 pre-existing flaky `DevSigningKeyStabilityTest`
 - ArchUnit: 28/28 InternalAdmin tests pass; AR-8 InternalAdminContext constraint satisfied on both new handlers
+
+### Review Findings (2026-05-26)
+
+**F1 — PATCHED:** `HandleMfaGrantAsync` (`ConnectController.cs:~160`) was missing the `TenantStatus.Suspended` check. A user who passed the password step before suspension could complete MFA and receive a valid token during the 5-minute MFA window. Added the same `Forbid(BuildForbidProperties("tenant_suspended", ...))` guard after the user lookup.
+
+**F2 — DEFERRED:** `AppDbContext.cs` comment L41 lists `AuditLog` in the `UseXminAsConcurrencyToken` group. AuditLog is correctly append-only with no xmin; the comment is a copy-paste artefact. Cosmetic only.
+
+**F3 — DISMISSED:** `SuspendTenant` calls `SaveChangesAsync` before iterating revocations. Intentional per dev notes — idempotent revocations mean the window is safe.
 
 ### File List
 

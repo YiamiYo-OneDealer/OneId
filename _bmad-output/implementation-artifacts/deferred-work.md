@@ -7,6 +7,10 @@
 - **TOCTOU race in `RemoveTenantAdminHandler` last-admin check** (`src/OneId.Server/Application/Internal/Commands/RemoveTenantAdminCommand.cs`) — concurrent remove requests can both pass the `CountAsync` check and both succeed, leaving a tenant with zero admins. Requires explicit transaction/row-lock; acceptable for v1 low-concurrency admin operations.
 - **`DesignateTenantAdminHandler` allows designation on soft-deleted tenants** (`src/OneId.Server/Application/Internal/Commands/DesignateTenantAdminCommand.cs`) — `IsTenantAdmin` can be set on users belonging to a deactivated tenant. Harmless because deactivated-tenant users are blocked at token issuance.
 
+## Deferred from: code review of 3-6 + 3-8 (2026-05-26)
+
+- **`AppDbContext.cs` comment L41 incorrectly lists `AuditLog` in `UseXminAsConcurrencyToken` group** — AuditLog is append-only; no xmin is applied. Comment is a copy-paste artefact. Cosmetic only; update when `OnModelCreating` is next touched.
+
 ## Deferred from: code review of 3-1-itenant-context-middleware-and-tenant-isolation-regression-tests (2026-05-26)
 
 - **`SeedSecondTenantAsync` seeds `Tenant` without initialized `TenantContext`** (`TenantIsolationRegressionTests.cs:SeedSecondTenantAsync`) — safe today because `Tenant` has no query filter and EF Core applies `HasQueryFilter` only to SELECTs, not INSERTs. Fragile if Epic 4a adds a tenant-scoped filter to `Tenant`. Add `.IgnoreQueryFilters()` on any future entity seeds that run without a tenant context.
