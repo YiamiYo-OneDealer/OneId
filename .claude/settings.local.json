@@ -75,7 +75,9 @@
       "Bash(mkdir *)",
       "Bash(echo \"Exit code: $?\")",
       "Bash(echo *)",
-      "Bash(mkdir -p \"c:/Users/georgios.mathioudaki/Dev/OneId/.vscode\")"
+      "Bash(mkdir -p \"c:/Users/georgios.mathioudaki/Dev/OneId/.vscode\")",
+      "Bash(find \"/c/Users/georgios.mathioudaki/.nuget/packages/openiddict.server/7.5.0\" -type f 2>/dev/null | head -10)",
+      "Read(//c/Users/georgios.mathioudaki/.nuget/packages/openiddict.server/7.5.0/**)"
     ],
     "additionalDirectories": [
       "C:\\Temp",

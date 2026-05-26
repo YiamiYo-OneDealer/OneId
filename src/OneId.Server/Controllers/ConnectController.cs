@@ -42,6 +42,9 @@ public class ConnectController(
         if (request.GrantType == "urn:oneid:mfa")
             return await HandleMfaGrantAsync(request, ct);
 
+        if (request.IsRefreshTokenGrantType())
+            return await HandleRefreshTokenGrantAsync(ct);
+
         return Forbid(
             BuildForbidProperties("unsupported_grant_type", "The grant type is not supported."),
             OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
@@ -198,6 +201,37 @@ public class ConnectController(
             await enricher.EnrichAsync(identity, enrichmentContext, ct);
 
         // Destination sweep MUST remain after the enricher pipeline so enricher-added claims are included.
+        foreach (var claim in identity.Claims)
+            claim.SetDestinations(Destinations.AccessToken);
+
+        return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    }
+
+    private async Task<IActionResult> HandleRefreshTokenGrantAsync(CancellationToken ct)
+    {
+        // Authenticate using the incoming refresh token — OpenIddict validates it and extracts claims.
+        var result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
+        var identity = new ClaimsIdentity(
+            result.Principal!.Claims,
+            authenticationType: TokenValidationParameters.DefaultAuthenticationType,
+            nameType: Claims.Name,
+            roleType: Claims.Role);
+
+        var principal = new ClaimsPrincipal(identity);
+        principal.SetScopes(result.Principal!.GetScopes());
+
+        // Re-run the enricher pipeline so claims stay current (e.g. role changes reflected on next token).
+        var subjectClaim = identity.FindFirst(Claims.Subject)?.Value;
+        var tidClaim = identity.FindFirst("tid")?.Value;
+        if (subjectClaim is not null && Guid.TryParse(subjectClaim, out var userId)
+            && tidClaim is not null && Guid.TryParse(tidClaim, out var tenantId))
+        {
+            var enrichmentContext = new TokenEnrichmentContext(userId, tenantId, OpenIddictConstants.GrantTypes.RefreshToken);
+            foreach (var enricher in enrichers)
+                await enricher.EnrichAsync(identity, enrichmentContext, ct);
+        }
+
         foreach (var claim in identity.Claims)
             claim.SetDestinations(Destinations.AccessToken);
 

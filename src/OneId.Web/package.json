@@ -19,6 +19,7 @@
     "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "ky": "^2.0.2",
     "lucide-react": "^1.16.0",
     "radix-ui": "^1.4.3",
     "react": "^19.2.6",

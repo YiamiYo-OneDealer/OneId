@@ -115,9 +115,16 @@ try
                 OpenIddictConstants.Scopes.Roles,
                 OpenIddictConstants.Scopes.OfflineAccess);
 
-            // Token lifetimes: access 15 min (NFR-2 budget), refresh 7 days minimum
-            options.SetAccessTokenLifetime(TimeSpan.FromMinutes(15));
-            options.SetRefreshTokenLifetime(TimeSpan.FromDays(7));
+            // Token lifetimes — configurable via appsettings.json "OpenIddict" section (NFR-2 budget)
+            var oidcConfig = builder.Configuration.GetSection("OpenIddict");
+            options.SetAccessTokenLifetime(
+                TimeSpan.FromMinutes(oidcConfig.GetValue<int>("AccessTokenLifetimeMinutes", 15)));
+            options.SetRefreshTokenLifetime(
+                TimeSpan.FromHours(oidcConfig.GetValue<int>("RefreshTokenSlidingExpiryHours", 8)));
+
+            // Enforce strict refresh token rotation: redeemed tokens cannot be reused at all.
+            // Prevents replay attacks; no grace window needed in the admin console use case.
+            options.SetRefreshTokenReuseLeeway(TimeSpan.Zero);
 
             // File-based stable RS256 signing key — survives app restarts (enforced by DevSigningKeyStabilityTest)
             var keysDir = Path.Combine(builder.Environment.ContentRootPath, "keys");
