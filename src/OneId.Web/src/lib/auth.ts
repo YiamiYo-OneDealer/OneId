@@ -62,5 +62,7 @@ export async function refreshGrant(refreshToken: string): Promise<TokenResponse>
     }),
   })
   if (!res.ok) throw new Error('refresh_failed')
-  return res.json()
+  const data: TokenResponse = await res.json()
+  if (!data.access_token || !data.refresh_token) throw new Error('incomplete_token_response')
+  return data
 }

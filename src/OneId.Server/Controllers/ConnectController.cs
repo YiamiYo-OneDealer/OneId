@@ -159,7 +159,7 @@ public class ConnectController(
         var isValid = totp.VerifyTotp(
             totpCode,
             out long timeStepMatched,
-            new VerificationWindow(previous: 1, future: 0));
+            new VerificationWindow(previous: 1, future: 1));
 
         if (!isValid)
             return ForbidInvalidGrant();
@@ -245,7 +245,10 @@ public class ConnectController(
     {
         user.AccessFailedCount++;
         if (user.AccessFailedCount >= 5)
-            user.LockoutEnd = DateTimeOffset.UtcNow.AddMinutes(5);
+        {
+            user.LockoutEnd = DateTimeOffset.UtcNow.AddMinutes(15);
+            user.AccessFailedCount = 0;
+        }
 
         try { await db.SaveChangesAsync(ct); }
         catch (DbUpdateConcurrencyException) { /* Accept optimistic loss — lockout still triggers eventually */ }

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-26  # 2-9 story implemented
+last_updated: 2026-05-26  # Epic 2 review complete — all stories done
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -61,16 +61,16 @@ development_status:
   # [PHASE 2] Epic 2: Working Authentication
   # (after Epic 5a — auth connects to the already-built shell)
   # ─────────────────────────────────────────────────────────────────────────
-  epic-2: in-progress
-  2-1-openiddict-configuration-and-oidc-discovery: review
-  2-2-password-authentication-and-account-lockout: review
-  2-3-totp-mfa-enrollment-and-challenge: review
-  2-4-jwt-issuance-with-itokenclaimsenricher-pipeline: review
-  2-5-token-introspection-and-jti-revocation-store: review
-  2-6-role-change-jti-invalidation-fr-5a: review
-  2-7-password-reset-via-email-link: review
-  2-8-refresh-token-rotation-and-spa-token-lifecycle: review
-  2-9-session-expiry-ux: review
+  epic-2: done
+  2-1-openiddict-configuration-and-oidc-discovery: done
+  2-2-password-authentication-and-account-lockout: done
+  2-3-totp-mfa-enrollment-and-challenge: done
+  2-4-jwt-issuance-with-itokenclaimsenricher-pipeline: done
+  2-5-token-introspection-and-jti-revocation-store: done
+  2-6-role-change-jti-invalidation-fr-5a: done
+  2-7-password-reset-via-email-link: done
+  2-8-refresh-token-rotation-and-spa-token-lifecycle: done
+  2-9-session-expiry-ux: done
   epic-2-retrospective: optional
 
   # ─────────────────────────────────────────────────────────────────────────

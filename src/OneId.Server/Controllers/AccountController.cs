@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using OneId.Server.Application.Common;
 using OneId.Server.Domain.Entities;
 using OneId.Server.Infrastructure.Persistence;
@@ -13,7 +14,8 @@ public class AccountController(
     AppDbContext db,
     IEmailSender emailSender,
     IPasswordHasher<User> hasher,
-    IUserTokenRevoker revoker) : ControllerBase
+    IUserTokenRevoker revoker,
+    IConfiguration configuration) : ControllerBase
 {
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword(
@@ -30,7 +32,8 @@ public class AccountController(
             user.PasswordResetTokenExpiry = DateTimeOffset.UtcNow.AddHours(1);
             await db.SaveChangesAsync(ct);
 
-            var resetLink = $"http://localhost:3000/reset-password?token={token}";
+            var frontendBase = configuration["App:FrontendBaseUrl"] ?? "http://localhost:3000";
+            var resetLink = $"{frontendBase}/reset-password?token={token}";
             await emailSender.SendAsync(
                 user.Email,
                 "Reset your OneId password",
@@ -38,7 +41,7 @@ public class AccountController(
                 ct);
         }
 
-        return Accepted();
+        return Ok(new { message = "If that email is registered, a reset link has been sent." });
     }
 
     [HttpPost("reset-password")]
@@ -46,6 +49,9 @@ public class AccountController(
         [FromBody] ResetPasswordRequest request,
         CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 8)
+            return BadRequest(new { error = "password_too_weak" });
+
         var user = await db.Users.IgnoreQueryFilters()
             .FirstOrDefaultAsync(u => u.PasswordResetToken == request.Token && u.DeletedAt == null, ct);
 
@@ -63,6 +69,8 @@ public class AccountController(
         user.PasswordHash = hasher.HashPassword(user, request.NewPassword);
         user.PasswordResetToken = null;
         user.PasswordResetTokenExpiry = null;
+        user.LockoutEnd = null;
+        user.AccessFailedCount = 0;
         user.UpdatedAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync(ct);
 

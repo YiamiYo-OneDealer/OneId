@@ -1,6 +1,6 @@
 # Story 2.9: Session Expiry UX
 
-Status: review
+Status: done
 
 ## Story
 
@@ -185,6 +185,30 @@ The absence of `session_expired=1` in these redirects is intentional — it mean
 | `PermissionCatalogSyncTests` | Story 4a.1 | OPEN |
 
 **Total: 3 / 3 cap** — zero new skips permitted.
+
+## Epic 2 Code Review — Applied Patches
+
+Epic-level review applied the following fixes across Epic 2 (2026-05-26):
+
+- [x] [Review][Patch] Lockout duration 5 min → 15 min [ConnectController.cs:248]
+- [x] [Review][Patch] `AccessFailedCount` not reset to 0 on lockout trigger [ConnectController.cs:247-248]
+- [x] [Review][Patch] TOTP window `future:0` → `future:1` (spec ±1 step) [ConnectController.cs:162]
+- [x] [Review][Patch] `reset-password` clears `LockoutEnd`/`AccessFailedCount` [AccountController.cs]
+- [x] [Review][Patch] `forgot-password` returns 200 OK, not 202 Accepted [AccountController.cs:41]
+- [x] [Review][Patch] Reset link reads `App:FrontendBaseUrl` from config, not hardcoded [AccountController.cs:33]
+- [x] [Review][Patch] Concurrent 401 coalesced via singleton refresh promise [api-client.ts]
+- [x] [Review][Patch] Minimum password length (8 chars) enforced on reset [AccountController.cs]
+- [x] [Review][Patch] Open-redirect via `/\evil.com` blocked in `safeReturnTo` [login.tsx]
+- [x] [Review][Patch] `refreshGrant` validates `access_token`/`refresh_token` present in response [auth.ts]
+- [x] [Review][Patch] `reset-password.tsx` shows error state when token param is absent [reset-password.tsx]
+- [x] [Review][Defer] Password reset token stored in plaintext (hash in production) — deferred, POC scope
+- [x] [Review][Defer] `LoggingEmailSender` logs raw token body — deferred, dev-only
+- [x] [Review][Defer] `MfaSessionToken` not server-side invalidated after use — deferred, POC scope
+- [x] [Review][Defer] `RevocationHandler` iterates/mutates same async stream — deferred, provider-dependent
+- [x] [Review][Defer] `GetUserIdFromToken` test helper decodes without sig verification — deferred, test-only
+- [x] [Review][Defer] Enricher pipeline skipped if `tid` missing on refresh — deferred, future epic
+- [x] [Review][Defer] `IgnoreQueryFilters` allows suspended-state bypass on reset — deferred, no suspension model yet
+- [x] [Review][Defer] Refresh grant doesn't recheck `LockoutEnd` — deferred, POC scope
 
 ## Dev Agent Record
 

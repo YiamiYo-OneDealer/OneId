@@ -18,12 +18,12 @@ namespace OneId.Server.IntegrationTests;
 public class PasswordResetTests(OneIdWebApplicationFactory factory) : IntegrationTestBase(factory)
 {
     [Fact]
-    public async Task ForgotPassword_RegisteredEmail_Returns202AndStoresToken()
+    public async Task ForgotPassword_RegisteredEmail_Returns200AndStoresToken()
     {
         var response = await Client.PostAsJsonAsync("/account/forgot-password",
             new { email = DevSeeder.TotpUserEmail });
 
-        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -37,12 +37,12 @@ public class PasswordResetTests(OneIdWebApplicationFactory factory) : Integratio
     }
 
     [Fact]
-    public async Task ForgotPassword_UnregisteredEmail_Returns202WithNoTokenStored()
+    public async Task ForgotPassword_UnregisteredEmail_Returns200WithNoTokenStored()
     {
         var response = await Client.PostAsJsonAsync("/account/forgot-password",
             new { email = "nobody@unknown.dev" });
 
-        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

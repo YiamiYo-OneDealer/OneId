@@ -5,6 +5,19 @@ export function ResetPasswordPage() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') ?? ''
   const navigate = useNavigate()
+
+  if (!token) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-8">
+        <div className="flex flex-col gap-4 w-80 text-center">
+          <h1 className="text-2xl font-semibold">Invalid link</h1>
+          <p className="text-muted-foreground text-sm">
+            This reset link is missing a token. Please request a new password reset.
+          </p>
+        </div>
+      </div>
+    )
+  }
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)

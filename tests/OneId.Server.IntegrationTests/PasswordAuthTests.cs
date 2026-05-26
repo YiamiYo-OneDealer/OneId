@@ -127,15 +127,17 @@ public class PasswordAuthTests(OneIdWebApplicationFactory factory) : Integration
             Assert.Equal(HttpStatusCode.BadRequest, r.StatusCode);
         }
 
-        // Verify DB state: AccessFailedCount == 5, LockoutEnd is set and in the future
+        // Verify DB state: AccessFailedCount reset to 0 on lockout, LockoutEnd is set and in the future
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var user = await db.Users.IgnoreQueryFilters()
             .SingleAsync(u => u.Email == "admin@oneid.dev");
 
-        Assert.Equal(5, user.AccessFailedCount);
+        Assert.Equal(0, user.AccessFailedCount);
         Assert.True(user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow,
             "LockoutEnd should be set and in the future after 5 failures");
+        Assert.True(user.LockoutEnd.HasValue && user.LockoutEnd.Value <= DateTimeOffset.UtcNow.AddMinutes(16),
+            "LockoutEnd should be approximately 15 minutes from now");
     }
 
     [Fact]

@@ -21,7 +21,10 @@ export function LoginPage() {
   const returnTo = searchParams.get('returnTo')
   const sessionExpired = searchParams.get('session_expired') === '1'
   const safeReturnTo =
-    returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')
+    returnTo &&
+    returnTo.startsWith('/') &&
+    !returnTo.startsWith('//') &&
+    !returnTo.startsWith('/\\')
       ? returnTo
       : '/internal/tenants'
 
