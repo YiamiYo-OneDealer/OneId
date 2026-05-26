@@ -7,7 +7,7 @@ import { useTenantStore } from '@/store/tenant-store'
 
 export function TenantAdminLayout() {
   const [paletteOpen, setPaletteOpen] = useState(false)
-  const tenantId = useTenantStore((s) => s.activeTenantId) ?? 'acme-corp'
+  const tenantId = useTenantStore((s) => s.activeTenantId)
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

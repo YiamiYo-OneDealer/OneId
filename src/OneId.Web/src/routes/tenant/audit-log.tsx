@@ -58,10 +58,7 @@ const columns: ColumnDef<AuditLogEntry, unknown>[] = [
 const PAGE_SIZE = 25
 
 export function TenantAuditLogPage() {
-  // Mock: /tenant/ routes have no :tenantId in URL.
-  // Use Zustand active tenant, falling back to 'acme-corp' for demo.
-  const cachedTenantId = useTenantStore((s) => s.activeTenantId)
-  const tenantId = cachedTenantId ?? 'acme-corp'
+  const tenantId = useTenantStore((s) => s.activeTenantId)
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -75,11 +72,13 @@ export function TenantAuditLogPage() {
     setPagination((prev) => (typeof updater === 'function' ? updater(prev) : updater))
   }
 
+  if (!tenantId) return null
+
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold text-foreground">Audit Log</h1>
 
-      {!isLoading && data?.items.length === 0 ? (
+      {!isLoading && data?.totalCount === 0 ? (
         <EmptyState
           variant="no-data"
           title="No audit events"

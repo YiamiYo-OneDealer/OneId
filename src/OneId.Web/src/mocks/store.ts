@@ -155,7 +155,7 @@ export const mockStore = {
     const filtered = tenantId
       ? state.auditLog.filter((e) => e.tenantId === tenantId)
       : [...state.auditLog]
-    filtered.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+    filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     const start = pageIndex * pageSize
     return {
       items: filtered.slice(start, start + pageSize),

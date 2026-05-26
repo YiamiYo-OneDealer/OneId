@@ -1,5 +1,11 @@
 # Deferred Work Log
 
+## Deferred from: code review of 5c-5-audit-log-ui + 5c-6-commandpalette (2026-05-26)
+
+- **No error state for audit log pages** (`routes/tenant/audit-log.tsx`, `routes/internal/audit-log.tsx`) — consistent with all other pages in the app; all use mock data with no real failure path. Revisit when real API is wired.
+- **DataTable row click creates new arrow function per render** (`components/shared/DataTable.tsx`) — no row-level memoization in place today; harmless until rows are individually memoized.
+- **`JSON.stringify` on payload with circular refs/BigInt throws in AuditEventSheet** (`components/shared/AuditEventSheet.tsx`) — mock data only, no real risk until real API payloads flow through.
+
 ## Deferred from: code review of 1-1-initialize-backend-and-frontend-projects (2026-05-22)
 
 - **Tailwind v4 / missing `tailwind.config.ts`** (`src/OneId.Web/components.json`) — Tailwind v4 deprecates `tailwind.config.ts`; `components.json` references a file that doesn't exist; dark mode uses v4 CSS-only approach instead of spec-required `darkMode: ['class']` in TS config. Reason: ramifications of v4 approach not yet clear. Revisit in Story 5a.1.

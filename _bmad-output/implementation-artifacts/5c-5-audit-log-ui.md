@@ -1,6 +1,6 @@
 # Story 5c-5: Audit Log UI
 
-Status: review
+Status: done
 
 ## Story
 
@@ -820,7 +820,31 @@ claude-sonnet-4-6
 - `src/routes/index.tsx` — MODIFIED (added InternalAuditLogPage route, replaced StubPage for tenant audit-log)
 - `src/components/shared/GlobalNav.tsx` — MODIFIED (Audit Log in INTERNAL_ADMIN_NAV)
 
+### Senior Developer Review (AI)
+
+**Date:** 2026-05-26
+**Outcome:** Changes Requested
+**Layers:** Blind Hunter ✅ | Edge Case Hunter ✅ | Acceptance Auditor ✅
+
+#### Action Items
+
+- [x] [Review][Patch] EmptyState triggered by `items.length === 0` — shows "no data" on out-of-range page instead of correct page; fix: gate on `data.totalCount === 0` [routes/tenant/audit-log.tsx + routes/internal/audit-log.tsx]
+- [x] [Review][Patch] Hardcoded `?? 'acme-corp'` fallback — silently queries wrong tenant when Zustand store is null [routes/tenant/audit-log.tsx:1338]
+- [x] [Review][Patch] Timestamp sort uses `localeCompare` on strings — use `Date` arithmetic instead [mocks/store.ts:944]
+- [x] [Review][Patch] Empty `payload: {}` renders an empty `<pre>` block — guard with `Object.keys(entry.payload).length > 0` [components/shared/AuditEventSheet.tsx:59]
+- [x] [Review][Defer] No error state for audit log pages — consistent with all other pages in the app; defer [routes/tenant/audit-log.tsx + routes/internal/audit-log.tsx] — deferred, pre-existing pattern
+- [x] [Review][Defer] `DataTable` row click handler creates new arrow function per render — no row-level memoization currently in place [components/shared/DataTable.tsx:434] — deferred, pre-existing pattern
+
+### Review Follow-ups (AI)
+
+- [x] [AI-Review] Fix EmptyState condition: use `totalCount === 0` to distinguish "no records" from "out-of-range page"
+- [x] [AI-Review] Remove `?? 'acme-corp'` fallback from TenantAuditLogPage — guard render until tenantId is known
+- [x] [AI-Review] Fix timestamp sort: `new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()`
+- [x] [AI-Review] Guard empty payload object: `entry.payload && Object.keys(entry.payload).length > 0`
+
 ## Change Log
 
 - 2026-05-26: Story created — audit log UI (Tenant Admin + Internal Admin pages, DataTable + Sheet detail, mock data layer).
 - 2026-05-26: Story implemented — all tasks complete, 51/51 tests pass, TypeScript build clean.
+- 2026-05-26: Code review complete — 4 patch findings, 2 deferred. Status set to in-progress pending fixes.
+- 2026-05-26: All 4 review patches applied (EmptyState totalCount guard, acme-corp fallback removal, Date sort, empty payload guard). 54/54 tests pass. Status: done.

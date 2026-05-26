@@ -77,7 +77,7 @@ export function InternalAuditLogPage() {
         All tenants — management events across the platform.
       </p>
 
-      {!isLoading && data?.items.length === 0 ? (
+      {!isLoading && data?.totalCount === 0 ? (
         <EmptyState
           variant="no-data"
           title="No audit events"

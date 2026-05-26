@@ -224,7 +224,7 @@ export function CommandPalette({ open, onOpenChange, tier, tenantId }: CommandPa
 
   function handleSelect(to: string) {
     navigate(to)
-    onOpenChange(false)
+    handleOpenChange(false)
   }
 
   return (
@@ -261,7 +261,7 @@ export function CommandPalette({ open, onOpenChange, tier, tenantId }: CommandPa
               {entityResults.map((result) => (
                 <CommandItem
                   key={result.id}
-                  value={`${result.label} ${result.sublabel ?? ''}`}
+                  value={`${result.id.split('-')[0]}:${result.label} ${result.sublabel ?? ''}`}
                   onSelect={() => handleSelect(result.to)}
                 >
                   <span>{result.label}</span>

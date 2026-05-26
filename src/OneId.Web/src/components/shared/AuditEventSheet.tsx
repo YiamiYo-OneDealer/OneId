@@ -50,7 +50,7 @@ export function AuditEventSheet({
               <dd className="font-mono text-xs text-foreground">{entry.entityId}</dd>
             </dl>
 
-            {entry.payload && (
+            {entry.payload && Object.keys(entry.payload).length > 0 && (
               <div>
                 <p className="text-muted-foreground font-medium mb-1">Payload</p>
                 <pre className="rounded-md border border-border bg-card p-3 text-xs text-foreground overflow-x-auto">

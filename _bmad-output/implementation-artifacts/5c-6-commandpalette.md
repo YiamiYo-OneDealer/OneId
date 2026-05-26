@@ -1,6 +1,6 @@
 # Story 5c-6: CommandPalette
 
-Status: review
+Status: done
 
 ## Story
 
@@ -616,7 +616,28 @@ claude-sonnet-4-6
 - `src/OneId.Web/src/routes/internal/_layout.tsx` — MODIFIED (⌘K handler + CommandPalette)
 - `src/OneId.Web/src/routes/tenant/_layout.tsx` — MODIFIED (⌘K handler + CommandPalette)
 
+### Senior Developer Review (AI)
+
+**Date:** 2026-05-26
+**Outcome:** Changes Requested
+**Layers:** Blind Hunter ✅ | Edge Case Hunter ✅ | Acceptance Auditor ✅
+
+#### Action Items
+
+- [x] [Review][Patch] `handleSelect` calls `onOpenChange(false)` directly — bypasses `handleOpenChange`, leaving `query` and `entityResults` stale on next palette open; fix: call `handleOpenChange(false)` instead [components/shared/CommandPalette.tsx line ~227]
+- [x] [Review][Patch] Hardcoded `?? 'acme-corp'` fallback in TenantAdminLayout — silently queries wrong tenant when Zustand store is null [routes/tenant/_layout.tsx:1240]
+- [x] [Review][Patch] Duplicate `value` props possible in CommandItem when same-named entities appear across search types — prefix result value with action type [components/shared/CommandPalette.tsx]
+- [x] [Review][Defer] `JSON.stringify` on payload with circular refs/BigInt would throw in AuditEventSheet — mock data only, no real risk [components/shared/AuditEventSheet.tsx:63] — deferred, mock-only risk
+
+### Review Follow-ups (AI)
+
+- [x] [AI-Review] Fix handleSelect: replace `onOpenChange(false)` with `handleOpenChange(false)` to clear query + results on navigation
+- [x] [AI-Review] Remove `?? 'acme-corp'` fallback from TenantAdminLayout — guard until tenantId is non-null
+- [x] [AI-Review] Prefix CommandItem `value` prop with entity type to prevent cmdk deduplication: `value={\`user:${result.label}\`}`
+
 ## Change Log
 
 - 2026-05-26: Story created — CommandPalette (⌘K) with TypeScript-enforced action registry, entity search, and accessibility test.
 - 2026-05-26: Story implemented — all tasks complete, 54/54 tests pass, TypeScript build clean.
+- 2026-05-26: Code review complete — 3 patch findings, 1 deferred. Status set to in-progress pending fixes.
+- 2026-05-26: All 3 review patches applied (handleSelect→handleOpenChange, acme-corp fallback removal, CommandItem value prefix). 54/54 tests pass. Status: done.
