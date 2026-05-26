@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-26  # 2-5 story implemented
+last_updated: 2026-05-26  # 2-6 story implemented
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -67,7 +67,7 @@ development_status:
   2-3-totp-mfa-enrollment-and-challenge: review
   2-4-jwt-issuance-with-itokenclaimsenricher-pipeline: review
   2-5-token-introspection-and-jti-revocation-store: review
-  2-6-role-change-jti-invalidation-fr-5a: backlog
+  2-6-role-change-jti-invalidation-fr-5a: review
   2-7-password-reset-via-email-link: backlog
   2-8-refresh-token-rotation-and-spa-token-lifecycle: backlog
   2-9-session-expiry-ux: backlog

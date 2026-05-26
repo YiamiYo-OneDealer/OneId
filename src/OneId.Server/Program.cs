@@ -68,6 +68,7 @@ try
     builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
     builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
     builder.Services.AddTokenPipeline();
+    builder.Services.AddRevocationHandler();
 
     // AR-5: ITenantContext MUST precede OpenIddict and EF Core — see architecture.md
     builder.Services.AddScoped<TenantContext>();
