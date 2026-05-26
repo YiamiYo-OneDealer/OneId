@@ -13,7 +13,7 @@ public sealed class RoleClaimsEnricher(AppDbContext db) : ITokenClaimsEnricher
     {
         var user = await db.Users
             .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(u => u.Id == context.UserId, ct);
+            .FirstOrDefaultAsync(u => u.Id == context.UserId && u.DeletedAt == null, ct);
 
         if (user?.IsTenantAdmin == true)
         {

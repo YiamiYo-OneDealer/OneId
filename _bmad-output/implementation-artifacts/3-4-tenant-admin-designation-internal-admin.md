@@ -1,6 +1,6 @@
 # Story 3.4: Tenant Admin Designation (Internal Admin)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -71,6 +71,13 @@ So that those users can manage their Tenant's configuration without Internal Adm
 - [x] Task 8: Verify ArchUnit and skip cap
   - [x] `dotnet test --filter "Category=InternalAdmin"` — 23/23 pass
   - [x] Skip count remains at 2 (`TestTokenFactoryContractTests`, `PermissionCatalogSyncTests`) — zero new skips
+
+### Review Findings
+
+- [x] [Review][Patch] `RoleClaimsEnricher` soft-deleted user enrichment — `IgnoreQueryFilters()` without `u.DeletedAt == null` guard means a soft-deleted user with a live token still gets `TenantAdmin` claim [`src/OneId.Server/Application/TokenPipeline/RoleClaimsEnricher.cs`] — **fixed**
+- [x] [Review][Defer] No role authorization on `InternalTenantsController` — deferred, pre-existing (intentional; Epic 4a adds `InternalAdmin` policy)
+- [x] [Review][Defer] TOCTOU race in last-admin check (not atomic) — deferred, pre-existing (v1 acceptable; requires transaction infrastructure)
+- [x] [Review][Defer] `DesignateTenantAdminHandler` allows designation on soft-deleted tenants — deferred, pre-existing (harmless; deactivated-tenant users cannot authenticate)
 
 ## Dev Notes
 

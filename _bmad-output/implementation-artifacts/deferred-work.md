@@ -1,5 +1,12 @@
 # Deferred Work Log
 
+## Deferred from: code review of 3-2-tenant-crud-internal-admin + 3-4-tenant-admin-designation-internal-admin (2026-05-26)
+
+- **No role authorization on `InternalTenantsController`** (`src/OneId.Server/Controllers/InternalTenantsController.cs`) — any valid bearer token can call internal tenant admin endpoints. Intentional; Epic 4a adds `[Authorize(Policy = "InternalAdmin")]` gate.
+- **`DeactivateTenantHandler` does not revoke active tokens** (`src/OneId.Server/Application/Internal/Commands/DeactivateTenantCommand.cs`) — users authenticated before deactivation can use tokens until expiry. Deactivate (soft-delete) is intentionally lighter than Suspend; Story 3.6 adds JTI revocation on Suspend.
+- **TOCTOU race in `RemoveTenantAdminHandler` last-admin check** (`src/OneId.Server/Application/Internal/Commands/RemoveTenantAdminCommand.cs`) — concurrent remove requests can both pass the `CountAsync` check and both succeed, leaving a tenant with zero admins. Requires explicit transaction/row-lock; acceptable for v1 low-concurrency admin operations.
+- **`DesignateTenantAdminHandler` allows designation on soft-deleted tenants** (`src/OneId.Server/Application/Internal/Commands/DesignateTenantAdminCommand.cs`) — `IsTenantAdmin` can be set on users belonging to a deactivated tenant. Harmless because deactivated-tenant users are blocked at token issuance.
+
 ## Deferred from: code review of 3-1-itenant-context-middleware-and-tenant-isolation-regression-tests (2026-05-26)
 
 - **`SeedSecondTenantAsync` seeds `Tenant` without initialized `TenantContext`** (`TenantIsolationRegressionTests.cs:SeedSecondTenantAsync`) — safe today because `Tenant` has no query filter and EF Core applies `HasQueryFilter` only to SELECTs, not INSERTs. Fragile if Epic 4a adds a tenant-scoped filter to `Tenant`. Add `.IgnoreQueryFilters()` on any future entity seeds that run without a tenant context.

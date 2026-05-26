@@ -1,6 +1,6 @@
 # Story 3.2: Tenant CRUD (Internal Admin)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -102,6 +102,14 @@ So that I can provision and manage the organizations that use OneId.
   - [x] Skip count remains at 2 (`TestTokenFactoryContractTests`, `PermissionCatalogSyncTests`) — zero new skips
   - [x] `dotnet test --filter "Category=InternalAdmin"` → 17/17 pass
   - [x] `InternalBoundaryTests.cs` passes with new handlers (AR-8 enforced via `InternalServiceExtensions.AddInternalAdminHandlers()`)
+
+### Review Findings
+
+- [x] [Review][Patch] `RoleClaimsEnricher` soft-deleted user enrichment — `IgnoreQueryFilters()` without `u.DeletedAt == null` guard means a soft-deleted user with a live token still gets `TenantAdmin` claim [`src/OneId.Server/Application/TokenPipeline/RoleClaimsEnricher.cs`] — **fixed**
+- [x] [Review][Defer] No role authorization on `InternalTenantsController` [`src/OneId.Server/Controllers/InternalTenantsController.cs`] — deferred, pre-existing (intentional; Epic 4a adds `InternalAdmin` policy)
+- [x] [Review][Defer] `DeactivateTenantHandler` does not revoke active tokens on deactivation — deferred, pre-existing (AC5/AC6 scope only blocks new issuance; revocation is Story 3.6 scope)
+- [x] [Review][Defer] TOCTOU race in `RemoveTenantAdminHandler` last-admin check (CountAsync + SaveChangesAsync not atomic) — deferred, pre-existing (acceptable for v1 low-concurrency; requires transaction infrastructure)
+- [x] [Review][Defer] `DesignateTenantAdminHandler` allows designation on soft-deleted tenants — deferred, pre-existing (harmless; deactivated-tenant users cannot authenticate)
 
 ## Dev Notes
 

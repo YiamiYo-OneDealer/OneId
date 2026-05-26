@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-26  # 3-1 done; 3-2 review; 3-4 review; 3-6 review; 3-8 review
+last_updated: 2026-05-26  # 3-1 done; 3-2 done; 3-4 done; 3-6 review; 3-8 review
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -81,9 +81,9 @@ development_status:
   # ─────────────────────────────────────────────────────────────────────────
   epic-3: in-progress
   3-1-itenant-context-middleware-and-tenant-isolation-regression-tests: done    # Phase 3 — first
-  3-2-tenant-crud-internal-admin: review                                          # Phase 3
+  3-2-tenant-crud-internal-admin: done                                             # Phase 3
   3-3-seat-count-license-management-internal-admin: backlog                       # Phase 6 (deferred)
-  3-4-tenant-admin-designation-internal-admin: review                             # Phase 3
+  3-4-tenant-admin-designation-internal-admin: done                               # Phase 3
   3-5-seat-limit-enforcement-at-token-issuance-fr-18: backlog                    # Phase 6 (deferred)
   3-6-tenant-suspension-with-jti-revocation-fr-12: review                         # Phase 3
   3-7-tenant-admin-license-view: backlog                                          # Phase 6 (deferred)
