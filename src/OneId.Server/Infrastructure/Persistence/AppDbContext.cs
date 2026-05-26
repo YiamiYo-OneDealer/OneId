@@ -13,6 +13,9 @@ public class AppDbContext(
     public DbSet<User> Users => Set<User>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<GroupRole> GroupRoles => Set<GroupRole>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -35,6 +38,9 @@ public class AppDbContext(
         // InternalAdmin handlers use .IgnoreQueryFilters() for cross-tenant reads.
         builder.Entity<AuditLog>().HasQueryFilter(a =>
             a.TenantId == tenantContext.TenantId);
+
+        // Story 4a.2: Role tenant isolation.
+        builder.Entity<Role>().HasQueryFilter(r => r.TenantId == tenantContext.TenantId);
 
         // AR-14: UseXminAsConcurrencyToken applied to all mutable entities.
         // Each epic that introduces a new mutable entity is responsible for adding it here.

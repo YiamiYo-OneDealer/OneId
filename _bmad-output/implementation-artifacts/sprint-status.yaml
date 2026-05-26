@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-26  # 3-1 done; 3-2 done; 3-4 done; 3-6 done; 3-8 done; 4a-1 review
+last_updated: 2026-05-26  # 3-1 done; 3-2 done; 3-4 done; 3-6 done; 3-8 done; 4a-1 review; 4a-2 ready-for-dev
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -96,7 +96,7 @@ development_status:
   # ─────────────────────────────────────────────────────────────────────────
   epic-4a: in-progress
   4a-1-permission-catalog-internal-admin: review
-  4a-2-role-management-tenant-admin: backlog
+  4a-2-role-management-tenant-admin: review
   4a-3-role-set-management-tenant-admin: backlog
   4a-4-group-management-tenant-admin: backlog
   4a-5-dimensional-attribute-reference-lists: backlog

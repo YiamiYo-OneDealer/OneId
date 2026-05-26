@@ -8,6 +8,7 @@ using OneId.Server.Infrastructure.Caching;
 using OneId.Server.Infrastructure.Logging;
 using OneId.Server.Application.Audit;
 using OneId.Server.Application.Internal;
+using OneId.Server.Application.TenantAdmin;
 using OneId.Server.Infrastructure.Middleware;
 using OneId.Server.Infrastructure.Persistence;
 using OneId.Server.Infrastructure.Persistence.Seeds;
@@ -80,6 +81,9 @@ try
 
     // Story 3.2: Internal Admin tenant CRUD handlers (AR-8: boundary enforced in AddInternalAdminHandlers)
     builder.Services.AddInternalAdminHandlers();
+
+    // Story 4a.2: Tenant Admin role management handlers
+    builder.Services.AddTenantAdminHandlers();
 
     // Story 3.8: Audit log service
     builder.Services.AddScoped<IAuditService, AuditService>();

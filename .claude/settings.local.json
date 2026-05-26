@@ -84,7 +84,11 @@
       "Bash(xargs grep -l \"RevokeAsync\\\\|RevokedTokenStore\\\\|RevocationHandler\\\\|JtiRevocation\")",
       "Bash(xargs grep -l \"Suspend\\\\|suspend\")",
       "Bash(xargs cat)",
-      "Bash(xargs grep -l -i \"audit\")"
+      "Bash(xargs grep -l -i \"audit\")",
+      "Bash(grep -rn \"Application.Tenant\\\\.\" src/OneId.Server/Application/TenantAdmin/)",
+      "Bash(grep -rn \"Application\\\\.Tenant;\" src/OneId.Server/Application/TenantAdmin/)",
+      "Bash(xargs sed -i 's/Application\\\\.Tenant\\\\./Application.TenantAdmin./g')",
+      "Bash(xargs sed -i 's/namespace OneId\\\\.Server\\\\.Application\\\\.Tenant;/namespace OneId.Server.Application.TenantAdmin;/')"
     ],
     "additionalDirectories": [
       "C:\\Temp",

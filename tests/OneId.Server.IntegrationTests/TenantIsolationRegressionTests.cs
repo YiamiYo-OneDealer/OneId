@@ -65,6 +65,66 @@ public class TenantIsolationRegressionTests : TenantIsolationTestBase
             () => db.Users.ToListAsync());
     }
 
+    // Story 4a.2: Role tenant isolation assertions
+    [Fact]
+    public async Task Role_IsNotVisible_FromOtherTenant()
+    {
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var tenantCtx = scope.ServiceProvider.GetRequiredService<TenantContext>();
+            tenantCtx.Initialize(DevSeeder.DevTenantId);
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Roles.Add(new Role
+            {
+                Id = Guid.NewGuid(),
+                TenantId = DevSeeder.DevTenantId,
+                Name = "IsolationTestRole",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var tenantBId = await SeedSecondTenantAsync();
+
+        using var scope2 = Factory.Services.CreateScope();
+        var tenantCtx2 = scope2.ServiceProvider.GetRequiredService<TenantContext>();
+        tenantCtx2.Initialize(tenantBId);
+        var db2 = scope2.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var roles = await db2.Roles.ToListAsync();
+        Assert.Empty(roles);
+    }
+
+    [Fact]
+    public async Task Role_IsVisible_FromOwningTenant()
+    {
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var tenantCtx = scope.ServiceProvider.GetRequiredService<TenantContext>();
+            tenantCtx.Initialize(DevSeeder.DevTenantId);
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Roles.Add(new Role
+            {
+                Id = Guid.NewGuid(),
+                TenantId = DevSeeder.DevTenantId,
+                Name = "OwningTenantRole",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        using var scope2 = Factory.Services.CreateScope();
+        var tenantCtx2 = scope2.ServiceProvider.GetRequiredService<TenantContext>();
+        tenantCtx2.Initialize(DevSeeder.DevTenantId);
+        var db2 = scope2.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var roles = await db2.Roles.ToListAsync();
+        Assert.NotEmpty(roles);
+        Assert.All(roles, r => Assert.Equal(DevSeeder.DevTenantId, r.TenantId));
+    }
+
     // AC9: Permission records are global — readable by Internal Admin regardless of tenant context
     [Fact]
     public async Task Permissions_AreGlobal_InternalAdminCanReadAllRegardlessOfTenantContext()
