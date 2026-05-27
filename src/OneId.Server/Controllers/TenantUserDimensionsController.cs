@@ -13,8 +13,7 @@ namespace OneId.Server.Controllers;
     Roles = "TenantAdmin")]
 public class TenantUserDimensionsController(
     GetUserDimensionsHandler getHandler,
-    AssignUserDimensionHandler assignHandler,
-    RemoveUserDimensionHandler removeHandler) : ControllerBase
+    SetUserDimensionsHandler setHandler) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> Get(Guid userId, CancellationToken ct)
@@ -30,15 +29,15 @@ public class TenantUserDimensionsController(
         }
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Assign(Guid userId, [FromBody] AssignDimensionBody body, CancellationToken ct)
+    [HttpPut]
+    public async Task<IActionResult> Set(Guid userId, [FromBody] SetDimensionsBody body, CancellationToken ct)
     {
         try
         {
-            var dto = await assignHandler.HandleAsync(userId, body.ValueId, ct);
-            return CreatedAtAction(nameof(Get), new { userId }, dto);
+            await setHandler.HandleAsync(userId, body.ValueIds, ct);
+            return NoContent();
         }
-        catch (AssignDimensionUserNotFoundException)
+        catch (SetDimensionsUserNotFoundException)
         {
             return NotFound(new { error = "user_not_found" });
         }
@@ -46,18 +45,11 @@ public class TenantUserDimensionsController(
         {
             return UnprocessableEntity(new { error = "invalid_dimension_value" });
         }
-        catch (DimensionAlreadyAssignedException)
+        catch (DimensionAssignmentConflictException)
         {
-            return Conflict(new { error = "already_assigned" });
+            return Conflict(new { error = "assignment_conflict" });
         }
-    }
-
-    [HttpDelete("{assignmentId:guid}")]
-    public async Task<IActionResult> Remove(Guid userId, Guid assignmentId, CancellationToken ct)
-    {
-        var found = await removeHandler.HandleAsync(userId, assignmentId, ct);
-        return found ? NoContent() : NotFound();
     }
 }
 
-public sealed record AssignDimensionBody(Guid ValueId);
+public sealed record SetDimensionsBody(IReadOnlyList<Guid> ValueIds);

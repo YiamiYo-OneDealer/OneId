@@ -93,54 +93,102 @@ public class TenantUserDimensionsIntegrationTests(OneIdWebApplicationFactory fac
         return user.Id;
     }
 
-    // ── AC2: POST creates assignment ──────────────────────────────────────────
+    // ── PUT: set assignments ──────────────────────────────────────────────────
 
     [Fact]
-    public async Task Post_ValidAssignment_Returns201WithDto()
+    public async Task Put_ValidValueIds_Returns204AndGetConfirmsState()
     {
-        var userId = await SeedUserAsync($"assign-test-{Guid.NewGuid():N}@test.com");
-        var valueId = await SeedDimensionValueAsync(DimensionAxis.Company, $"Acme-{Guid.NewGuid():N}");
+        var userId = await SeedUserAsync($"put-test-{Guid.NewGuid():N}@test.com");
+        var companyId = await SeedDimensionValueAsync(DimensionAxis.Company, $"Acme-{Guid.NewGuid():N}");
+        var makeId = await SeedDimensionValueAsync(DimensionAxis.Make, $"Toyota-{Guid.NewGuid():N}");
         var client = await AuthClientAsync();
 
-        var response = await client.PostAsJsonAsync(
+        var response = await client.PutAsJsonAsync(
             $"/api/tenant/users/{userId}/dimensions",
-            new { valueId });
+            new { valueIds = new[] { companyId, makeId } });
 
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.Equal(userId.ToString(), body.GetProperty("userId").GetString());
-        Assert.Equal(valueId.ToString(), body.GetProperty("dimensionValueId").GetString());
-        Assert.Equal("Company", body.GetProperty("axis").GetString());
-        Assert.NotEqual(Guid.Empty, Guid.Parse(body.GetProperty("id").GetString()!));
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        var getResponse = await client.GetAsync($"/api/tenant/users/{userId}/dimensions");
+        var body = await getResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(1, body.GetProperty("company").GetArrayLength());
+        Assert.Equal(1, body.GetProperty("make").GetArrayLength());
+        Assert.Equal(0, body.GetProperty("location").GetArrayLength());
     }
 
     [Fact]
-    public async Task Post_MultipleValuesToSameAxis_Allowed()
+    public async Task Put_EmptyList_ClearsAllAssignments()
     {
-        var userId = await SeedUserAsync($"multi-axis-{Guid.NewGuid():N}@test.com");
-        var valueId1 = await SeedDimensionValueAsync(DimensionAxis.Make, $"Toyota-{Guid.NewGuid():N}");
-        var valueId2 = await SeedDimensionValueAsync(DimensionAxis.Make, $"Honda-{Guid.NewGuid():N}");
+        var userId = await SeedUserAsync($"put-clear-{Guid.NewGuid():N}@test.com");
+        var makeId = await SeedDimensionValueAsync(DimensionAxis.Make, $"BMW-{Guid.NewGuid():N}");
         var client = await AuthClientAsync();
 
-        var r1 = await client.PostAsJsonAsync($"/api/tenant/users/{userId}/dimensions", new { valueId = valueId1 });
-        var r2 = await client.PostAsJsonAsync($"/api/tenant/users/{userId}/dimensions", new { valueId = valueId2 });
+        await client.PutAsJsonAsync($"/api/tenant/users/{userId}/dimensions",
+            new { valueIds = new[] { makeId } });
 
-        Assert.Equal(HttpStatusCode.Created, r1.StatusCode);
-        Assert.Equal(HttpStatusCode.Created, r2.StatusCode);
+        var clearResponse = await client.PutAsJsonAsync(
+            $"/api/tenant/users/{userId}/dimensions",
+            new { valueIds = Array.Empty<Guid>() });
+
+        Assert.Equal(HttpStatusCode.NoContent, clearResponse.StatusCode);
+
+        var getResponse = await client.GetAsync($"/api/tenant/users/{userId}/dimensions");
+        var body = await getResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(0, body.GetProperty("make").GetArrayLength());
     }
 
-    // ── AC3: POST inactive/cross-tenant value returns 422 ────────────────────
-
     [Fact]
-    public async Task Post_InactiveValue_Returns422()
+    public async Task Put_ReplacesExistingAssignments()
     {
-        var userId = await SeedUserAsync($"inactive-val-{Guid.NewGuid():N}@test.com");
-        var inactiveValueId = await SeedDimensionValueAsync(DimensionAxis.Branch, $"ClosedBranch-{Guid.NewGuid():N}", isActive: false);
+        var userId = await SeedUserAsync($"put-replace-{Guid.NewGuid():N}@test.com");
+        var makeId1 = await SeedDimensionValueAsync(DimensionAxis.Make, $"Toyota-{Guid.NewGuid():N}");
+        var makeId2 = await SeedDimensionValueAsync(DimensionAxis.Make, $"Honda-{Guid.NewGuid():N}");
         var client = await AuthClientAsync();
 
-        var response = await client.PostAsJsonAsync(
+        await client.PutAsJsonAsync($"/api/tenant/users/{userId}/dimensions",
+            new { valueIds = new[] { makeId1 } });
+
+        var replaceResponse = await client.PutAsJsonAsync(
             $"/api/tenant/users/{userId}/dimensions",
-            new { valueId = inactiveValueId });
+            new { valueIds = new[] { makeId2 } });
+
+        Assert.Equal(HttpStatusCode.NoContent, replaceResponse.StatusCode);
+
+        var getResponse = await client.GetAsync($"/api/tenant/users/{userId}/dimensions");
+        var body = await getResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var makes = body.GetProperty("make").EnumerateArray().ToList();
+        Assert.Single(makes);
+    }
+
+    [Fact]
+    public async Task Put_MultipleValuesPerAxis_Allowed()
+    {
+        var userId = await SeedUserAsync($"put-multi-{Guid.NewGuid():N}@test.com");
+        var makeId1 = await SeedDimensionValueAsync(DimensionAxis.Make, $"Toyota-{Guid.NewGuid():N}");
+        var makeId2 = await SeedDimensionValueAsync(DimensionAxis.Make, $"BMW-{Guid.NewGuid():N}");
+        var client = await AuthClientAsync();
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/tenant/users/{userId}/dimensions",
+            new { valueIds = new[] { makeId1, makeId2 } });
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        var getResponse = await client.GetAsync($"/api/tenant/users/{userId}/dimensions");
+        var body = await getResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(2, body.GetProperty("make").GetArrayLength());
+    }
+
+    [Fact]
+    public async Task Put_InactiveValue_Returns422()
+    {
+        var userId = await SeedUserAsync($"put-inactive-{Guid.NewGuid():N}@test.com");
+        var inactiveId = await SeedDimensionValueAsync(DimensionAxis.Branch, $"ClosedBranch-{Guid.NewGuid():N}", isActive: false);
+        var client = await AuthClientAsync();
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/tenant/users/{userId}/dimensions",
+            new { valueIds = new[] { inactiveId } });
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
@@ -148,109 +196,34 @@ public class TenantUserDimensionsIntegrationTests(OneIdWebApplicationFactory fac
     }
 
     [Fact]
-    public async Task Post_NonExistentValue_Returns422()
+    public async Task Put_NonExistentValue_Returns422()
     {
-        var userId = await SeedUserAsync($"nonexistent-val-{Guid.NewGuid():N}@test.com");
+        var userId = await SeedUserAsync($"put-novalue-{Guid.NewGuid():N}@test.com");
         var client = await AuthClientAsync();
 
-        var response = await client.PostAsJsonAsync(
+        var response = await client.PutAsJsonAsync(
             $"/api/tenant/users/{userId}/dimensions",
-            new { valueId = Guid.NewGuid() });
+            new { valueIds = new[] { Guid.NewGuid() } });
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
-    // ── AC4: POST with non-existent user returns 404 ─────────────────────────
-
     [Fact]
-    public async Task Post_NonExistentUser_Returns404()
+    public async Task Put_NonExistentUser_Returns404()
     {
         var valueId = await SeedDimensionValueAsync(DimensionAxis.Location, $"Paris-{Guid.NewGuid():N}");
         var client = await AuthClientAsync();
 
-        var response = await client.PostAsJsonAsync(
+        var response = await client.PutAsJsonAsync(
             $"/api/tenant/users/{Guid.NewGuid()}/dimensions",
-            new { valueId });
+            new { valueIds = new[] { valueId } });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal("user_not_found", body.GetProperty("error").GetString());
     }
 
-    // ── AC5: POST duplicate returns 409 ──────────────────────────────────────
-
-    [Fact]
-    public async Task Post_DuplicateAssignment_Returns409()
-    {
-        var userId = await SeedUserAsync($"dupe-assign-{Guid.NewGuid():N}@test.com");
-        var valueId = await SeedDimensionValueAsync(DimensionAxis.MarketSegment, $"Retail-{Guid.NewGuid():N}");
-        var client = await AuthClientAsync();
-
-        await client.PostAsJsonAsync($"/api/tenant/users/{userId}/dimensions", new { valueId });
-        var response = await client.PostAsJsonAsync($"/api/tenant/users/{userId}/dimensions", new { valueId });
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.Equal("already_assigned", body.GetProperty("error").GetString());
-    }
-
-    // ── AC6: DELETE physically removes assignment ─────────────────────────────
-
-    [Fact]
-    public async Task Delete_ExistingAssignment_Returns204()
-    {
-        var userId = await SeedUserAsync($"delete-assign-{Guid.NewGuid():N}@test.com");
-        var valueId = await SeedDimensionValueAsync(DimensionAxis.Company, $"DeleteMe-{Guid.NewGuid():N}");
-        var client = await AuthClientAsync();
-
-        var createResponse = await client.PostAsJsonAsync(
-            $"/api/tenant/users/{userId}/dimensions",
-            new { valueId });
-        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
-        var created = await createResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var assignmentId = created.GetProperty("id").GetString()!;
-
-        var deleteResponse = await client.DeleteAsync(
-            $"/api/tenant/users/{userId}/dimensions/{assignmentId}");
-
-        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
-    }
-
-    [Fact]
-    public async Task Delete_OtherAssignmentsUnaffected()
-    {
-        var userId = await SeedUserAsync($"multi-delete-{Guid.NewGuid():N}@test.com");
-        var valueId1 = await SeedDimensionValueAsync(DimensionAxis.Branch, $"Branch1-{Guid.NewGuid():N}");
-        var valueId2 = await SeedDimensionValueAsync(DimensionAxis.Branch, $"Branch2-{Guid.NewGuid():N}");
-        var client = await AuthClientAsync();
-
-        var r1 = await client.PostAsJsonAsync($"/api/tenant/users/{userId}/dimensions", new { valueId = valueId1 });
-        var r2 = await client.PostAsJsonAsync($"/api/tenant/users/{userId}/dimensions", new { valueId = valueId2 });
-        var assignmentId1 = (await r1.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetString()!;
-
-        await client.DeleteAsync($"/api/tenant/users/{userId}/dimensions/{assignmentId1}");
-
-        var getResponse = await client.GetAsync($"/api/tenant/users/{userId}/dimensions");
-        var body = await getResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var branches = body.GetProperty("branch").EnumerateArray().ToList();
-        Assert.Single(branches);
-    }
-
-    // ── AC7: DELETE non-existent returns 404 ─────────────────────────────────
-
-    [Fact]
-    public async Task Delete_NonExistentAssignment_Returns404()
-    {
-        var userId = await SeedUserAsync($"del-404-{Guid.NewGuid():N}@test.com");
-        var client = await AuthClientAsync();
-
-        var response = await client.DeleteAsync(
-            $"/api/tenant/users/{userId}/dimensions/{Guid.NewGuid()}");
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    // ── AC8: GET returns grouped response with all 5 axes ────────────────────
+    // ── GET: grouped response ─────────────────────────────────────────────────
 
     [Fact]
     public async Task Get_UserWithNoAssignments_ReturnsAllFiveAxesEmpty()
@@ -263,7 +236,6 @@ public class TenantUserDimensionsIntegrationTests(OneIdWebApplicationFactory fac
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
 
-        // All 5 axes must be present
         Assert.True(body.TryGetProperty("company", out var company));
         Assert.True(body.TryGetProperty("location", out var location));
         Assert.True(body.TryGetProperty("branch", out var branch));
@@ -282,14 +254,13 @@ public class TenantUserDimensionsIntegrationTests(OneIdWebApplicationFactory fac
     public async Task Get_UserWithAssignments_ReturnsGroupedByAxis()
     {
         var userId = await SeedUserAsync($"grouped-{Guid.NewGuid():N}@test.com");
-        var companyValueId = await SeedDimensionValueAsync(DimensionAxis.Company, $"Acme-{Guid.NewGuid():N}");
-        var makeValueId1 = await SeedDimensionValueAsync(DimensionAxis.Make, $"Toyota-{Guid.NewGuid():N}");
-        var makeValueId2 = await SeedDimensionValueAsync(DimensionAxis.Make, $"BMW-{Guid.NewGuid():N}");
+        var companyId = await SeedDimensionValueAsync(DimensionAxis.Company, $"Acme-{Guid.NewGuid():N}");
+        var makeId1 = await SeedDimensionValueAsync(DimensionAxis.Make, $"Toyota-{Guid.NewGuid():N}");
+        var makeId2 = await SeedDimensionValueAsync(DimensionAxis.Make, $"BMW-{Guid.NewGuid():N}");
         var client = await AuthClientAsync();
 
-        await client.PostAsJsonAsync($"/api/tenant/users/{userId}/dimensions", new { valueId = companyValueId });
-        await client.PostAsJsonAsync($"/api/tenant/users/{userId}/dimensions", new { valueId = makeValueId1 });
-        await client.PostAsJsonAsync($"/api/tenant/users/{userId}/dimensions", new { valueId = makeValueId2 });
+        await client.PutAsJsonAsync($"/api/tenant/users/{userId}/dimensions",
+            new { valueIds = new[] { companyId, makeId1, makeId2 } });
 
         var response = await client.GetAsync($"/api/tenant/users/{userId}/dimensions");
 
@@ -299,8 +270,6 @@ public class TenantUserDimensionsIntegrationTests(OneIdWebApplicationFactory fac
         Assert.Equal(2, body.GetProperty("make").GetArrayLength());
         Assert.Equal(0, body.GetProperty("location").GetArrayLength());
     }
-
-    // ── AC9: GET with non-existent user returns 404 ──────────────────────────
 
     [Fact]
     public async Task Get_NonExistentUser_Returns404()

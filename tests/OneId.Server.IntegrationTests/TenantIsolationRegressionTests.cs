@@ -435,6 +435,54 @@ public class UserDimensionAssignmentIsolationRegressionTests(OneIdWebApplication
         var assignments = await db2.UserDimensionAssignments.ToListAsync();
         Assert.Empty(assignments);
     }
+
+    [Fact]
+    public async Task UserDimensionAssignment_Put_CannotTargetOtherTenantUser()
+    {
+        // Seed a user and dimension value in DevTenant
+        var userId = Guid.NewGuid();
+        var dimValueId = Guid.NewGuid();
+
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var tenantCtx = scope.ServiceProvider.GetRequiredService<TenantContext>();
+            tenantCtx.Initialize(DevSeeder.DevTenantId);
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            db.Users.Add(new OneId.Server.Domain.Entities.User
+            {
+                Id = userId,
+                TenantId = DevSeeder.DevTenantId,
+                Email = $"iso-put-{Guid.NewGuid():N}@test.com",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            db.DimensionValues.Add(new OneId.Server.Domain.Entities.DimensionValue
+            {
+                Id = dimValueId,
+                TenantId = DevSeeder.DevTenantId,
+                Axis = OneId.Server.Domain.Enums.DimensionAxis.Company,
+                Value = $"IsoPutCompany-{Guid.NewGuid():N}",
+                IsActive = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var tenantBId = await SeedSecondTenantAsync();
+
+        // Under TenantB context, the DevTenant user is not visible — handler throws user-not-found
+        using var scope2 = Factory.Services.CreateScope();
+        var tenantCtx2 = scope2.ServiceProvider.GetRequiredService<TenantContext>();
+        tenantCtx2.Initialize(tenantBId);
+        var handler = scope2.ServiceProvider.GetRequiredService<
+            OneId.Server.Application.TenantAdmin.Dimensions.Commands.SetUserDimensionsHandler>();
+
+        await Assert.ThrowsAsync<
+            OneId.Server.Application.TenantAdmin.Dimensions.Commands.SetDimensionsUserNotFoundException>(
+            () => handler.HandleAsync(userId, [dimValueId], default));
+    }
 }
 
 /// <summary>

@@ -1,6 +1,6 @@
 # Story 4a.6: Per-User Dimension Assignments (Tenant Admin)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -497,6 +497,16 @@ claude-sonnet-4-6
 - src/OneId.Server/Application/TenantAdmin/TenantServiceExtensions.cs — added 3 handler registrations
 - tests/OneId.Server.IntegrationTests/TenantIsolationRegressionTests.cs — added `UserDimensionAssignmentIsolationRegressionTests` class
 
+### Review Findings
+
+- [x] [Review][Decision] GET grouped response returns value strings — no `assignmentId` in response; clients cannot call DELETE without a separate lookup. **Resolved:** replaced POST+DELETE with PUT replace-on-save; GET value strings are now sufficient for the write contract.
+- [x] [Review][Patch] Race condition on duplicate concurrent writes causing unhandled `DbUpdateException` → 500. **Fixed:** `SetUserDimensionsHandler` catches `DbUpdateException` on `23505` and maps to `DimensionAssignmentConflictException` → 409.
+- [x] [Review][Patch] DELETE 404 returned bare `NotFound()` with no body. **Fixed:** DELETE endpoint removed; superseded by PUT replace-on-save.
+- [x] [Review][Patch] No cross-tenant write isolation test. **Fixed:** added `UserDimensionAssignment_Put_CannotTargetOtherTenantUser` to `UserDimensionAssignmentIsolationRegressionTests`.
+- [x] [Review][Defer] `RemoveUserDimensionHandler` cross-tenant isolation relied on navigation-join filter only. Pre-existing architectural constraint — **moot**, handler removed.
+- [x] [Review][Defer] Double-query without transaction in GET/Assign handlers. Low-probability race, pre-existing pattern. [GetUserDimensionsHandler.cs]
+
 ## Change Log
 
 - 2026-05-27: Story 4a-6 implemented — UserDimensionAssignment entity + EF migration, 3 handlers, TenantUserDimensionsController, 12 integration tests, 1 isolation regression test. (Dev Agent)
+- 2026-05-27: Code review complete — 1 decision-needed, 3 patches, 2 deferred, 4 dismissed. (Review)

@@ -37,8 +37,7 @@ public static class TenantServiceExtensions
         services.AddScoped<AddDimensionValueHandler>();
         services.AddScoped<DeactivateDimensionValueHandler>();
         services.AddScoped<GetUserDimensionsHandler>();
-        services.AddScoped<AssignUserDimensionHandler>();
-        services.AddScoped<RemoveUserDimensionHandler>();
+        services.AddScoped<SetUserDimensionsHandler>();
         services.AddScoped<ListUsersHandler>();
         services.AddScoped<GetUserHandler>();
         services.AddScoped<CreateUserHandler>();

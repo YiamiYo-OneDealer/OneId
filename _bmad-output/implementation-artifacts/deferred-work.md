@@ -1,5 +1,10 @@
 # Deferred Work Log
 
+## Deferred from: code review of 4a-6-per-user-dimension-assignments-tenant-admin (2026-05-27)
+
+- **Fine-grained DELETE by axis/value** — `DELETE /api/tenant/users/{userId}/dimensions/{axis}/{value}` deferred; current design uses PUT replace-on-save. Add if fine-grained removal is needed by UI without a full round-trip.
+- **Double-query without transaction in GET/Set handlers** — `userExists` check and assignment query run in two sequential DB reads; a concurrent user-delete between them returns 200/empty instead of 404. Low-probability race; pre-existing pattern across handlers.
+
 ## Deferred from: code review of 4a-5-dimensional-attribute-reference-lists (2026-05-27)
 
 - **Audit log staged before SaveChangesAsync** — `audit.AppendAsync` enqueues the `AuditLog` entity in the EF change tracker before the command's `SaveChangesAsync`; if the save fails, the audit entry is written by the next successful save in the same DI scope. Pre-existing pattern across all handlers (Groups, Roles, RoleSets). Address holistically at the Audit infrastructure level rather than per-handler.
