@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneId.Server.Application.TenantAdmin.Users.Commands;
@@ -54,8 +55,15 @@ public class TenantUsersController(
     [HttpPatch("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserBody body, CancellationToken ct)
     {
-        var dto = await updateHandler.HandleAsync(new UpdateUserRequest(id, body.DisplayName, body.Email), ct);
-        return dto is null ? NotFound() : Ok(dto);
+        try
+        {
+            var dto = await updateHandler.HandleAsync(new UpdateUserRequest(id, body.DisplayName, body.Email), ct);
+            return dto is null ? NotFound() : Ok(dto);
+        }
+        catch (UserEmailConflictException)
+        {
+            return Conflict(new { error = "email_conflict" });
+        }
     }
 
     [HttpDelete("{id:guid}")]
@@ -66,5 +74,5 @@ public class TenantUsersController(
     }
 }
 
-public sealed record CreateUserBody(string Email, string? DisplayName, string? Password);
+public sealed record CreateUserBody([Required][MaxLength(320)][EmailAddress] string Email, string? DisplayName, string? Password);
 public sealed record UpdateUserBody(string? DisplayName, string? Email);

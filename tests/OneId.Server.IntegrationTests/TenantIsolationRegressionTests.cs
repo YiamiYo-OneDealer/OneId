@@ -493,6 +493,40 @@ public class UserDimensionAssignmentIsolationRegressionTests(OneIdWebApplication
 [Trait("Category", "TenantIsolation")]
 public class UserLifecycleIsolationRegressionTests(OneIdWebApplicationFactory factory) : TenantIsolationTestBase(factory)
 {
+    private async Task<HttpClient> AuthClientAsync()
+    {
+        var step1 = await Client.PostAsync("/connect/token",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "password",
+                ["username"] = DevSeeder.TotpUserEmail,
+                ["password"] = "Admin123!",
+                ["client_id"] = "oneid-dev-client",
+                ["scope"] = "openid",
+            }));
+        step1.EnsureSuccessStatusCode();
+        var mfaToken = (await step1.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("mfa_session_token").GetString()!;
+
+        var step2 = await Client.PostAsync("/connect/token",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "urn:oneid:mfa",
+                ["mfa_session_token"] = mfaToken,
+                ["totp_code"] = new Totp(Base32Encoding.ToBytes(DevSeeder.TotpUserTotpSecret))
+                                    .ComputeTotp(DateTime.UtcNow),
+                ["client_id"] = "oneid-dev-client",
+                ["scope"] = "openid",
+            }));
+        step2.EnsureSuccessStatusCode();
+        var token = (await step2.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("access_token").GetString()!;
+
+        var client = Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return client;
+    }
+
     [Fact]
     public async Task User_IsNotVisible_FromOtherTenant_ViaDbFilter()
     {
@@ -522,6 +556,46 @@ public class UserLifecycleIsolationRegressionTests(OneIdWebApplicationFactory fa
 
         var users = await db2.Users.ToListAsync();
         Assert.Empty(users);
+    }
+
+    [Fact]
+    public async Task User_CrossTenantGet_Returns404_ViaHttp()
+    {
+        // Seed a user directly into a second tenant (not DevTenant)
+        var tenantBId = await SeedSecondTenantAsync();
+        var otherTenantUserId = Guid.NewGuid();
+
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Users.Add(new OneId.Server.Domain.Entities.User
+            {
+                Id = otherTenantUserId,
+                TenantId = tenantBId,
+                Email = $"other-tenant-{Guid.NewGuid():N}@test.com",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        // DevTenant TenantAdmin cannot see the other tenant's user via HTTP
+        var client = await AuthClientAsync();
+        var response = await client.GetAsync($"/api/tenant/users/{otherTenantUserId}");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task User_Create_ScopedToCallerTenant_ViaHttp()
+    {
+        var client = await AuthClientAsync();
+
+        var response = await client.PostAsJsonAsync("/api/tenant/users",
+            new { email = $"scoped-{Guid.NewGuid():N}@test.com", displayName = "Scoped User" });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(DevSeeder.DevTenantId.ToString(), body.GetProperty("tenantId").GetString());
     }
 }
 

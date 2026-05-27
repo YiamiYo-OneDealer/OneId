@@ -325,6 +325,34 @@ public class UserLifecycleIntegrationTests(OneIdWebApplicationFactory factory) :
         Assert.Equal(HttpStatusCode.Unauthorized, (await Client.DeleteAsync($"/api/tenant/users/{id}")).StatusCode);
     }
 
+    [Fact]
+    public async Task AllEndpoints_WithNonTenantAdminRole_Return403()
+    {
+        // admin@oneid.dev is InternalAdmin only — JWT contains no TenantAdmin role
+        var tokenResp = await Client.PostAsync("/connect/token",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "password",
+                ["username"] = "admin@oneid.dev",
+                ["password"] = "Admin123!",
+                ["client_id"] = "oneid-dev-client",
+                ["scope"] = "openid",
+            }));
+        tokenResp.EnsureSuccessStatusCode();
+        var token = (await tokenResp.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("access_token").GetString()!;
+
+        var client = Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var id = Guid.NewGuid();
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync("/api/tenant/users")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync($"/api/tenant/users/{id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsJsonAsync("/api/tenant/users", new { email = "x@x.com" })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.PatchAsJsonAsync($"/api/tenant/users/{id}", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.DeleteAsync($"/api/tenant/users/{id}")).StatusCode);
+    }
+
     // ── AC8: Full lifecycle sequence ─────────────────────────────────────────
 
     [Fact]
@@ -364,16 +392,20 @@ public class UserLifecycleIntegrationTests(OneIdWebApplicationFactory factory) :
         var deactivated = await getAfterDelete.Content.ReadFromJsonAsync<JsonElement>();
         Assert.False(deactivated.GetProperty("isActive").GetBoolean());
 
-        // Verify 3 audit entries: user.created, user.updated, user.deactivated
+        // Verify 3 audit entries: user.created, user.updated, user.deactivated in timestamp order
         var auditResp = await client.GetAsync("/api/tenant/audit?pageSize=50");
         auditResp.EnsureSuccessStatusCode();
         var audit = await auditResp.Content.ReadFromJsonAsync<JsonElement>();
-        var items = audit.GetProperty("items").EnumerateArray()
+        var userAuditEntries = audit.GetProperty("items").EnumerateArray()
             .Where(e => e.GetProperty("entityId").GetString() == userId)
+            .OrderBy(e => e.GetProperty("timestamp").GetString())
             .Select(e => e.GetProperty("action").GetString())
             .ToList();
-        Assert.Contains("user.created", items);
-        Assert.Contains("user.updated", items);
-        Assert.Contains("user.deactivated", items);
+        Assert.Equal(3, userAuditEntries.Count);
+        Assert.Equal("user.created", userAuditEntries[0]);
+        Assert.Equal("user.updated", userAuditEntries[1]);
+        Assert.Equal("user.deactivated", userAuditEntries[2]);
+
+        // TODO (Phase 6): assert seatsUsed decremented via GET /api/tenant/license once licensing endpoint is implemented
     }
 }

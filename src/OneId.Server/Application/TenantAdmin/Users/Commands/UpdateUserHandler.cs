@@ -24,6 +24,11 @@ public sealed class UpdateUserHandler(AppDbContext db, ITenantContext tenantCont
         }
         if (request.Email is not null && request.Email != user.Email)
         {
+            // IgnoreQueryFilters: deactivated users still hold their email reservation
+            var emailTaken = await db.Users
+                .IgnoreQueryFilters()
+                .AnyAsync(u => u.TenantId == tenantContext.TenantId && u.Email == request.Email && u.Id != request.Id, ct);
+            if (emailTaken) throw new UserEmailConflictException();
             changes["email"] = request.Email;
             user.Email = request.Email;
         }

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-27  # 3-1 done; 3-2 done; 3-4 done; 3-6 done; 3-8 done; 4a-1 done; 4a-2 done; 4a-3 done; 4a-4 done; 4a-5 done; 4a-6 done; 4a-7 review
+last_updated: 2026-05-27  # 3-1 done; 3-2 done; 3-4 done; 3-6 done; 3-8 done; 4a-1 done; 4a-2 done; 4a-3 done; 4a-4 done; 4a-5 done; 4a-6 done; 4a-7 done
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -101,7 +101,7 @@ development_status:
   4a-4-group-management-tenant-admin: done
   4a-5-dimensional-attribute-reference-lists: done
   4a-6-per-user-dimension-assignments-tenant-admin: done
-  4a-7-user-lifecycle-management-tenant-admin: review
+  4a-7-user-lifecycle-management-tenant-admin: done
   epic-4a-retrospective: optional
 
   # ─────────────────────────────────────────────────────────────────────────

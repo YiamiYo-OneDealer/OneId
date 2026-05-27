@@ -1,5 +1,12 @@
 # Deferred Work Log
 
+## Deferred from: code review of 4a-7-user-lifecycle-management-tenant-admin (2026-05-27)
+
+- **W1: AuditService TenantId guard removal** — Guard was removed intentionally to allow InternalAdmin operations to audit under a TenantId different from the calling user's context. No replacement guard added; callers are trusted by contract to pass the correct TenantId. Revisit if cross-tenant audit poisoning becomes a concern.
+- **W2: ListUsersHandler double DB round-trip** — `CountAsync` + `ToListAsync` run as separate queries without snapshot isolation. `totalCount` can be stale relative to `items` under concurrent writes. Pre-existing pattern across all list handlers.
+- **W3: AuditService.QueryAsync no tenant filter** — `QueryAsync` applies no explicit `TenantId` predicate; relies on global query filter for `AuditLogs` (if any). Not introduced by this story. Address holistically.
+- **W4: AuditService.QueryAsync no pageSize clamping** — No upper/lower bound on `page` or `pageSize`; `page=0` or `pageSize=0` produce semantically wrong results. Pre-existing, out of scope.
+
 ## Deferred from: code review of 4a-6-per-user-dimension-assignments-tenant-admin (2026-05-27)
 
 - **Fine-grained DELETE by axis/value** — `DELETE /api/tenant/users/{userId}/dimensions/{axis}/{value}` deferred; current design uses PUT replace-on-save. Add if fine-grained removal is needed by UI without a full round-trip.

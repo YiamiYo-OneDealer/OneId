@@ -19,7 +19,10 @@ public sealed class CreateUserHandler(
 {
     public async Task<UserDto> HandleAsync(CreateUserRequest request, CancellationToken ct = default)
     {
-        var emailExists = await db.Users.AnyAsync(u => u.Email == request.Email, ct);
+        // IgnoreQueryFilters: deactivated users still hold their email reservation within the tenant
+        var emailExists = await db.Users
+            .IgnoreQueryFilters()
+            .AnyAsync(u => u.TenantId == tenantContext.TenantId && u.Email == request.Email, ct);
         if (emailExists) throw new UserEmailConflictException();
 
         var now = DateTimeOffset.UtcNow;
