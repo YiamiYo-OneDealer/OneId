@@ -1,8 +1,4 @@
-<p align="center">
-  <img src="docs/logo.svg" alt="OneId" width="80" />
-</p>
-
-# OneId
+# <img src="docs/logo.svg" alt="" width="36" height="36" style="vertical-align:middle;margin-right:8px"> OneId
 
 **OneId** is a custom identity and licensing platform for OneDealer v2. It replaces ad-hoc credential management with a standards-compliant OAuth 2.0 / OpenID Connect foundation built on [OpenIddict](https://documentation.openiddict.com/), while implementing a domain-specific authorization model that off-the-shelf IDPs cannot support.
 
