@@ -12,6 +12,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.TenantId).IsRequired();
         builder.Property(u => u.Email).IsRequired().HasMaxLength(320);
+        builder.Property(u => u.DisplayName).HasMaxLength(200);
         builder.Property(u => u.CreatedAt).IsRequired();
         builder.Property(u => u.UpdatedAt).IsRequired();
         builder.Property(u => u.DeletedAt);

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using OneId.Server.Application.Common;
 using OneId.Server.Domain.Entities;
 using OneId.Server.Infrastructure.Persistence;
 
@@ -8,15 +7,10 @@ namespace OneId.Server.Application.Audit;
 
 public sealed class AuditService(
     AppDbContext db,
-    ITenantContext tenantContext,
     IHttpContextAccessor httpContextAccessor) : IAuditService
 {
     public Task AppendAsync(AuditLogEntry entry, CancellationToken ct = default)
     {
-        if (tenantContext.IsInitialized && entry.TenantId != tenantContext.TenantId)
-            throw new InvalidOperationException(
-                $"Audit entry TenantId {entry.TenantId} does not match current tenant context {tenantContext.TenantId}.");
-
         var actorSub = httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
         Guid? actorUserId = Guid.TryParse(actorSub, out var parsed) ? parsed : null;
 

@@ -438,6 +438,46 @@ public class UserDimensionAssignmentIsolationRegressionTests(OneIdWebApplication
 }
 
 /// <summary>
+/// Story 4a.7: User lifecycle isolation regression tests.
+/// Users created under Tenant A must not be visible under Tenant B.
+/// </summary>
+[Collection("IntegrationTests")]
+[Trait("Category", "TenantIsolation")]
+public class UserLifecycleIsolationRegressionTests(OneIdWebApplicationFactory factory) : TenantIsolationTestBase(factory)
+{
+    [Fact]
+    public async Task User_IsNotVisible_FromOtherTenant_ViaDbFilter()
+    {
+        // Seed a user directly in DevTenant
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var tenantCtx = scope.ServiceProvider.GetRequiredService<TenantContext>();
+            tenantCtx.Initialize(DevSeeder.DevTenantId);
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Users.Add(new OneId.Server.Domain.Entities.User
+            {
+                Id = Guid.NewGuid(),
+                TenantId = DevSeeder.DevTenantId,
+                Email = $"isolation-user-{Guid.NewGuid():N}@test.com",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var tenantBId = await SeedSecondTenantAsync();
+
+        using var scope2 = Factory.Services.CreateScope();
+        var tenantCtx2 = scope2.ServiceProvider.GetRequiredService<TenantContext>();
+        tenantCtx2.Initialize(tenantBId);
+        var db2 = scope2.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var users = await db2.Users.ToListAsync();
+        Assert.Empty(users);
+    }
+}
+
+/// <summary>
 /// Base class for tenant isolation regression tests.
 /// Provides seed helpers and scoped context factory for Epic 4a extension.
 /// </summary>

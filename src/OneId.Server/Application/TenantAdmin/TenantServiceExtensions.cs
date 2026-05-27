@@ -7,6 +7,8 @@ using OneId.Server.Application.TenantAdmin.Roles.Commands;
 using OneId.Server.Application.TenantAdmin.Roles.Queries;
 using OneId.Server.Application.TenantAdmin.RoleSets.Commands;
 using OneId.Server.Application.TenantAdmin.RoleSets.Queries;
+using OneId.Server.Application.TenantAdmin.Users.Commands;
+using OneId.Server.Application.TenantAdmin.Users.Queries;
 
 namespace OneId.Server.Application.TenantAdmin;
 
@@ -37,6 +39,11 @@ public static class TenantServiceExtensions
         services.AddScoped<GetUserDimensionsHandler>();
         services.AddScoped<AssignUserDimensionHandler>();
         services.AddScoped<RemoveUserDimensionHandler>();
+        services.AddScoped<ListUsersHandler>();
+        services.AddScoped<GetUserHandler>();
+        services.AddScoped<CreateUserHandler>();
+        services.AddScoped<UpdateUserHandler>();
+        services.AddScoped<DeleteUserHandler>();
         return services;
     }
 }
