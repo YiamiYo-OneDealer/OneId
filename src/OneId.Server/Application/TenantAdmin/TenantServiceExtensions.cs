@@ -7,6 +7,8 @@ using OneId.Server.Application.TenantAdmin.Roles.Commands;
 using OneId.Server.Application.TenantAdmin.Roles.Queries;
 using OneId.Server.Application.TenantAdmin.RoleSets.Commands;
 using OneId.Server.Application.TenantAdmin.RoleSets.Queries;
+using OneId.Server.Application.TenantAdmin.UserOverrides.Commands;
+using OneId.Server.Application.TenantAdmin.UserOverrides.Queries;
 using OneId.Server.Application.TenantAdmin.Users.Commands;
 using OneId.Server.Application.TenantAdmin.Users.Queries;
 
@@ -43,6 +45,9 @@ public static class TenantServiceExtensions
         services.AddScoped<CreateUserHandler>();
         services.AddScoped<UpdateUserHandler>();
         services.AddScoped<DeleteUserHandler>();
+        services.AddScoped<ListUserOverridesHandler>();
+        services.AddScoped<CreateUserOverrideHandler>();
+        services.AddScoped<DeleteUserOverrideHandler>();
         return services;
     }
 }

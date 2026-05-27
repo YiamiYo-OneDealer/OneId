@@ -23,6 +23,7 @@ public class AppDbContext(
     public DbSet<UserGroup> UserGroups => Set<UserGroup>();
     public DbSet<DimensionValue> DimensionValues => Set<DimensionValue>();
     public DbSet<UserDimensionAssignment> UserDimensionAssignments => Set<UserDimensionAssignment>();
+    public DbSet<UserPermissionOverride> UserPermissionOverrides => Set<UserPermissionOverride>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -62,12 +63,17 @@ public class AppDbContext(
         builder.Entity<UserDimensionAssignment>().HasQueryFilter(a =>
             a.DimensionValue.TenantId == tenantContext.TenantId);
 
+        // Story 4b.1: UserPermissionOverride tenant isolation.
+        builder.Entity<UserPermissionOverride>().HasQueryFilter(o =>
+            o.TenantId == tenantContext.TenantId);
+
         // AR-14: UseXminAsConcurrencyToken applied to all mutable entities.
         // Each epic that introduces a new mutable entity is responsible for adding it here.
         // Story 1.3b adds: Tenant, User
         // Epic 3 adds: License, IdpConfiguration, AuditLog
         // Story 4a.1 adds: Permission (via PermissionConfiguration)
         // Epic 4a adds: Role, RoleSet, Group, DimensionValue, UserDimensionAssignment
+        // Story 4b.1 adds: UserPermissionOverride
         // Note: xmin is a PostgreSQL system column. No migration column is needed. In-memory provider ignores it.
     }
 }

@@ -600,6 +600,59 @@ public class UserLifecycleIsolationRegressionTests(OneIdWebApplicationFactory fa
 }
 
 /// <summary>
+/// Story 4b.1: UserPermissionOverride isolation regression tests.
+/// </summary>
+[Collection("IntegrationTests")]
+[Trait("Category", "TenantIsolation")]
+public class UserPermissionOverrideIsolationRegressionTests(OneIdWebApplicationFactory factory) : TenantIsolationTestBase(factory)
+{
+    [Fact]
+    public async Task UserPermissionOverride_IsNotVisible_FromOtherTenant()
+    {
+        var userId = Guid.NewGuid();
+        var permId = OneId.Server.Application.Common.Permissions.AdminTenantsView;
+
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var tenantCtx = scope.ServiceProvider.GetRequiredService<TenantContext>();
+            tenantCtx.Initialize(DevSeeder.DevTenantId);
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            db.Users.Add(new OneId.Server.Domain.Entities.User
+            {
+                Id = userId,
+                TenantId = DevSeeder.DevTenantId,
+                Email = $"iso-override-{Guid.NewGuid():N}@test.com",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            db.UserPermissionOverrides.Add(new OneId.Server.Domain.Entities.UserPermissionOverride
+            {
+                Id = Guid.NewGuid(),
+                TenantId = DevSeeder.DevTenantId,
+                UserId = userId,
+                PermissionId = permId,
+                OverrideType = OneId.Server.Domain.Enums.PermissionOverrideType.Deny,
+                Reason = "Isolation test",
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedByUserId = Guid.Empty,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var tenantBId = await SeedSecondTenantAsync();
+
+        using var scope2 = Factory.Services.CreateScope();
+        var tenantCtx2 = scope2.ServiceProvider.GetRequiredService<TenantContext>();
+        tenantCtx2.Initialize(tenantBId);
+        var db2 = scope2.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var overrides = await db2.UserPermissionOverrides.ToListAsync();
+        Assert.Empty(overrides);
+    }
+}
+
+/// <summary>
 /// Base class for tenant isolation regression tests.
 /// Provides seed helpers and scoped context factory for Epic 4a extension.
 /// </summary>
