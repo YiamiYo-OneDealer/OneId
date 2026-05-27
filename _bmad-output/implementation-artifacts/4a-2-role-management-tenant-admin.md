@@ -1,6 +1,6 @@
 # Story 4a.2: Role Management (Tenant Admin)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -588,6 +588,19 @@ Implementation complete. All 7 tasks and all subtasks checked.
 - `src/OneId.Server/Program.cs` — added TenantAdmin using + `AddTenantAdminHandlers()`
 - `tests/OneId.Server.IntegrationTests/TenantIsolationRegressionTests.cs` — added 2 Role isolation tests
 
+### Review Findings
+
+- [x] [Review][Decision] Empty `permissionIds` silently creates a zero-permission role — resolved: zero-permission roles are allowed (permissions added later via PUT). No code change needed.
+- [x] [Review][Patch] Null `PermissionIds` or null string entries cause NullReferenceException — fixed: added null-guard in Create and Update controller actions before calling handler. [`TenantRolesController.cs`]
+- [x] [Review][Patch] `DELETE` handler does not catch `DbUpdateConcurrencyException` — fixed: added catch in `TenantRolesController.Delete` returning 409. [`TenantRolesController.cs`]
+- [x] [Review][Patch] Missing AC7 test: InternalAdmin-only JWT → 403 — fixed: added `GetList_WithoutTenantAdminRole_Returns403` test using admin@oneid.dev (no TenantAdmin role). [`TenantRolesIntegrationTests.cs`]
+- [x] [Review][Defer] Audit written before `SaveChangesAsync` (ghost audit on save failure) — pre-existing systemic pattern across the codebase; not introduced by this story
+- [x] [Review][Defer] DELETE 409 lists Group GUIDs not names — intentionally deferred to Story 4a.4 per dev notes; Group.Name not yet available
+- [x] [Review][Defer] Missing test: DELETE role_in_use → 409 — requires seeding a GroupRole record which needs Group entity (Story 4a.4)
+- [x] [Review][Defer] Race between CountAsync and ToListAsync in ListRolesHandler — systemic pre-existing pagination pattern; no snapshot isolation
+- [x] [Review][Defer] xmin CurrentValue after SaveChangesAsync may not reflect DB-assigned value — systemic xmin pattern used across all entities; pre-existing
+
 ## Change Log
 
 - 2026-05-26: Story 4a-2 implemented — Role CRUD for Tenant Admin, RolePermission join, GroupRole stub, TenantServiceExtensions, audit integration, tenant isolation tests. (Dev Agent)
+- 2026-05-27: Code review — 1 decision-needed, 3 patch, 5 deferred, 8 dismissed. (Review)

@@ -1,5 +1,13 @@
 # Deferred Work Log
 
+## Deferred from: code review of 4a-2-role-management-tenant-admin (2026-05-27)
+
+- **Audit written before SaveChangesAsync** — ghost audit entry persisted if DB save fails. Systemic pre-existing pattern across the codebase; needs architectural decision about audit transactionality.
+- **DELETE 409 lists Group GUIDs not names** — `role_in_use` 409 response uses `GroupId.ToString()` instead of `Group.Name`. Intentionally deferred to Story 4a.4 which adds the Group entity.
+- **Missing test: DELETE role_in_use → 409** — integration test for the 409 conflict path requires seeding GroupRole rows, which requires the Group entity (Story 4a.4).
+- **Race between CountAsync and ToListAsync in ListRolesHandler** — `totalCount` and `items` are fetched in separate queries without snapshot isolation; concurrent inserts/deletes can produce inconsistent pagination. Pre-existing systemic pattern.
+- **xmin CurrentValue after SaveChangesAsync may not reflect DB-assigned value** — EF/Npgsql xmin handling after save not verified to reload the system column. Pre-existing systemic pattern across all entities.
+
 ## Deferred from: code review of 3-2-tenant-crud-internal-admin + 3-4-tenant-admin-designation-internal-admin (2026-05-26)
 
 - **No role authorization on `InternalTenantsController`** (`src/OneId.Server/Controllers/InternalTenantsController.cs`) — any valid bearer token can call internal tenant admin endpoints. Intentional; Epic 4a adds `[Authorize(Policy = "InternalAdmin")]` gate.

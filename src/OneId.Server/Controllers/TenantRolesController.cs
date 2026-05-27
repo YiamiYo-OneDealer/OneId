@@ -42,6 +42,9 @@ public class TenantRolesController(
         if (string.IsNullOrWhiteSpace(body.Name))
             return BadRequest(new { error = "invalid_name" });
 
+        if (body.PermissionIds is null || body.PermissionIds.Any(id => id is null))
+            return BadRequest(new { error = "invalid_permission_ids" });
+
         try
         {
             var dto = await createHandler.HandleAsync(new CreateRoleRequest(body.Name, body.PermissionIds), ct);
@@ -58,6 +61,9 @@ public class TenantRolesController(
     {
         if (string.IsNullOrWhiteSpace(body.Name))
             return BadRequest(new { error = "invalid_name" });
+
+        if (body.PermissionIds is null || body.PermissionIds.Any(id => id is null))
+            return BadRequest(new { error = "invalid_permission_ids" });
 
         try
         {
@@ -86,6 +92,10 @@ public class TenantRolesController(
         catch (RoleInUseException ex)
         {
             return Conflict(new { error = "role_in_use", groups = ex.GroupNames });
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(new { error = "conflict", detail = "Concurrent modification — reload and retry." });
         }
     }
 }

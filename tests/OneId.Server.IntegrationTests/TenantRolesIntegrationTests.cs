@@ -235,4 +235,29 @@ public class TenantRolesIntegrationTests(OneIdWebApplicationFactory factory) : I
         var response = await Factory.CreateClient().GetAsync("/api/tenant/roles");
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
+
+    [Fact]
+    public async Task GetList_WithoutTenantAdminRole_Returns403()
+    {
+        // admin@oneid.dev has no IsTenantAdmin — JWT contains no TenantAdmin role.
+        // No TOTP enrolled, so password grant returns access_token directly.
+        var tokenResp = await Client.PostAsync("/connect/token",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "password",
+                ["username"] = "admin@oneid.dev",
+                ["password"] = "Admin123!",
+                ["client_id"] = "oneid-dev-client",
+                ["scope"] = "openid",
+            }));
+        tokenResp.EnsureSuccessStatusCode();
+        var token = (await tokenResp.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("access_token").GetString()!;
+
+        var client = Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await client.GetAsync("/api/tenant/roles");
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
 }
