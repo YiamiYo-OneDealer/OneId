@@ -18,7 +18,8 @@ public class TenantDimensionsController(
     DeactivateDimensionValueHandler deactivateHandler) : ControllerBase
 {
     private static bool TryParseAxis(string raw, out DimensionAxis axis)
-        => Enum.TryParse(raw, ignoreCase: true, out axis);
+        => Enum.TryParse(raw, ignoreCase: true, out axis)
+           && !char.IsDigit(raw[0]);
 
     [HttpGet]
     public async Task<IActionResult> List(string axis, CancellationToken ct)
@@ -36,6 +37,8 @@ public class TenantDimensionsController(
             return BadRequest(new { error = "invalid_axis" });
         if (string.IsNullOrWhiteSpace(body.Value))
             return BadRequest(new { error = "invalid_value" });
+        if (body.Value.Trim().Length > 200)
+            return BadRequest(new { error = "value_too_long" });
         try
         {
             var dto = await addHandler.HandleAsync(parsedAxis, body.Value, ct);
@@ -50,9 +53,9 @@ public class TenantDimensionsController(
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Deactivate(string axis, Guid id, CancellationToken ct)
     {
-        if (!TryParseAxis(axis, out _))
+        if (!TryParseAxis(axis, out var parsedAxis))
             return BadRequest(new { error = "invalid_axis" });
-        var found = await deactivateHandler.HandleAsync(id, ct);
+        var found = await deactivateHandler.HandleAsync(id, parsedAxis, ct);
         return found ? NoContent() : NotFound();
     }
 }

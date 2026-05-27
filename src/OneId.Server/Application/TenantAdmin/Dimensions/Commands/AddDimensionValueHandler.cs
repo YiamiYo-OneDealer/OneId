@@ -12,6 +12,8 @@ public sealed class AddDimensionValueHandler(AppDbContext db, ITenantContext ten
 {
     public async Task<DimensionValueDto> HandleAsync(DimensionAxis axis, string value, CancellationToken ct = default)
     {
+        value = value.Trim();
+
         var exists = await db.DimensionValues
             .IgnoreQueryFilters()
             .AnyAsync(d => d.TenantId == tenantContext.TenantId && d.Axis == axis && d.Value == value, ct);

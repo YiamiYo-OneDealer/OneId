@@ -1,5 +1,9 @@
 # Deferred Work Log
 
+## Deferred from: code review of 4a-5-dimensional-attribute-reference-lists (2026-05-27)
+
+- **Audit log staged before SaveChangesAsync** — `audit.AppendAsync` enqueues the `AuditLog` entity in the EF change tracker before the command's `SaveChangesAsync`; if the save fails, the audit entry is written by the next successful save in the same DI scope. Pre-existing pattern across all handlers (Groups, Roles, RoleSets). Address holistically at the Audit infrastructure level rather than per-handler.
+
 ## Deferred from: code review of 4a-4-group-management-tenant-admin (2026-05-27)
 
 - **AddMember/RemoveMember 404 ambiguity** — Both `GroupNotFound` and `UserNotFound` return `404` with no body. Caller cannot distinguish which resource was missing. Design choice; spec does not require differentiation. If UX needs it, add an error body.

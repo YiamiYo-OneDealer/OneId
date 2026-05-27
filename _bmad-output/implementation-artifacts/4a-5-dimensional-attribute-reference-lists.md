@@ -1,6 +1,6 @@
 # Story 4a.5: Dimensional Attribute Reference Lists
 
-Status: review
+Status: done
 
 ## Story
 
@@ -394,6 +394,14 @@ claude-sonnet-4-6
 - src/OneId.Server/Infrastructure/Persistence/Migrations/AppDbContextModelSnapshot.cs — auto-updated by EF tooling
 - src/OneId.Server/Application/TenantAdmin/TenantServiceExtensions.cs — added 3 handler registrations + 2 using statements
 - tests/OneId.Server.IntegrationTests/TenantIsolationRegressionTests.cs — added DimensionValueIsolationRegressionTests class
+
+### Review Findings
+
+- [x] [Review][Decision→Patch] Cross-axis DELETE not enforced — fixed: `DeactivateDimensionValueHandler.HandleAsync` now takes `DimensionAxis axis` and adds `d.Axis == axis` to the query predicate; controller passes `parsedAxis` instead of discarding it. [TenantDimensionsController.cs + DeactivateDimensionValueHandler.cs]
+- [x] [Review][Decision→Patch] Numeric string axis accepted — fixed: `TryParseAxis` now returns `false` when `raw[0]` is a digit, rejecting `"0"`–`"4"` with 400. [TenantDimensionsController.cs:TryParseAxis]
+- [x] [Review][Decision→Patch] Value not normalized before uniqueness check — fixed: `value = value.Trim()` added at the top of `AddDimensionValueHandler.HandleAsync` before duplicate check and insert. [AddDimensionValueHandler.cs:HandleAsync]
+- [x] [Review][Patch] No max-length validation on POST body `Value` — fixed: added `body.Value.Trim().Length > 200` guard returning 400 `{ "error": "value_too_long" }` before handler is called. [TenantDimensionsController.cs:Add]
+- [x] [Review][Defer] Audit log staged before `SaveChangesAsync` — `audit.AppendAsync` enqueues the `AuditLog` entity in the EF change tracker before the command save; if `SaveChangesAsync` fails, the audit entry is persisted by the next successful save in the same scope. Pre-existing pattern across all handlers (Groups, Roles, etc.) — deferred, pre-existing
 
 ## Change Log
 
