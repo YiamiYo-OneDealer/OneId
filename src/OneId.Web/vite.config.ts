@@ -31,8 +31,9 @@ export default defineConfig({
   server: {
     sourcemapIgnoreList: (sourcePath) => sourcePath.includes('node_modules'),
     proxy: {
-      '/account': 'http://localhost:5000',
-      '/connect': 'http://localhost:5000',
+      '/account': { target: 'https://localhost:7070', secure: false },
+      '/connect': { target: 'https://localhost:7070', secure: false },
+      '/api': { target: 'https://localhost:7070', secure: false },
     },
   },
   test: {
