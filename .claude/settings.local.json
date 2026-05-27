@@ -94,7 +94,8 @@
       "Bash(grep -n \"DevTenantId\\\\|TotpUserEmail\\\\|SeedSecondTenant\\\\|GroupId\\\\|GroupRole\\\\|class IntegrationTestBase\" /mnt/c/Users/georgios.mathioudaki/Dev/OneId/tests/OneId.Server.IntegrationTests/TenantRoleSetsIntegrationTests.cs | head -30)",
       "Read(//mnt/c/Users/georgios.mathioudaki/Dev/OneId/tests/OneId.Server.IntegrationTests/**)",
       "Bash(grep -rn \"SeedSecondTenant\\\\|DevSeeder\\\\.\" /mnt/c/Users/georgios.mathioudaki/Dev/OneId/tests/OneId.Server.IntegrationTests/ --include=\"*.cs\" | head -20)",
-      "Read(//mnt/c/Users/georgios.mathioudaki/Dev/OneId/tests/**)"
+      "Read(//mnt/c/Users/georgios.mathioudaki/Dev/OneId/tests/**)",
+      "Bash(xargs grep -l \"PermissionEvaluator\\\\|ICacheService\\\\|CacheService\")"
     ],
     "additionalDirectories": [
       "C:\\Temp",
