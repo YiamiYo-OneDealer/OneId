@@ -14,12 +14,15 @@ public sealed class ListPermissionsHandler(InternalAdminContext internalAdminCon
 
     public async Task<PagedResponse<PermissionDto>> HandleAsync(ListPermissionsRequest request, CancellationToken ct = default)
     {
+        var page = Math.Max(1, request.Page);
+        var pageSize = Math.Clamp(request.PageSize, 1, 200);
+
         var query = db.Permissions.AsQueryable();
 
-        query = request.Status switch
+        query = request.Status.ToLowerInvariant() switch
         {
-            "Active"   => query.Where(p => p.Status == PermissionStatus.Active),
-            "Inactive" => query.Where(p => p.Status == PermissionStatus.Inactive),
+            "active"   => query.Where(p => p.Status == PermissionStatus.Active),
+            "inactive" => query.Where(p => p.Status == PermissionStatus.Inactive),
             _          => query,
         };
 
@@ -27,14 +30,14 @@ public sealed class ListPermissionsHandler(InternalAdminContext internalAdminCon
 
         var items = await query
             .OrderBy(p => p.PermissionId)
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(p => new PermissionDto(
                 p.Id, p.PermissionId, p.Label, p.Status.ToString(),
                 p.CreatedAt, p.UpdatedAt,
                 EF.Property<uint>(p, "xmin")))
             .ToListAsync(ct);
 
-        return new PagedResponse<PermissionDto>(items, request.Page, request.PageSize, totalCount);
+        return new PagedResponse<PermissionDto>(items, page, pageSize, totalCount);
     }
 }

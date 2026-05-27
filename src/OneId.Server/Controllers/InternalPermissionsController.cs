@@ -52,6 +52,11 @@ public class InternalPermissionsController(
         {
             return Conflict(new { error = "permission_id_taken" });
         }
+        catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("23505") == true
+                                         || ex.InnerException?.Message.Contains("unique") == true)
+        {
+            return Conflict(new { error = "permission_id_taken" });
+        }
     }
 
     [HttpPatch("{permissionId}")]

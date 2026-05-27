@@ -1,6 +1,6 @@
 # Story 4a.1: Permission Catalog (Internal Admin)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -466,6 +466,19 @@ Check existing `InternalTenantsIntegrationTests.cs` for the exact auth helper us
 ## Story Progress Notes
 
 Implementation complete. All 9 tasks and 41 subtasks checked.
+
+### Review Findings
+
+- [x] [Review][Patch] Race in Create: DbUpdateException unhandled → 500 instead of 409 [src/OneId.Server/Application/Internal/Permissions/Commands/CreatePermissionHandler.cs:18, src/OneId.Server/Controllers/InternalPermissionsController.cs:51]
+- [x] [Review][Patch] PageSize unbounded — large value causes memory/CPU exhaustion [src/OneId.Server/Application/Internal/Permissions/Queries/ListPermissionsHandler.cs:33]
+- [x] [Review][Patch] Case-sensitive status filter — `status=active` returns all rows silently [src/OneId.Server/Application/Internal/Permissions/Queries/ListPermissionsHandler.cs:22-27]
+- [x] [Review][Patch] Page=0 or negative → negative Skip throws 500 [src/OneId.Server/Application/Internal/Permissions/Queries/ListPermissionsHandler.cs:32]
+- [x] [Review][Patch] Create audit test missing EntityId assertion — AC4 not fully covered [tests/OneId.Server.IntegrationTests/InternalPermissionsIntegrationTests.cs:226]
+- [x] [Review][Patch] No PATCH 404 test for non-existent permissionId — AC7 gap [tests/OneId.Server.IntegrationTests/InternalPermissionsIntegrationTests.cs]
+- [x] [Review][Defer] Audit written before SaveChanges — orphan entry if save fails [src/OneId.Server/Application/Internal/Permissions/Commands/] — deferred, pre-existing pattern across all handlers
+- [x] [Review][Defer] Deactivate emits double audit on concurrent calls — no xmin concurrency token [src/OneId.Server/Application/Internal/Permissions/Commands/DeactivatePermissionHandler.cs] — deferred, low-risk admin-only op
+- [x] [Review][Defer] PermissionCatalogSyncTests missing IgnoreQueryFilters [tests/OneId.Server.IntegrationTests/PermissionCatalogSyncTests.cs:30-32] — deferred, latent risk only (no global filter today)
+- [x] [Review][Defer] Permission ID dot-notation not enforced at API layer — deferred, not an AC requirement
 
 ## Dev Agent Record
 

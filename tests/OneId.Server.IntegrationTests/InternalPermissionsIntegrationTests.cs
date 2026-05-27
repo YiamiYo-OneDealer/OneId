@@ -210,8 +210,10 @@ public class InternalPermissionsIntegrationTests(OneIdWebApplicationFactory fact
     public async Task Create_WritesAuditEntry()
     {
         var client = await AuthClientAsync();
-        await client.PostAsJsonAsync("/api/internal/permissions",
+        var createResp = await client.PostAsJsonAsync("/api/internal/permissions",
             new { permissionId = "od.audit.test", label = "Audit Test" });
+        var created = await createResp.Content.ReadFromJsonAsync<JsonElement>();
+        var permissionId = created.GetProperty("id").GetGuid();
 
         // Verify audit entry in DB
         using var scope = Factory.Services.CreateScope();
@@ -221,5 +223,19 @@ public class InternalPermissionsIntegrationTests(OneIdWebApplicationFactory fact
 
         Assert.NotNull(entry);
         Assert.Equal("Permission", entry.EntityType);
+        Assert.Equal(permissionId, entry.EntityId);
+    }
+
+    // ── AC7: PATCH 404 for non-existent permissionId ──────────────────────────
+
+    [Fact]
+    public async Task Patch_NonExistentPermission_Returns404()
+    {
+        var client = await AuthClientAsync();
+        var response = await client.PatchAsJsonAsync(
+            "/api/internal/permissions/od.does.not.exist",
+            new { label = "Ghost", version = 1u });
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }
