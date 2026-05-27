@@ -1,6 +1,6 @@
 # Story 4a.4: Group Management (Tenant Admin)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -591,7 +591,18 @@ claude-sonnet-4-6
 - src/OneId.Server/Application/TenantAdmin/TenantServiceExtensions.cs — added 7 Group handler registrations
 - 	ests/OneId.Server.IntegrationTests/TenantIsolationRegressionTests.cs — added GroupIsolationRegressionTests class
 
+### Review Findings
+
+- [x] [Review][Patch] Cross-tenant membership deletion: RemoveGroupMemberHandler queries `db.UserGroups` directly with no tenant ownership check — a TenantAdmin who knows a foreign groupId can delete memberships in another tenant's group [src/OneId.Server/Application/TenantAdmin/Groups/Commands/RemoveGroupMemberHandler.cs:14]
+- [x] [Review][Patch] Null RoleIds/RoleSetIds crash with 500: GroupBody and GroupUpdateBody records have no null-guard or default value for RoleIds/RoleSetIds — omitting them from JSON body causes NullReferenceException in ValidateRoleIdsAsync [src/OneId.Server/Controllers/TenantGroupsController.cs:122]
+- [x] [Review][Patch] UpdateGroupHandler audit records new Name not old Name: group.Name is mutated before audit.AppendAsync is called, so the audit payload never captures the previous value [src/OneId.Server/Application/TenantAdmin/Groups/Commands/UpdateGroupHandler.cs:33]
+- [x] [Review][Patch] Audit payload serializes raw request.RoleIds/RoleSetIds not validated set: duplicates in the request are de-duplicated before storage but the audit log records the raw (potentially duplicate) input [src/OneId.Server/Application/TenantAdmin/Groups/Commands/CreateGroupHandler.cs:36]
+- [x] [Review][Defer] AddMember/RemoveMember both return 404 with no body — caller cannot distinguish group-not-found from user-not-found — deferred, design choice not required by spec
+- [x] [Review][Defer] ListGroups totalCount and page items fetched in two round-trips — can be transiently inconsistent — deferred, pre-existing pattern
+- [x] [Review][Defer] Duplicate RoleIds silently de-duplicated via .Distinct() with no client feedback — deferred, intentional design
+
 ## Change Log
 
 - 2026-05-26: Story 4a-4 created — Group CRUD + member management, stub upgrades for GroupRole/GroupRoleSet, UserGroup join entity. (Create-Story Agent)
 - 2026-05-26: Story 4a-4 implemented — Group entity, UserGroup join, full CRUD + member management, stub FK upgrades, EF migration, 17 integration tests, 2 isolation regression tests. (Dev Agent)
+- 2026-05-27: Story 4a-4 code reviewed — 4 patches, 3 deferred, 6 dismissed. (Review Agent)

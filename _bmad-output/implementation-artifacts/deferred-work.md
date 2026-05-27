@@ -1,5 +1,11 @@
 # Deferred Work Log
 
+## Deferred from: code review of 4a-4-group-management-tenant-admin (2026-05-27)
+
+- **AddMember/RemoveMember 404 ambiguity** — Both `GroupNotFound` and `UserNotFound` return `404` with no body. Caller cannot distinguish which resource was missing. Design choice; spec does not require differentiation. If UX needs it, add an error body.
+- **ListGroups count/page two-round-trip inconsistency** — `totalCount` and page items are fetched in separate queries; concurrent writes can make them transiently inconsistent. Pre-existing pattern across all list endpoints.
+- **Duplicate RoleIds/RoleSetIds silently de-duplicated** — `ValidateRoleIdsAsync` calls `.Distinct()` before querying; client gets back fewer items than submitted with no error. Intentional but undocumented behavior.
+
 ## Deferred from: code review of 4a-3-role-set-management-tenant-admin (2026-05-27)
 
 - **`totalCount`/`items` TOCTOU on paginated reads** — `ListRoleSetsHandler` fetches count and items in two separate queries; concurrent inserts/deletes between them can make the count stale. Pre-existing pattern used across all list endpoints; needs architectural decision.

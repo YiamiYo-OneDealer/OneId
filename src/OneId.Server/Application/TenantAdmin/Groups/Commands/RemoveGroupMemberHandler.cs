@@ -11,6 +11,10 @@ public sealed class RemoveGroupMemberHandler(AppDbContext db, ITenantContext ten
 {
     public async Task<RemoveMemberResult> HandleAsync(Guid groupId, Guid userId, CancellationToken ct = default)
     {
+        // Verify the group belongs to the current tenant before touching UserGroups (which has no tenant filter)
+        var groupExists = await db.Groups.AnyAsync(g => g.Id == groupId, ct);
+        if (!groupExists) return RemoveMemberResult.NotFound;
+
         var membership = await db.UserGroups
             .FirstOrDefaultAsync(ug => ug.GroupId == groupId && ug.UserId == userId, ct);
 

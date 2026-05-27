@@ -33,7 +33,7 @@ public sealed class CreateGroupHandler(AppDbContext db, ITenantContext tenantCon
             "group.created",
             "Group",
             group.Id,
-            JsonSerializer.Serialize(new { group.Name, RoleIds = request.RoleIds, RoleSetIds = request.RoleSetIds })), ct);
+            JsonSerializer.Serialize(new { group.Name, RoleIds = validRoles.Select(r => r.Id), RoleSetIds = validRoleSets.Select(rs => rs.Id) })), ct);
         await db.SaveChangesAsync(ct);
 
         var version = db.Entry(group).Property<uint>("xmin").CurrentValue;

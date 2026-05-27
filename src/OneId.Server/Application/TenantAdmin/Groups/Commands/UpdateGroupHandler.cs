@@ -25,6 +25,8 @@ public sealed class UpdateGroupHandler(AppDbContext db, ITenantContext tenantCon
         var validRoles = await CreateGroupHandler.ValidateRoleIdsAsync(request.RoleIds, db, ct);
         var validRoleSets = await CreateGroupHandler.ValidateRoleSetIdsAsync(request.RoleSetIds, db, ct);
 
+        var oldName = group.Name;
+
         db.GroupRoles.RemoveRange(group.GroupRoles);
         db.GroupRoleSets.RemoveRange(group.GroupRoleSets);
         group.GroupRoles = validRoles.Select(r => new GroupRole { GroupId = group.Id, RoleId = r.Id }).ToList();
@@ -37,7 +39,7 @@ public sealed class UpdateGroupHandler(AppDbContext db, ITenantContext tenantCon
             "group.updated",
             "Group",
             group.Id,
-            JsonSerializer.Serialize(new { group.Name, RoleIds = request.RoleIds, RoleSetIds = request.RoleSetIds })), ct);
+            JsonSerializer.Serialize(new { OldName = oldName, NewName = group.Name, RoleIds = validRoles.Select(r => r.Id), RoleSetIds = validRoleSets.Select(rs => rs.Id) })), ct);
         await db.SaveChangesAsync(ct);
 
         var version = db.Entry(group).Property<uint>("xmin").CurrentValue;

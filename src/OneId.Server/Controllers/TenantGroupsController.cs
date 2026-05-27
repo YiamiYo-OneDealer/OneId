@@ -47,7 +47,7 @@ public class TenantGroupsController(
         try
         {
             var dto = await createHandler.HandleAsync(
-                new CreateGroupRequest(body.Name, body.RoleIds, body.RoleSetIds), ct);
+                new CreateGroupRequest(body.Name, body.RoleIds ?? [], body.RoleSetIds ?? []), ct);
             return CreatedAtAction(nameof(Get), new { id = dto.Id }, dto);
         }
         catch (InvalidRoleIdsException ex)
@@ -69,7 +69,7 @@ public class TenantGroupsController(
         try
         {
             var dto = await updateHandler.HandleAsync(
-                new UpdateGroupRequest(id, body.Name, body.RoleIds, body.RoleSetIds, body.Version), ct);
+                new UpdateGroupRequest(id, body.Name, body.RoleIds ?? [], body.RoleSetIds ?? [], body.Version), ct);
             return dto is null ? NotFound() : Ok(dto);
         }
         catch (InvalidRoleIdsException ex)
@@ -119,6 +119,6 @@ public class TenantGroupsController(
     }
 }
 
-public sealed record GroupBody(string Name, IReadOnlyList<Guid> RoleIds, IReadOnlyList<Guid> RoleSetIds);
-public sealed record GroupUpdateBody(string Name, IReadOnlyList<Guid> RoleIds, IReadOnlyList<Guid> RoleSetIds, uint Version);
+public sealed record GroupBody(string Name, IReadOnlyList<Guid>? RoleIds, IReadOnlyList<Guid>? RoleSetIds);
+public sealed record GroupUpdateBody(string Name, IReadOnlyList<Guid>? RoleIds, IReadOnlyList<Guid>? RoleSetIds, uint Version);
 public sealed record AddMemberBody(Guid UserId);
