@@ -55,3 +55,7 @@ TestResults/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Claude Code — personal and ephemeral files
+.claude/worktrees/
+.claude/settings.local.json
