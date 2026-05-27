@@ -41,6 +41,8 @@ public class TenantRoleSetsController(
     {
         if (string.IsNullOrWhiteSpace(body.Name))
             return BadRequest(new { error = "invalid_name" });
+        if (body.RoleIds is null)
+            return BadRequest(new { error = "role_ids_required" });
 
         try
         {
@@ -58,11 +60,15 @@ public class TenantRoleSetsController(
     {
         if (string.IsNullOrWhiteSpace(body.Name))
             return BadRequest(new { error = "invalid_name" });
+        if (body.RoleIds is null)
+            return BadRequest(new { error = "role_ids_required" });
+        if (body.Version is null)
+            return BadRequest(new { error = "version_required" });
 
         try
         {
             var dto = await updateHandler.HandleAsync(
-                new UpdateRoleSetRequest(id, body.Name, body.RoleIds, body.Version), ct);
+                new UpdateRoleSetRequest(id, body.Name, body.RoleIds, body.Version.Value), ct);
             return dto is null ? NotFound() : Ok(dto);
         }
         catch (InvalidRoleIdsException ex)
@@ -76,19 +82,24 @@ public class TenantRoleSetsController(
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    public async Task<IActionResult> Delete(Guid id, [FromBody] RoleSetDeleteBody body, CancellationToken ct)
     {
         try
         {
-            var found = await deleteHandler.HandleAsync(id, ct);
+            var found = await deleteHandler.HandleAsync(id, body.Version, ct);
             return found ? NoContent() : NotFound();
         }
         catch (RoleSetInUseException ex)
         {
             return Conflict(new { error = "role_set_in_use", groups = ex.GroupNames });
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(new { error = "conflict", detail = "Stale version — reload and retry." });
+        }
     }
 }
 
-public sealed record RoleSetBody(string Name, IReadOnlyList<Guid> RoleIds);
-public sealed record RoleSetUpdateBody(string Name, IReadOnlyList<Guid> RoleIds, uint Version);
+public sealed record RoleSetBody(string Name, IReadOnlyList<Guid>? RoleIds);
+public sealed record RoleSetUpdateBody(string Name, IReadOnlyList<Guid>? RoleIds, uint? Version);
+public sealed record RoleSetDeleteBody(uint Version);

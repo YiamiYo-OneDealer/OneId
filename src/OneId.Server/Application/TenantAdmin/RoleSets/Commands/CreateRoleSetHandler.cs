@@ -26,13 +26,14 @@ public sealed class CreateRoleSetHandler(AppDbContext db, ITenantContext tenantC
         };
 
         db.RoleSets.Add(roleSet);
+        await db.SaveChangesAsync(ct);
+
         await audit.AppendAsync(new AuditLogEntry(
             tenantContext.TenantId,
             "role_set.created",
             "RoleSet",
             roleSet.Id,
-            JsonSerializer.Serialize(new { roleSet.Name, RoleIds = request.RoleIds })), ct);
-        await db.SaveChangesAsync(ct);
+            JsonSerializer.Serialize(new { roleSet.Name, RoleIds = validRoles.Select(r => r.Id) })), ct);
 
         var version = db.Entry(roleSet).Property<uint>("xmin").CurrentValue;
         return new RoleSetDto(

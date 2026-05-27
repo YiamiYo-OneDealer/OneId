@@ -279,8 +279,13 @@ public class TenantRoleSetsIntegrationTests(OneIdWebApplicationFactory factory) 
             new { name = "Delete RoleSet", roleIds = new[] { roleId } });
         var createBody = await createResp.Content.ReadFromJsonAsync<JsonElement>();
         var id = createBody.GetProperty("id").GetString()!;
+        var version = createBody.GetProperty("version").GetUInt32();
 
-        var deleteResp = await client.DeleteAsync($"/api/tenant/role-sets/{id}");
+        var deleteReq = new HttpRequestMessage(HttpMethod.Delete, $"/api/tenant/role-sets/{id}")
+        {
+            Content = JsonContent.Create(new { version }),
+        };
+        var deleteResp = await client.SendAsync(deleteReq);
         Assert.Equal(HttpStatusCode.NoContent, deleteResp.StatusCode);
 
         var getResp = await client.GetAsync($"/api/tenant/role-sets/{id}");
@@ -291,7 +296,11 @@ public class TenantRoleSetsIntegrationTests(OneIdWebApplicationFactory factory) 
     public async Task Delete_NonExistent_Returns404()
     {
         var client = await AuthClientAsync();
-        var response = await client.DeleteAsync($"/api/tenant/role-sets/{Guid.NewGuid()}");
+        var req = new HttpRequestMessage(HttpMethod.Delete, $"/api/tenant/role-sets/{Guid.NewGuid()}")
+        {
+            Content = JsonContent.Create(new { version = 1u }),
+        };
+        var response = await client.SendAsync(req);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
@@ -302,5 +311,29 @@ public class TenantRoleSetsIntegrationTests(OneIdWebApplicationFactory factory) 
     {
         var response = await Factory.CreateClient().GetAsync("/api/tenant/role-sets");
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetList_WithoutTenantAdminRole_Returns403()
+    {
+        // admin@oneid.dev has no IsTenantAdmin — JWT contains no TenantAdmin role.
+        var tokenResp = await Client.PostAsync("/connect/token",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "password",
+                ["username"] = "admin@oneid.dev",
+                ["password"] = "Admin123!",
+                ["client_id"] = "oneid-dev-client",
+                ["scope"] = "openid",
+            }));
+        tokenResp.EnsureSuccessStatusCode();
+        var token = (await tokenResp.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("access_token").GetString()!;
+
+        var client = Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await client.GetAsync("/api/tenant/role-sets");
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 }

@@ -32,13 +32,14 @@ public sealed class UpdateRoleSetHandler(AppDbContext db, ITenantContext tenantC
         roleSet.Name = request.Name;
         roleSet.UpdatedAt = DateTimeOffset.UtcNow;
 
+        await db.SaveChangesAsync(ct);  // throws DbUpdateConcurrencyException if xmin mismatch
+
         await audit.AppendAsync(new AuditLogEntry(
             tenantContext.TenantId,
             "role_set.updated",
             "RoleSet",
             roleSet.Id,
-            JsonSerializer.Serialize(new { roleSet.Name, RoleIds = request.RoleIds })), ct);
-        await db.SaveChangesAsync(ct);  // throws DbUpdateConcurrencyException if xmin mismatch
+            JsonSerializer.Serialize(new { roleSet.Name, RoleIds = validRoles.Select(r => r.Id) })), ct);
 
         var version = db.Entry(roleSet).Property<uint>("xmin").CurrentValue;
         return new RoleSetDto(

@@ -1,6 +1,6 @@
 # Story 4a.3: Role Set Management (Tenant Admin)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -573,6 +573,19 @@ No issues encountered. Pattern mirrors 4a-2 Role management cleanly.
 - `src/OneId.Server/Application/TenantAdmin/TenantServiceExtensions.cs` — added 5 RoleSet handler registrations
 - `tests/OneId.Server.IntegrationTests/TenantIsolationRegressionTests.cs` — added 2 RoleSet isolation tests
 
+### Review Findings
+
+- [x] [Review][Decision] Empty `RoleIds` allowed — is a RoleSet with zero roles valid? — resolved: allow empty RoleSet (no change needed)
+- [x] [Review][Decision] DELETE has no optimistic concurrency — resolved: added `version` parameter to DELETE with xmin check
+- [x] [Review][Patch] `RoleIds` null body field causes NullReferenceException [`TenantRoleSetsController.cs` — `RoleSetBody` / `RoleSetUpdateBody`]
+- [x] [Review][Patch] Audit serializes raw `request.RoleIds` (with potential duplicates) instead of validated IDs [`CreateRoleSetHandler.cs:40`, `UpdateRoleSetHandler.cs:40`]
+- [x] [Review][Patch] `audit.AppendAsync` called before `SaveChangesAsync` — phantom audit record on save failure [`CreateRoleSetHandler.cs:35`, `UpdateRoleSetHandler.cs:37`, `DeleteRoleSetHandler.cs:25`]
+- [x] [Review][Patch] `Version=0` default in `RoleSetUpdateBody` causes spurious 409 when `version` field is omitted from JSON [`TenantRoleSetsController.cs` — `RoleSetUpdateBody`]
+- [x] [Review][Patch] No integration test for InternalAdmin-only JWT → 403 on role-set endpoints [`TenantRoleSetsIntegrationTests.cs`]
+- [x] [Review][Defer] `totalCount`/`items` TOCTOU on paginated reads [`ListRoleSetsHandler.cs`] — deferred, pre-existing pattern used across all list endpoints
+- [x] [Review][Defer] No integration test for DELETE 409 (`role_set_in_use`) [`TenantRoleSetsIntegrationTests.cs`] — deferred, requires group seeding not available until Story 4a.4
+
 ## Change Log
 
 - 2026-05-26: Story 4a-3 implemented — RoleSet CRUD for Tenant Admin, RoleSetRole join, GroupRoleSet stub, audit integration, tenant isolation tests. (Dev Agent)
+- 2026-05-27: Code review completed — 2 decisions needed, 5 patches identified, 2 deferred, 6 dismissed. (Review)

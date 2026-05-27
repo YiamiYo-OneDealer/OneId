@@ -7,7 +7,7 @@ namespace OneId.Server.Application.TenantAdmin.RoleSets.Commands;
 
 public sealed class DeleteRoleSetHandler(AppDbContext db, ITenantContext tenantContext, IAuditService audit)
 {
-    public async Task<bool> HandleAsync(Guid id, CancellationToken ct = default)
+    public async Task<bool> HandleAsync(Guid id, uint version, CancellationToken ct = default)
     {
         var roleSet = await db.RoleSets
             .Include(rs => rs.GroupRoleSets)
@@ -22,13 +22,15 @@ public sealed class DeleteRoleSetHandler(AppDbContext db, ITenantContext tenantC
             throw new RoleSetInUseException(groupNames);
         }
 
+        db.Entry(roleSet).Property<uint>("xmin").OriginalValue = version;
         db.RoleSets.Remove(roleSet);
+        await db.SaveChangesAsync(ct);  // throws DbUpdateConcurrencyException if xmin mismatch
+
         await audit.AppendAsync(new AuditLogEntry(
             tenantContext.TenantId,
             "role_set.deleted",
             "RoleSet",
             id), ct);
-        await db.SaveChangesAsync(ct);
         return true;
     }
 }

@@ -1,5 +1,10 @@
 # Deferred Work Log
 
+## Deferred from: code review of 4a-3-role-set-management-tenant-admin (2026-05-27)
+
+- **`totalCount`/`items` TOCTOU on paginated reads** — `ListRoleSetsHandler` fetches count and items in two separate queries; concurrent inserts/deletes between them can make the count stale. Pre-existing pattern used across all list endpoints; needs architectural decision.
+- **No integration test for DELETE 409 (`role_set_in_use`)** — the 409 branch requires a Group seeded and assigned to the RoleSet, which is not possible until Story 4a.4 adds the Group entity. Add the test in 4a.4.
+
 ## Deferred from: code review of 4a-2-role-management-tenant-admin (2026-05-27)
 
 - **Audit written before SaveChangesAsync** — ghost audit entry persisted if DB save fails. Systemic pre-existing pattern across the codebase; needs architectural decision about audit transactionality.
