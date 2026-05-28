@@ -1,5 +1,5 @@
 import type { Tenant, User, Group, Role, RoleSet, Permission, AuditLogEntry, Paginated } from './types'
-import type { EffectivePermissionsResponse, PreviewPayload } from '@/features/users/schemas'
+import type { EffectivePermissionsResponse, PreviewPayload, DenyOverride } from '@/features/users/schemas'
 import { fixtures } from './fixtures'
 
 export const mockDelay = (ms = 400): Promise<void> =>
@@ -7,6 +7,17 @@ export const mockDelay = (ms = 400): Promise<void> =>
 
 const state = {
   auditLog: [...fixtures.auditLog],
+  overrides: [
+    {
+      id: 'override-1',
+      permissionId: 'od.users.deactivate',
+      overrideType: 'DENY' as const,
+      reason: 'Pending compliance review',
+      appliedByName: 'System Admin',
+      appliedAt: '2026-05-01T10:00:00.000Z',
+      expiresAt: undefined,
+    },
+  ] as DenyOverride[],
   tenants: fixtures.tenants.map((t) => ({ ...t, seatUsage: { ...t.seatUsage } })),
   users: fixtures.users.map((u) => ({ ...u, groupIds: [...u.groupIds] })),
   groups: fixtures.groups.map((g) => ({
@@ -270,6 +281,15 @@ export const mockStore = {
       hasGroupAssignments: true,
       permissions,
     }
+  },
+
+  // ── Overrides ────────────────────────────────────────────────────────────
+  getDenyOverridesForUser: (_userId: string): DenyOverride[] => state.overrides,
+  deleteOverride: (_userId: string, overrideId: string): void => {
+    state.overrides = state.overrides.filter((o) => o.id !== overrideId)
+  },
+  revokeUserTokens: (_userId: string): void => {
+    // no-op in mock — real backend revokes JTIs
   },
 
   // ── Audit Log ────────────────────────────────────────────────────────────

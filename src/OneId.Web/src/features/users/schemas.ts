@@ -26,6 +26,16 @@ export interface EffectivePermissionsPreviewResponse extends EffectivePermission
   permissions: PermissionEntry[]
 }
 
+export interface DenyOverride {
+  id: string
+  permissionId: string
+  overrideType: 'DENY'
+  reason?: string
+  appliedByName: string
+  appliedAt: string
+  expiresAt?: string
+}
+
 export interface EffectivePermissionsResponse {
   userId: string
   /** ISO 8601 timestamp of when permissions were last resolved */

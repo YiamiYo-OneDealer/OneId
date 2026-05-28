@@ -16,6 +16,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useUsers, useCreateUser, useUpdateUser, useGroups } from '@/queries/hooks'
+import { useTenant } from '@/queries/hooks/useTenants'
+import { SeatUsageIndicator, isSeatLimitReached } from '@/components/shared/SeatUsageIndicator'
+import { DisabledButtonWithTooltip } from '@/components/shared/DisabledButtonWithTooltip'
 import type { User, Group } from '@/mocks/types'
 
 // ── Group select list ─────────────────────────────────────────────────────────
@@ -324,6 +327,7 @@ export function TenantUsersPage() {
   const { tenantId = '' } = useParams<{ tenantId: string }>()
   const { data: users = [], isLoading } = useUsers(tenantId)
   const { data: groups = [] } = useGroups(tenantId)
+  const { data: tenant } = useTenant(tenantId)
   const updateUser = useUpdateUser(tenantId)
   const [createOpen, setCreateOpen] = useState(false)
   const [editUser, setEditUser] = useState<User | null>(null)
@@ -414,8 +418,19 @@ export function TenantUsersPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-foreground">Users</h1>
-        <Button size="sm" onClick={() => setCreateOpen(true)}>Create User</Button>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-semibold text-foreground">Users</h1>
+          {tenant && (
+            <SeatUsageIndicator used={tenant.seatUsage.used} max={tenant.seatUsage.max} />
+          )}
+        </div>
+        {tenant && isSeatLimitReached(tenant.seatUsage.used, tenant.seatUsage.max) ? (
+          <DisabledButtonWithTooltip tooltip="Seat limit reached. Contact your administrator to expand your license.">
+            <Button size="sm">Create User</Button>
+          </DisabledButtonWithTooltip>
+        ) : (
+          <Button size="sm" onClick={() => setCreateOpen(true)}>Create User</Button>
+        )}
       </div>
 
       {!isLoading && users.length === 0 ? (

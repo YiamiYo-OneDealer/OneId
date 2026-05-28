@@ -12,7 +12,9 @@ import {
 import { EmptyState } from '@/components/shared/EmptyState'
 import { DenyOverrideBadge } from '@/components/shared/DenyOverrideBadge'
 import { ProvenanceChain } from '@/components/shared/ProvenanceChain'
-import { useEffectivePermissionsLive, useEffectivePermissionsPreview } from '@/features/users/api'
+import { useEffectivePermissionsLive, useEffectivePermissionsPreview, useUserOverrides } from '@/features/users/api'
+import { DenyOverrideSheet } from '@/components/shared/DenyOverrideSheet'
+import type { DenyOverride } from '@/features/users/schemas'
 import { getPermissionLabel } from '@/permissions/registry'
 import { queryKeys } from '@/queries/keys'
 import { cn } from '@/lib/utils'
@@ -187,13 +189,15 @@ function PreviewPanel({ userId, previewPayload }: { userId: string; previewPaylo
 
 function LivePanel({ userId }: { userId: string }) {
   const navigate = useNavigate()
-  const tenantId = useTenantStore((s) => s.activeTenantId)
+  const tenantId = useTenantStore((s) => s.activeTenantId) ?? ''
   const { data, isLoading, isFetching } = useEffectivePermissionsLive(userId)
+  const { data: overrides } = useUserOverrides(tenantId, userId)
   const fetchingCount = useIsFetching({ queryKey: queryKeys.effectivePermissions(userId) })
   const isBackgroundFetching = fetchingCount > 0 && !isLoading
 
   const [search, setSearch] = React.useState('')
   const [announcement, setAnnouncement] = React.useState('')
+  const [selectedOverride, setSelectedOverride] = React.useState<DenyOverride | null>(null)
 
   // Debounced aria-live announcement after fetch settles
   React.useEffect(() => {
@@ -336,7 +340,13 @@ function LivePanel({ userId }: { userId: string }) {
                       </Tooltip>
                     </TooltipProvider>
                     {perm.isDenied && (
-                      <DenyOverrideBadge permissionLabel={getPermissionLabel(perm.id)} />
+                      <DenyOverrideBadge
+                        permissionLabel={getPermissionLabel(perm.id)}
+                        onReview={() => {
+                          const ov = overrides?.find((o) => o.permissionId === perm.id) ?? null
+                          setSelectedOverride(ov)
+                        }}
+                      />
                     )}
                   </div>
                   <ProvenanceChain chain={perm.provenanceChain} collapsed />
@@ -356,7 +366,13 @@ function LivePanel({ userId }: { userId: string }) {
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <code className="font-mono text-[13px] text-indigo-300">{perm.id}</code>
                   {perm.isDenied && (
-                    <DenyOverrideBadge permissionLabel={getPermissionLabel(perm.id)} />
+                    <DenyOverrideBadge
+                      permissionLabel={getPermissionLabel(perm.id)}
+                      onReview={() => {
+                        const ov = overrides?.find((o) => o.permissionId === perm.id) ?? null
+                        setSelectedOverride(ov)
+                      }}
+                    />
                   )}
                 </div>
                 <ProvenanceChain chain={perm.provenanceChain} collapsed={false} />
@@ -365,6 +381,13 @@ function LivePanel({ userId }: { userId: string }) {
           </div>
         </TabsContent>
       </Tabs>
+
+      <DenyOverrideSheet
+        userId={userId}
+        tenantId={tenantId}
+        override={selectedOverride}
+        onClose={() => setSelectedOverride(null)}
+      />
     </div>
   )
 }
