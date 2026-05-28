@@ -160,3 +160,13 @@ export interface CreateOverrideBody {
   reason: string
   expiresAt?: string | null
 }
+
+export interface CreatePermissionBody {
+  permissionId: string
+  label: string
+}
+
+export interface UpdatePermissionBody {
+  label: string
+  version: number
+}

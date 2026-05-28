@@ -194,6 +194,40 @@ public class InternalPermissionsIntegrationTests(OneIdWebApplicationFactory fact
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    // ── AC5: POST activate (reactivate) ──────────────────────────────────────
+
+    [Fact]
+    public async Task Post_Activate_DeactivateThenReactivate_StatusReturnsToActive()
+    {
+        var client = await AuthClientAsync();
+
+        // Deactivate first
+        var deleteResp = await client.DeleteAsync("/api/internal/permissions/od.crm.read");
+        Assert.Equal(HttpStatusCode.NoContent, deleteResp.StatusCode);
+
+        // Verify it is now Inactive
+        var afterDeactivate = await client.GetAsync("/api/internal/permissions/od.crm.read");
+        var deactivatedBody = await afterDeactivate.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Inactive", deactivatedBody.GetProperty("status").GetString());
+
+        // Reactivate
+        var activateResp = await client.PostAsync("/api/internal/permissions/od.crm.read/activate", null);
+        Assert.Equal(HttpStatusCode.NoContent, activateResp.StatusCode);
+
+        // Verify status is Active again
+        var afterActivate = await client.GetAsync("/api/internal/permissions/od.crm.read");
+        var reactivatedBody = await afterActivate.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Active", reactivatedBody.GetProperty("status").GetString());
+    }
+
+    [Fact]
+    public async Task Post_Activate_NonExistentPermission_Returns404()
+    {
+        var client = await AuthClientAsync();
+        var response = await client.PostAsync("/api/internal/permissions/od.does.not.exist/activate", null);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     // ── AC10: Auth enforcement ────────────────────────────────────────────────
 
     [Fact]

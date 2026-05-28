@@ -28,6 +28,7 @@ public static class InternalServiceExtensions
         services.AddScoped<CreatePermissionHandler>();
         services.AddScoped<UpdatePermissionHandler>();
         services.AddScoped<DeactivatePermissionHandler>();
+        services.AddScoped<ReactivatePermissionHandler>();
         return services;
     }
 }

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-28  # Stories 5c-2 and 5c-7 done
+last_updated: 2026-05-28  # Stories 5c-2 and 5c-7 done; 5c-3b ready for review
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -159,7 +159,7 @@ development_status:
   5c-5-audit-log-ui: done                                                   # Phase 5 — demo milestone
   5c-6-commandpalette: done                                          # Phase 5 — demo milestone
   5c-7-wcag-aa-audit-automated-accessibility-tests-and-ci-playwright-activation: done  # Phase 8
-  5c-3b-permission-management-ui: ready-for-dev                                        # Permission add/edit/toggle UI + reactivate backend endpoint
+  5c-3b-permission-management-ui: review                                               # Permission add/edit/toggle UI + reactivate backend endpoint
   epic-5c-retrospective: optional
 
   # ─────────────────────────────────────────────────────────────────────────

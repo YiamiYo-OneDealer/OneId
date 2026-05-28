@@ -17,7 +17,8 @@ public class InternalPermissionsController(
     GetPermissionHandler getHandler,
     CreatePermissionHandler createHandler,
     UpdatePermissionHandler updateHandler,
-    DeactivatePermissionHandler deactivateHandler) : ControllerBase
+    DeactivatePermissionHandler deactivateHandler,
+    ReactivatePermissionHandler reactivateHandler) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List(
@@ -80,6 +81,13 @@ public class InternalPermissionsController(
     public async Task<IActionResult> Deactivate(string permissionId, CancellationToken ct)
     {
         var found = await deactivateHandler.HandleAsync(permissionId, ct);
+        return found ? NoContent() : NotFound();
+    }
+
+    [HttpPost("{permissionId}/activate")]
+    public async Task<IActionResult> Activate(string permissionId, CancellationToken ct)
+    {
+        var found = await reactivateHandler.HandleAsync(permissionId, ct);
         return found ? NoContent() : NotFound();
     }
 }

@@ -1,6 +1,6 @@
 # Story 5c.3b: Permission Management UI (Add / Edit Label / Toggle Status)
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -80,13 +80,13 @@ Then the response is HTTP 403 — enforced by the existing controller attribute,
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — Backend: Reactivate endpoint** (AC5)
-  - [ ] Add `ReactivatePermissionHandler` in `Application/Internal/Permissions/Commands/` following the CQRS pattern of `DeactivatePermissionHandler` — sets `Status = Active`, writes audit event `permission.reactivated`
-  - [ ] Add `POST /api/internal/permissions/{permissionId}/activate` action to `InternalPermissionsController.cs` — returns 204 on success, 404 if not found
-  - [ ] Add integration test in `PermissionsIntegrationTests.cs`: deactivate then reactivate → status returns to Active
+- [x] **Task 1 — Backend: Reactivate endpoint** (AC5)
+  - [x] Add `ReactivatePermissionHandler` in `Application/Internal/Permissions/Commands/` following the CQRS pattern of `DeactivatePermissionHandler` — sets `Status = Active`, writes audit event `permission.reactivated`
+  - [x] Add `POST /api/internal/permissions/{permissionId}/activate` action to `InternalPermissionsController.cs` — returns 204 on success, 404 if not found
+  - [x] Add integration test in `PermissionsIntegrationTests.cs`: deactivate then reactivate → status returns to Active
 
-- [ ] **Task 2 — API types** (AC1, AC3, AC5)
-  - [ ] Add to `src/OneId.Web/src/api/types.ts`:
+- [x] **Task 2 — API types** (AC1, AC3, AC5)
+  - [x] Add to `src/OneId.Web/src/api/types.ts`:
     ```typescript
     export interface CreatePermissionBody {
       permissionId: string
@@ -97,47 +97,47 @@ Then the response is HTTP 403 — enforced by the existing controller attribute,
       version: number
     }
     ```
-  - [ ] Note: the backend `version` field is `uint` but arrives as a JSON number — `number` is correct on the frontend
+  - [x] Note: the backend `version` field is `uint` but arrives as a JSON number — `number` is correct on the frontend
 
-- [ ] **Task 3 — Query hooks** (AC1, AC3, AC4, AC5)
-  - [ ] Add to `src/OneId.Web/src/queries/hooks/usePermissions.ts`:
+- [x] **Task 3 — Query hooks** (AC1, AC3, AC4, AC5)
+  - [x] Add to `src/OneId.Web/src/queries/hooks/usePermissions.ts`:
     - `useCreatePermission()` — `POST api/internal/permissions`, invalidates `permissions()` query key on success
     - `useUpdatePermission()` — `PATCH api/internal/permissions/{permissionId}`, invalidates on success
     - `useDeactivatePermission()` — `DELETE api/internal/permissions/{permissionId}`, invalidates on success
     - `useActivatePermission()` — `POST api/internal/permissions/{permissionId}/activate`, invalidates on success
-  - [ ] Export all four from `src/OneId.Web/src/queries/hooks/index.ts`
-  - [ ] Update `usePermissions()` to fetch all statuses: change `pageSize: 200` call to include no status filter (or `status=All` if backend supports it — check `ListPermissionsHandler`; if not, use two queries and merge, but prefer adding `All` to the handler)
+  - [x] Export all four from `src/OneId.Web/src/queries/hooks/index.ts`
+  - [x] Update `usePermissions()` to fetch all statuses: `status=All` — `ListPermissionsHandler` already handles any non-"active"/non-"inactive" string as no-filter (default case)
 
-- [ ] **Task 4 — Add Permission dialog** (AC1, AC2)
-  - [ ] In `permissions.tsx`, add `AddPermissionDialog` component (inline in the file, same pattern as other dialogs in the codebase):
+- [x] **Task 4 — Add Permission dialog** (AC1, AC2)
+  - [x] In `permissions.tsx`, add `AddPermissionDialog` component (inline in the file, same pattern as other dialogs in the codebase):
     - Fields: `permissionId` (text, validated on blur and submit), `label` (text, required)
     - `permissionId` regex: `^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*){2,}$` — validate client-side, show field error
     - On submit call `useCreatePermission().mutate(...)` 
     - On 409 response show inline "Permission ID already exists" without closing
     - On success close and reset form; table auto-refreshes via query invalidation
-  - [ ] Add "Add Permission" `<Button size="sm">` in the page header alongside the title (same layout as Groups/Roles pages)
+  - [x] Add "Add Permission" `<Button size="sm">` in the page header alongside the title (same layout as Groups/Roles pages)
 
-- [ ] **Task 5 — Edit Label dialog** (AC3)
-  - [ ] Add `EditPermissionDialog` component in `permissions.tsx`:
+- [x] **Task 5 — Edit Label dialog** (AC3)
+  - [x] Add `EditPermissionDialog` component in `permissions.tsx`:
     - Single field: `label` (pre-filled, required, non-empty)
     - Tracks `version` from the row's `PermissionDto.version` — pass it through to PATCH
     - On 409 (stale version) show inline "Someone else edited this — reload and try again" without closing
     - On success close; table auto-refreshes
-  - [ ] Add "Edit" `<Button variant="outline" size="sm">` in the actions column — opens `EditPermissionDialog` with the row's current data
+  - [x] Add "Edit" `<Button variant="outline" size="sm">` in the actions column — opens `EditPermissionDialog` with the row's current data
 
-- [ ] **Task 6 — Deactivate / Activate toggle** (AC4, AC5, AC6, AC7)
-  - [ ] Add `DeactivateDialog` component in `permissions.tsx` (or reuse the existing `_delete-dialog` pattern with custom message):
+- [x] **Task 6 — Deactivate / Activate toggle** (AC4, AC5, AC6, AC7)
+  - [x] Add `DeactivateDialog` component in `permissions.tsx` (or reuse the existing `_delete-dialog` pattern with custom message):
     - Title: "Deactivate `{permissionId}`?"
     - Body: "This permission will no longer be included in token claims. The record is retained for audit purposes."
     - Confirm button: "Deactivate" (destructive variant)
-  - [ ] In the actions column, render conditionally:
+  - [x] In the actions column, render conditionally:
     - If `status === 'Active'`: show "Deactivate" button → opens `DeactivateDialog`
     - If `status === 'Inactive'`: show "Activate" button (default variant) → calls `useActivatePermission()` directly (no confirmation needed for reactivation)
-  - [ ] Update `usePermissions()` so the list includes Inactive rows (AC6) — Inactive rows must be visible for the Activate button to be reachable
+  - [x] Update `usePermissions()` so the list includes Inactive rows (AC6) — Inactive rows must be visible for the Activate button to be reachable
 
-- [ ] **Task 7 — Column layout update** (AC6)
-  - [ ] Ensure the Status column badge renders correctly for both "Active" (`default` variant) and "Inactive" (`secondary` variant) — already done in the current page, verify it still works with Inactive rows visible
-  - [ ] Actions column must contain three buttons: Edit | Deactivate (or Activate) — use `flex gap-2 justify-end` layout matching other pages
+- [x] **Task 7 — Column layout update** (AC6)
+  - [x] Ensure the Status column badge renders correctly for both "Active" (`default` variant) and "Inactive" (`secondary` variant) — already done in the current page, verify it still works with Inactive rows visible
+  - [x] Actions column must contain three buttons: Edit | Deactivate (or Activate) — use `flex gap-2 justify-end` layout matching other pages
 
 ## Dev Notes
 
@@ -249,4 +249,26 @@ claude-sonnet-4-6
 
 ### Completion Notes List
 
+- `ListPermissionsHandler` already handles `status=All` via the default `_` arm of its switch — no backend change needed to support fetching all statuses.
+- `index.ts` exports all hooks via `export * from './usePermissions'` so no explicit re-export update required.
+- Pre-existing TypeScript errors in `EffectivePermissions.tsx`, `useTenants.test.ts`, and `TenantDetailPage.tsx` are unrelated to this story and were present before implementation.
+- All 13 backend integration tests pass (including 2 new reactivate tests: deactivate→reactivate→Active and 404 for non-existent).
+
 ### File List
+
+**Backend (created):**
+- `src/OneId.Server/Application/Internal/Permissions/Commands/ReactivatePermissionHandler.cs`
+
+**Backend (modified):**
+- `src/OneId.Server/Controllers/InternalPermissionsController.cs`
+- `src/OneId.Server/Application/Internal/InternalServiceExtensions.cs`
+- `tests/OneId.Server.IntegrationTests/InternalPermissionsIntegrationTests.cs`
+
+**Frontend (modified):**
+- `src/OneId.Web/src/api/types.ts`
+- `src/OneId.Web/src/queries/hooks/usePermissions.ts`
+- `src/OneId.Web/src/routes/internal/permissions.tsx`
+
+### Change Log
+
+- 2026-05-28: Implemented Story 5c-3b — Permission Management UI. Added `ReactivatePermissionHandler` (backend), `POST /activate` endpoint, 4 frontend mutation hooks, `AddPermissionDialog`, `EditPermissionDialog`, `DeactivateDialog`, and action buttons with Activate/Deactivate toggle. Permissions list now fetches all statuses via `status=All`.
