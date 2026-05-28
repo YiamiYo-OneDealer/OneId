@@ -1,6 +1,6 @@
 # Story 4b.2: Permission Evaluation Pipeline
 
-**Status:** review
+**Status:** done
 **Epic:** 4b — Token Evaluation & Overrides
 **Story ID:** 4b-2
 **Prerequisite:** Story 4b-1 complete ✓ (`UserPermissionOverride` table, entity, CRUD API all stable)
@@ -252,6 +252,14 @@ Look at `tests/OneId.Server.IntegrationTests/` for existing base classes — do 
 ## Change Log
 
 - **2026-05-27:** Implemented story 4b-2 — `IPermissionEvaluator` interface, `PermissionEvaluator` service, `PermissionEvaluationEnricher` enricher, 5 integration tests. All 5 new tests pass; 6 pre-existing failures unchanged; 0 regressions.
+
+---
+
+## Review Findings
+
+- [x] [Review][Defer] **F03: `PermissionEvaluator` group join tables have no `TenantId` column** [`PermissionEvaluator.cs:24-36`] — deferred, by design; `UserGroup`/`GroupRole`/`RoleSetRole` are pure join tables with no `TenantId`; tenant isolation is enforced structurally through parent entities (`User`, `Group`, `Role`, `RoleSet` all carry `TenantId`); adding a filter would require a schema change with no correctness benefit — The code comments "UserGroups and GroupRoles have no tenant query filter — safe to query directly" but reviewers flag that if a userId ever has cross-tenant `UserGroup` rows (possible if FK constraints are absent), roles from another tenant would bleed into permission evaluation. Decision: is the absence of an explicit `tenantId` filter on `UserGroups`/`GroupRoles`/`RoleSetRoles` safe by application invariant, or should we add a defensive explicit filter? [`PermissionEvaluator.cs:24-36`]
+- [x] [Review][Patch] **F09: `PermissionUnionIntegrationTest` doesn't assert total count = 3** — Test asserts the 3 specific permission IDs are present (via Contains) but does not assert `permissions.Count == 3`. Test would pass silently if extra permissions exist in the result. Add `Assert.Equal(3, permissions.Count)`. [`PermissionEvaluationPipelineTests.cs`]
+- [x] [Review][Defer] **F14: 5-min cache TTL causes stale permissions after override mutation** [`PermissionEvaluator.cs`] — deferred, documented design decision (matches architecture AR-10; propagation delay is intentional and matches OneDealer v2's consumer-side introspection cache window)
 
 ---
 

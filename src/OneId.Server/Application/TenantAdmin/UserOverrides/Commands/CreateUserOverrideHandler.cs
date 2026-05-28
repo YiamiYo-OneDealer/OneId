@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using OneId.Server.Application.Audit;
 using OneId.Server.Application.Common;
 using OneId.Server.Domain.Entities;
 using OneId.Server.Domain.Enums;
 using OneId.Server.Infrastructure.Persistence;
+using OpenIddict.Abstractions;
 
 namespace OneId.Server.Application.TenantAdmin.UserOverrides.Commands;
 
@@ -19,7 +21,8 @@ public sealed record CreateUserOverrideRequest(
 public sealed class CreateUserOverrideHandler(
     AppDbContext db,
     ITenantContext tenantContext,
-    IAuditService audit)
+    IAuditService audit,
+    IHttpContextAccessor httpContextAccessor)
 {
     public async Task<UserOverrideDto?> HandleAsync(CreateUserOverrideRequest request, CancellationToken ct = default)
     {
@@ -36,7 +39,8 @@ public sealed class CreateUserOverrideHandler(
         if (duplicate) throw new UserOverrideDuplicateException();
 
         var now = DateTimeOffset.UtcNow;
-        var actorSub = tenantContext.GetType().Name; // resolved via IAuditService from HttpContext
+        var actorSub = httpContextAccessor.HttpContext?.User?.FindFirst(OpenIddictConstants.Claims.Subject)?.Value;
+        Guid.TryParse(actorSub, out var createdByUserId);
 
         var entity = new UserPermissionOverride
         {
@@ -48,7 +52,7 @@ public sealed class CreateUserOverrideHandler(
             Reason = request.Reason,
             ExpiresAt = request.ExpiresAt,
             CreatedAt = now,
-            CreatedByUserId = Guid.Empty, // resolved from JWT via AuditService
+            CreatedByUserId = createdByUserId,
         };
 
         db.UserPermissionOverrides.Add(entity);

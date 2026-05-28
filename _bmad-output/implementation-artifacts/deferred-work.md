@@ -139,6 +139,18 @@
 - **Weak email validation (`@` presence only)** (`TenantUsersPage.tsx` `validateEmail`) — pre-existing pattern from 5c-1b; upgrade to proper regex or library validation in Phase 2 when real auth is wired.
 - **`user.groupIds` has no null-fallback in EditUserDialog** (`TenantUsersPage.tsx`) — mock data always provides the array; add `user.groupIds ?? []` when moving to a real API that may return partial user objects.
 
+## Deferred from: code review of Epic 4b (4b-1, 4b-2, 4b-3) (2026-05-28)
+
+- **F01: ExpiresAt in past accepted at creation** — permissive by design; useful for testing (ExpiredDenyOverrideIntegrationTest relies on it) and backdating scenarios; no validation added intentionally.
+- **F02: IntrospectionResponseEnricher registered as Singleton** — OpenIddict isolates `context.Transaction` per request; no captured-state hazard; Singleton is correct per OpenIddict event pipeline design.
+- **F10: No FK constraints on `UserPermissionOverride.UserId`/`PermissionId`** — intentional design; `PermissionId` is a string reference (not FK Guid), consistent with other tenant-scoped entities; physical FK on string references not used elsewhere.
+- **F11: License stub always returns `status: active`** — by design; Phase 6 stories 3-3/3-5 will wire real seat-count and license status data.
+- **F12: Client-credentials token (missing `tid`) → introspection returns `active: true` with no enriched fields** — expected behavior; enrichment is only meaningful for user tokens; no spec requirement for enrichment of client-credentials tokens.
+- **F13: Soft-deleted users — overrides still evaluated at introspection time** — out of scope for epic 4b; token revocation on user deletion is a separate concern handled by Story 2-6 (role-change JTI invalidation) and future lifecycle work.
+- **F03: `PermissionEvaluator` group join tables have no `TenantId` column** — by design; `UserGroup`/`GroupRole`/`RoleSetRole` are pure join tables; tenant isolation flows through parent entities (`User`, `Group`, `Role`, `RoleSet`); no schema change warranted.
+- **F14: 5-min cache TTL causes stale permissions after override mutation or expiry** — documented design decision; propagation delay matches OneDealer v2's consumer-side introspection cache window (AR-10); active invalidation skipped due to cache-key prefix mismatch between evaluator path (no TenantContext) and mutation handler path (TenantContext initialized).
+- **F15: Permission ID case sensitivity — duplicate overrides possible with differently-cased IDs** — pre-existing characteristic of the permission catalog; canonical casing enforced at seeding time via `PermissionId` format convention.
+
 ## Deferred from: code review of 4a-1-permission-catalog-internal-admin (2026-05-27)
 
 - **Audit written before SaveChanges — orphan entry if save fails** (`src/OneId.Server/Application/Internal/Permissions/Commands/`) — pre-existing pattern used across all handlers in the project; requires transactional audit or outbox pattern to fully address.

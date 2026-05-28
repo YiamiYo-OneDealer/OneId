@@ -1,6 +1,6 @@
 # Story 4b.1: User-Level Permission Override Data Model
 
-**Status:** review
+**Status:** done
 **Epic:** 4b — Token Evaluation & Overrides
 **Story ID:** 4b-1
 **Prerequisite:** Epic 4a complete ✓ (Permission catalog, Roles, RoleSets, Groups, Dimensions all stable)
@@ -204,6 +204,18 @@ Story ready-for-dev. All dependent entities (Permission, User, Group, etc.) are 
 ## Change Log
 
 - **2026-05-27:** Implemented story 4b-1 — UserPermissionOverride data model, CRUD API, 10 integration tests (9 new + 1 isolation), EF migration. All 10 new tests pass; 0 regressions introduced.
+
+---
+
+## Review Findings
+
+- [x] [Review][Defer] **F01: ExpiresAt in past accepted at creation** — intentional; permissive by design to support testing and backdating scenarios; document in dev notes — No validation that `request.ExpiresAt > UtcNow`. A caller can create an immediately-expired (always-inert) override with no error. The `ExpiredDenyOverrideIntegrationTest` deliberately does this for testing. Decision: should we reject past ExpiresAt with 422, or keep it permissive for test/backdating purposes? [`TenantUserOverridesController.cs`, `CreateUserOverrideHandler.cs:49`]
+- [x] [Review][Patch] **F04: `CreatedByUserId` hardcoded as `Guid.Empty`** — Actor identity is lost from every audit record. `actorSub` is assigned `tenantContext.GetType().Name` (a class name string) and never used. Should be resolved from the calling user's JWT `sub` claim via `ITenantContext` or `IHttpContextAccessor`. [`CreateUserOverrideHandler.cs:201,213`]
+- [x] [Review][Patch] **F05: Concurrent POST race — `DbUpdateException` not caught → 500** — Two simultaneous POSTs for the same `(userId, permissionId)` both pass the `AnyAsync` duplicate check, then the second hits the DB unique index and throws `DbUpdateException`. Not caught → 500. Should catch and return 409. [`CreateUserOverrideHandler.cs:34-36`, `TenantUserOverridesController.cs`]
+- [x] [Review][Patch] **F06: `CreateOverrideBody.Reason` typed `string?` with null-forgiving `!` downstream** — `Reason` is declared nullable in the request record but the `CreateUserOverrideRequest` propagates it with `body.Reason!`. Change `Reason` to `string` + `[Required]` so model binding rejects a missing field with 400 rather than relying solely on the manual null check. [`TenantUserOverridesController.cs:404`]
+- [x] [Review][Defer] **F10: No FK constraints on `UserPermissionOverride.UserId` / `PermissionId`** [`20260527104530_AddUserPermissionOverride.cs`] — deferred, intentional design (matches other tenant-scoped entities; PermissionId is a string reference not a Guid FK)
+- [x] [Review][Defer] **F13: Soft-deleted users — overrides still evaluated at introspection time** [`PermissionEvaluator.cs`] — deferred, out of scope for epic 4b; user lifecycle and token revocation is a separate concern
+- [x] [Review][Defer] **F15: Permission ID case sensitivity — duplicate overrides possible with differently-cased IDs** [`UserPermissionOverrideConfiguration.cs`] — deferred, pre-existing design characteristic of the permission catalog; canonical casing is enforced at seeding time
 
 ---
 

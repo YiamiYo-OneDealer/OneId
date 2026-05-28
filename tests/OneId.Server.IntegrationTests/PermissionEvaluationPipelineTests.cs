@@ -229,8 +229,7 @@ public class PermissionEvaluationPipelineTests(OneIdWebApplicationFactory factor
         Assert.Contains(Permissions.CrmRead, permissions);
         Assert.Contains(Permissions.CrmWrite, permissions);
         Assert.Contains(Permissions.FinanceRead, permissions);
-        Assert.Equal(3, permissions.Count(p =>
-            p is Permissions.CrmRead or Permissions.CrmWrite or Permissions.FinanceRead));
+        Assert.Equal(3, permissions.Count);
     }
 
     // ── AC 3: DENY is terminal ────────────────────────────────────────────────

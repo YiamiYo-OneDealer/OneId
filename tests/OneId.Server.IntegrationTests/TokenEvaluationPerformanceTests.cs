@@ -49,8 +49,8 @@ public class TokenEvaluationPerformanceTests(OneIdWebApplicationFactory factory)
         });
 
     // AC4: 40ms p95 ceiling — 10ms headroom against NFR-4's 50ms gate.
-    // After the first call the cache is warm (permissions + dimensions cached for 5 min),
-    // so subsequent calls avoid DB round-trips and should comfortably pass the threshold.
+    // Exercises both the cache-miss path (cold call, DB round-trip) and the
+    // cache-hit path (warm calls, in-process cache only). Both must pass 40ms.
     [Fact]
     public async Task IntrospectionP95_Under40ms()
     {
@@ -59,9 +59,15 @@ public class TokenEvaluationPerformanceTests(OneIdWebApplicationFactory factory)
 
         var accessToken = await IssueMfaTokenAsync();
 
-        // Warm up: first call populates ICacheService for this userId/tenantId.
-        await Client.PostAsync("/connect/introspect", IntrospectRequest(accessToken));
+        // Cold path: cache is empty; permissions + dimensions are fetched from DB.
+        var coldSw = Stopwatch.StartNew();
+        var coldResponse = await Client.PostAsync("/connect/introspect", IntrospectRequest(accessToken));
+        coldSw.Stop();
+        Assert.Equal(HttpStatusCode.OK, coldResponse.StatusCode);
+        Assert.True(coldSw.ElapsedMilliseconds <= BudgetMs,
+            $"Cold-path introspection {coldSw.ElapsedMilliseconds}ms exceeded {BudgetMs}ms ceiling");
 
+        // Warm path: cache is populated; subsequent calls skip DB round-trips.
         var times = new List<long>(SampleCount);
 
         for (var i = 0; i < SampleCount; i++)

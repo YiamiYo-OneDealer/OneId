@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-28  # 4b-3 done
+last_updated: 2026-05-28  # epic 4b done
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -108,9 +108,9 @@ development_status:
   # [PHASE 7] Epic 4b: Token Evaluation & Overrides
   # ─────────────────────────────────────────────────────────────────────────
   epic-4b: in-progress
-  4b-1-user-level-permission-override-data-model: review
-  4b-2-permission-evaluation-pipeline: review
-  4b-3-enriched-introspection-response-and-performance-gate: review
+  4b-1-user-level-permission-override-data-model: done
+  4b-2-permission-evaluation-pipeline: done
+  4b-3-enriched-introspection-response-and-performance-gate: done
   epic-4b-retrospective: optional
 
   # ─────────────────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OneId.Server.Application.TenantAdmin.UserOverrides;
 using OneId.Server.Application.TenantAdmin.UserOverrides.Commands;
 using OneId.Server.Application.TenantAdmin.UserOverrides.Queries;
@@ -39,7 +40,7 @@ public class TenantUserOverridesController(
         try
         {
             var dto = await createHandler.HandleAsync(
-                new CreateUserOverrideRequest(userId, body.PermissionId, overrideType, body.Reason!, body.ExpiresAt), ct);
+                new CreateUserOverrideRequest(userId, body.PermissionId, overrideType, body.Reason, body.ExpiresAt), ct);
             if (dto is null) return NotFound();
             return CreatedAtAction(nameof(List), new { userId }, dto);
         }
@@ -48,6 +49,11 @@ public class TenantUserOverridesController(
             return UnprocessableEntity(new { error = "permission_not_found_or_inactive" });
         }
         catch (UserOverrideDuplicateException)
+        {
+            return Conflict(new { error = "duplicate_override" });
+        }
+        catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("unique") == true
+                                         || ex.InnerException?.Message.Contains("duplicate") == true)
         {
             return Conflict(new { error = "duplicate_override" });
         }
@@ -64,5 +70,5 @@ public class TenantUserOverridesController(
 public sealed record CreateOverrideBody(
     [Required][MaxLength(200)] string PermissionId,
     [Required] string OverrideType,
-    string? Reason,
+    [Required] string Reason,
     DateTimeOffset? ExpiresAt);

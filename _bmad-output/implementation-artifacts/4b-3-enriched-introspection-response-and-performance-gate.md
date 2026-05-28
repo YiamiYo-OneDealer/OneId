@@ -1,6 +1,6 @@
 # Story 4b.3: Enriched Introspection Response and Performance Gate
 
-**Status:** review
+**Status:** done
 **Epic:** 4b — Token Evaluation & Overrides
 **Story ID:** 4b-3
 **Prerequisite:** Story 4b-2 complete ✓ (`PermissionEvaluator`, `PermissionEvaluationEnricher`, permissions in JWT)
@@ -336,6 +336,16 @@ public DbSet<UserDimensionAssignment> UserDimensionAssignments => Set<UserDimens
 ---
 
 ## Dev Agent Record
+
+## Review Findings
+
+- [x] [Review][Defer] **F02: `IntrospectionResponseEnricher` registered as Singleton** — intentional; OpenIddict isolates `context.Transaction` per request so there is no captured-state hazard; Singleton is correct here — Stage 2 is registered as Singleton via `AddSingleton` but reads from `context.Transaction` which is per-request. Stage 1 (DataEnricher) is Scoped. OpenIddict's transaction dictionary should isolate per-request, but the inconsistency is architecturally fragile. Decision: should Stage 2 also be Scoped, or is Singleton correct per OpenIddict's event pipeline design? [`TokenPipelineExtensions.cs:591`, `IntrospectionEnricher.cs:522`]
+- [x] [Review][Dismiss] **F07: `DimensionEvaluator.cache.Get<Dictionary<>>` type mismatch with stored type** — `cache.Get<Dictionary<string, IReadOnlyList<string>>>` is called but the result is stored via `cache.Set(cacheKey, result, ...)` where `result` is typed `Dictionary<string, IReadOnlyList<string>>`. If `ICacheService` does runtime type-checking, the Get would return null on every call (defeating the cache). Verify the concrete type stored matches the Get type parameter, or align to `IReadOnlyDictionary`. [`DimensionEvaluator.cs:25`]
+- [x] [Review][Patch] **F08: `TokenEvaluationPerformanceTests` doesn't exercise or assert cache-miss p95 (AC4)** — AC4 requires "cache-miss and cache-hit paths both exercised." Currently only the warm path is measured (50 samples after one warm-up). Add a separate cold-path sample (clear cache, single timed call) and assert it also meets the 40ms gate. [`TokenEvaluationPerformanceTests.cs`]
+- [x] [Review][Defer] **F11: License stub always returns `status: active`** [`IntrospectionEnricher.cs`] — deferred, by design; Phase 6 stories 3-3/3-5 will wire real license data
+- [x] [Review][Defer] **F12: Client-credentials token (missing `tid`) → introspection returns `active: true` with no enriched fields** [`IntrospectionEnricher.cs:34-35`] — deferred, expected behavior; client-credentials tokens are not user tokens and enrichment is scoped to user tokens with a valid `tid`
+
+---
 
 ### Implementation Notes
 
