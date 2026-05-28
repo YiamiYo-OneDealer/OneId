@@ -5,9 +5,9 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useTenants } from '@/queries/hooks'
-import type { Tenant } from '@/mocks/types'
+import type { TenantDto } from '@/api/types'
 
-const columns: ColumnDef<Tenant, unknown>[] = [
+const columns: ColumnDef<TenantDto, unknown>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
@@ -24,22 +24,10 @@ const columns: ColumnDef<Tenant, unknown>[] = [
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => (
-      <Badge variant={row.original.status === 'active' ? 'default' : 'destructive'}>
-        {row.original.status === 'active' ? 'Active' : 'Suspended'}
+      <Badge variant={row.original.status === 'Active' ? 'default' : 'destructive'}>
+        {row.original.status}
       </Badge>
     ),
-  },
-  {
-    accessorKey: 'seatUsage',
-    header: 'Seat Usage',
-    cell: ({ row }) => {
-      const { used, max } = row.original.seatUsage
-      return (
-        <span className="text-muted-foreground">
-          {used} / {max === null ? '∞' : max}
-        </span>
-      )
-    },
   },
   {
     accessorKey: 'createdAt',

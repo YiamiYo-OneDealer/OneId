@@ -50,6 +50,12 @@
       "configurations": [".NET: OneId.Server", ".NET: OneId.SampleClient"],
       "preLaunchTask": "start: server + sample deps",
       "stopAll": true
+    },
+    {
+      "name": "Full Stack + Sample Client",
+      "configurations": [".NET: OneId.Server", "Browser: Frontend", ".NET: OneId.SampleClient"],
+      "preLaunchTask": "start: fullstack + sample deps",
+      "stopAll": true
     }
   ]
 }

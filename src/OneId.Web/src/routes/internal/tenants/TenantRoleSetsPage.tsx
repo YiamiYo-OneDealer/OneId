@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { DeleteDialog } from './_delete-dialog'
 import { useRoleSets, useCreateRoleSet, useUpdateRoleSet, useDeleteRoleSet, useRoles } from '@/queries/hooks'
-import type { RoleSet, Role } from '@/mocks/types'
+import type { RoleSetDto, RoleDto } from '@/api/types'
 
 // ── Role select list ──────────────────────────────────────────────────────────
 
@@ -25,7 +25,7 @@ function RoleSelectList({
   selected,
   onChange,
 }: {
-  roles: Role[]
+  roles: RoleDto[]
   selected: string[]
   onChange: (ids: string[]) => void
 }) {
@@ -77,13 +77,15 @@ function RoleSetFormDialog({
 }: {
   isOpen: boolean
   onClose: () => void
-  initial: RoleSet | null
+  initial: RoleSetDto | null
   tenantId: string
-  roles: Role[]
+  roles: RoleDto[]
 }) {
   const [name, setName] = useState(initial?.name ?? '')
   const [nameError, setNameError] = useState('')
-  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>(initial?.roleIds ?? [])
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>(
+    initial?.roles.map((r) => r.id) ?? [],
+  )
   const createRoleSet = useCreateRoleSet(tenantId)
   const updateRoleSet = useUpdateRoleSet(tenantId)
 
@@ -114,7 +116,7 @@ function RoleSetFormDialog({
   const handleClose = () => {
     setName(initial?.name ?? '')
     setNameError('')
-    setSelectedRoleIds(initial?.roleIds ?? [])
+    setSelectedRoleIds(initial?.roles.map((r) => r.id) ?? [])
     onClose()
   }
 
@@ -163,14 +165,14 @@ export function TenantRoleSetsPage() {
   const deleteRoleSet = useDeleteRoleSet(tenantId)
 
   const [createOpen, setCreateOpen] = useState(false)
-  const [editRoleSet, setEditRoleSet] = useState<RoleSet | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<RoleSet | null>(null)
+  const [editRoleSet, setEditRoleSet] = useState<RoleSetDto | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<RoleSetDto | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const handleDelete = () => {
     if (!deleteTarget) return
     setDeleteError(null)
-    deleteRoleSet.mutate(deleteTarget.id, {
+    deleteRoleSet.mutate({ roleSetId: deleteTarget.id, version: deleteTarget.version }, {
       onSuccess: () => setDeleteTarget(null),
       onError: (err: unknown) => {
         const e = err as { status?: number; assignedTo?: string[] }
@@ -183,7 +185,7 @@ export function TenantRoleSetsPage() {
     })
   }
 
-  const columns: ColumnDef<RoleSet, unknown>[] = [
+  const columns: ColumnDef<RoleSetDto, unknown>[] = [
     {
       accessorKey: 'name',
       header: 'Name',
@@ -195,7 +197,7 @@ export function TenantRoleSetsPage() {
       id: 'roles',
       header: 'Roles',
       cell: ({ row }) => (
-        <span className="text-muted-foreground">{row.original.roleIds.length}</span>
+        <span className="text-muted-foreground">{row.original.roles.length}</span>
       ),
     },
     {

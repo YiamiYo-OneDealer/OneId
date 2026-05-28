@@ -1,17 +1,12 @@
-using OneId.Server.Domain.Services;
 using System.Security.Claims;
 
 namespace OneId.Server.Application.TokenPipeline;
 
-public sealed class PermissionEvaluationEnricher(IPermissionEvaluator evaluator) : ITokenClaimsEnricher
+// Permissions are intentionally NOT embedded in the JWT access token.
+// They are returned exclusively via the /connect/introspect endpoint (IntrospectionEnricher),
+// so the token stays small and the authoritative permission check requires a live server round-trip.
+public sealed class PermissionEvaluationEnricher : ITokenClaimsEnricher
 {
-    public async Task EnrichAsync(ClaimsIdentity identity, TokenEnrichmentContext context, CancellationToken ct)
-    {
-        var permissions = await evaluator.EvaluateAsync(context.UserId, context.TenantId, ct);
-
-        foreach (var permissionId in permissions)
-        {
-            identity.AddClaim(new Claim("permissions", permissionId, ClaimValueTypes.String, "OpenIddict"));
-        }
-    }
+    public Task EnrichAsync(ClaimsIdentity identity, TokenEnrichmentContext context, CancellationToken ct)
+        => Task.CompletedTask;
 }

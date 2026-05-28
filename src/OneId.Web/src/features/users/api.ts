@@ -1,9 +1,14 @@
 import * as React from 'react'
 import { useQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query'
 import { queryKeys } from '@/queries/keys'
-import { mockStore, mockDelay } from '@/mocks/store'
+import { apiClient } from '@/lib/api-client'
+import type { UserOverrideDto, CreateOverrideBody } from '@/api/types'
 import type { EffectivePermissionsResponse, PreviewPayload } from './schemas'
+import { mockStore, mockDelay } from '@/mocks/store'
 
+// Effective permissions require a confidential-client introspection call that the SPA cannot
+// make directly. These hooks remain on mock data until a dedicated /api/account/permissions
+// endpoint is added.
 export const effectivePermissionsLiveOptions = (userId: string) =>
   queryOptions({
     queryKey: queryKeys.effectivePermissions(userId),
@@ -53,33 +58,43 @@ export function useEffectivePermissionsPreview(
 export function useUserOverrides(tenantId: string, userId: string) {
   return useQuery({
     queryKey: queryKeys.userOverrides(tenantId, userId),
-    queryFn: async () => {
-      await mockDelay(200)
-      return mockStore.getDenyOverridesForUser(userId)
-    },
+    queryFn: () =>
+      apiClient
+        .get(`api/tenant/users/${userId}/overrides`)
+        .json<UserOverrideDto[]>(),
     enabled: !!(tenantId && userId),
+  })
+}
+
+export function useCreateOverride(tenantId: string, userId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: CreateOverrideBody) =>
+      apiClient
+        .post(`api/tenant/users/${userId}/overrides`, { json: body })
+        .json<UserOverrideDto>(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.userOverrides(tenantId, userId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.effectivePermissions(userId) })
+    },
   })
 }
 
 export function useDeleteOverride(tenantId: string, userId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (overrideId: string) => {
-      await mockDelay(200)
-      mockStore.deleteOverride(userId, overrideId)
-    },
+    mutationFn: (overrideId: string) =>
+      apiClient.delete(`api/tenant/users/${userId}/overrides/${overrideId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.effectivePermissions(userId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.userOverrides(tenantId, userId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.effectivePermissions(userId) })
     },
   })
 }
 
 export function useRevokeUserTokens(userId: string) {
   return useMutation({
-    mutationFn: async () => {
-      await mockDelay(200)
-      mockStore.revokeUserTokens(userId)
-    },
+    mutationFn: () =>
+      apiClient.post(`api/tenant/users/${userId}/revoke-tokens`),
   })
 }

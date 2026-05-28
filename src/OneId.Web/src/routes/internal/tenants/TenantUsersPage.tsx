@@ -16,10 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useUsers, useCreateUser, useUpdateUser, useGroups } from '@/queries/hooks'
-import { useTenant } from '@/queries/hooks/useTenants'
-import { SeatUsageIndicator, isSeatLimitReached } from '@/components/shared/SeatUsageIndicator'
-import { DisabledButtonWithTooltip } from '@/components/shared/DisabledButtonWithTooltip'
-import type { User, Group } from '@/mocks/types'
+import type { UserDto, GroupDto } from '@/api/types'
 
 // ── Group select list ─────────────────────────────────────────────────────────
 
@@ -29,7 +26,7 @@ function GroupSelectList({
   onChange,
   idPrefix = 'user-grp',
 }: {
-  groups: Group[]
+  groups: GroupDto[]
   selected: string[]
   onChange: (ids: string[]) => void
   idPrefix?: string
@@ -82,21 +79,13 @@ function CreateUserDialog({
   isOpen: boolean
   onClose: () => void
   tenantId: string
-  groups: Group[]
+  groups: GroupDto[]
 }) {
-  const [name, setName] = useState('')
-  const [nameError, setNameError] = useState('')
+  const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
-  const [status, setStatus] = useState<'active' | 'inactive'>('active')
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
   const createUser = useCreateUser(tenantId)
-
-  const validateName = () => {
-    if (!name.trim()) { setNameError('Name is required.'); return false }
-    setNameError('')
-    return true
-  }
 
   const validateEmail = () => {
     if (!email.trim()) { setEmailError('Email is required.'); return false }
@@ -106,21 +95,12 @@ function CreateUserDialog({
   }
 
   const handleSubmit = () => {
-    const nameOk = validateName()
-    const emailOk = validateEmail()
-    if (!nameOk || !emailOk) return
+    if (!validateEmail()) return
     createUser.mutate(
-      {
-        tenantId,
-        name: name.trim(),
-        email: email.trim(),
-        status,
-        groupIds: selectedGroupIds,
-        lastLogin: null,
-      },
+      { email: email.trim(), displayName: displayName.trim() || null },
       {
         onSuccess: () => {
-          setName(''); setEmail(''); setStatus('active'); setSelectedGroupIds([])
+          setDisplayName(''); setEmail(''); setSelectedGroupIds([])
           onClose()
         },
       },
@@ -128,8 +108,7 @@ function CreateUserDialog({
   }
 
   const handleClose = () => {
-    setName(''); setNameError(''); setEmail(''); setEmailError('')
-    setStatus('active'); setSelectedGroupIds([])
+    setDisplayName(''); setEmail(''); setEmailError(''); setSelectedGroupIds([])
     onClose()
   }
 
@@ -141,18 +120,16 @@ function CreateUserDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1">
-            <Label htmlFor="user-name">Name</Label>
+            <Label htmlFor="user-display-name">Display Name</Label>
             <Input
-              id="user-name"
-              value={name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-              onBlur={validateName}
+              id="user-display-name"
+              value={displayName}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDisplayName(e.target.value)}
               placeholder="e.g. Jane Doe"
             />
-            {nameError && <p className="text-sm text-destructive">{nameError}</p>}
           </div>
           <div className="space-y-1">
-            <Label htmlFor="user-email">Email</Label>
+            <Label htmlFor="user-email">Email *</Label>
             <Input
               id="user-email"
               type="email"
@@ -162,27 +139,6 @@ function CreateUserDialog({
               placeholder="e.g. jane@example.com"
             />
             {emailError && <p className="text-sm text-destructive">{emailError}</p>}
-          </div>
-          <div className="space-y-1">
-            <Label>Status</Label>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={status === 'active' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatus('active')}
-              >
-                Active
-              </Button>
-              <Button
-                type="button"
-                variant={status === 'inactive' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatus('inactive')}
-              >
-                Inactive
-              </Button>
-            </div>
           </div>
           <div className="space-y-1">
             <Label>Groups</Label>
@@ -207,27 +163,16 @@ function CreateUserDialog({
 function EditUserDialog({
   user,
   onClose,
-  groups,
   updateUser,
 }: {
-  user: User
+  user: UserDto
   onClose: () => void
-  groups: Group[]
   updateUser: ReturnType<typeof useUpdateUser>
 }) {
-  const [name, setName] = useState(user.name)
-  const [nameError, setNameError] = useState('')
+  const [displayName, setDisplayName] = useState(user.displayName ?? '')
   const [email, setEmail] = useState(user.email)
   const [emailError, setEmailError] = useState('')
-  const [status, setStatus] = useState<'active' | 'inactive'>(user.status)
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>(user.groupIds)
   const [saveError, setSaveError] = useState<string | null>(null)
-
-  const validateName = () => {
-    if (!name.trim()) { setNameError('Name is required.'); return false }
-    setNameError('')
-    return true
-  }
 
   const validateEmail = () => {
     if (!email.trim()) { setEmailError('Email is required.'); return false }
@@ -237,14 +182,12 @@ function EditUserDialog({
   }
 
   const handleSubmit = () => {
-    const nameOk = validateName()
-    const emailOk = validateEmail()
-    if (!nameOk || !emailOk) return
+    if (!validateEmail()) return
     setSaveError(null)
     updateUser.mutate(
       {
         userId: user.id,
-        patch: { name: name.trim(), email: email.trim(), status, groupIds: selectedGroupIds },
+        patch: { displayName: displayName.trim() || null, email: email.trim() },
       },
       {
         onSuccess: onClose,
@@ -261,17 +204,15 @@ function EditUserDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1">
-            <Label htmlFor="edit-user-name">Name</Label>
+            <Label htmlFor="edit-user-display-name">Display Name</Label>
             <Input
-              id="edit-user-name"
-              value={name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-              onBlur={validateName}
+              id="edit-user-display-name"
+              value={displayName}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDisplayName(e.target.value)}
             />
-            {nameError && <p className="text-sm text-destructive">{nameError}</p>}
           </div>
           <div className="space-y-1">
-            <Label htmlFor="edit-user-email">Email</Label>
+            <Label htmlFor="edit-user-email">Email *</Label>
             <Input
               id="edit-user-email"
               type="email"
@@ -280,31 +221,6 @@ function EditUserDialog({
               onBlur={validateEmail}
             />
             {emailError && <p className="text-sm text-destructive">{emailError}</p>}
-          </div>
-          <div className="space-y-1">
-            <Label>Status</Label>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={status === 'active' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatus('active')}
-              >
-                Active
-              </Button>
-              <Button
-                type="button"
-                variant={status === 'inactive' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatus('inactive')}
-              >
-                Inactive
-              </Button>
-            </div>
-          </div>
-          <div className="space-y-1">
-            <Label>Groups</Label>
-            <GroupSelectList groups={groups} selected={selectedGroupIds} onChange={setSelectedGroupIds} idPrefix="edit-user-grp" />
           </div>
         </div>
         {saveError && <p className="text-sm text-destructive">{saveError}</p>}
@@ -327,17 +243,18 @@ export function TenantUsersPage() {
   const { tenantId = '' } = useParams<{ tenantId: string }>()
   const { data: users = [], isLoading } = useUsers(tenantId)
   const { data: groups = [] } = useGroups(tenantId)
-  const { data: tenant } = useTenant(tenantId)
   const updateUser = useUpdateUser(tenantId)
   const [createOpen, setCreateOpen] = useState(false)
-  const [editUser, setEditUser] = useState<User | null>(null)
+  const [editUser, setEditUser] = useState<UserDto | null>(null)
 
-  const columns: ColumnDef<User, unknown>[] = [
+  const columns: ColumnDef<UserDto, unknown>[] = [
     {
-      accessorKey: 'name',
+      accessorKey: 'displayName',
       header: 'Name',
       cell: ({ row }) => (
-        <span className="font-medium text-foreground">{row.original.name}</span>
+        <span className="font-medium text-foreground">
+          {row.original.displayName ?? row.original.email}
+        </span>
       ),
     },
     {
@@ -348,44 +265,19 @@ export function TenantUsersPage() {
       ),
     },
     {
-      accessorKey: 'status',
+      accessorKey: 'isActive',
       header: 'Status',
       cell: ({ row }) => (
-        <Badge variant={row.original.status === 'active' ? 'default' : 'secondary'}>
-          {row.original.status === 'active' ? 'Active' : 'Inactive'}
+        <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
+          {row.original.isActive ? 'Active' : 'Inactive'}
         </Badge>
       ),
-    },
-    {
-      id: 'groups',
-      header: 'Groups',
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">{row.original.groupIds.length}</span>
-      ),
-    },
-    {
-      accessorKey: 'lastLogin',
-      header: 'Last Login',
-      cell: ({ row }) => {
-        const v = row.original.lastLogin
-        if (!v) return <span className="text-muted-foreground">Never</span>
-        return (
-          <span className="text-muted-foreground">
-            {new Date(v).toLocaleDateString('en-GB', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-            })}
-          </span>
-        )
-      },
     },
     {
       id: 'actions',
       header: '',
       cell: ({ row }) => {
         const user = row.original
-        const isActive = user.status === 'active'
         return (
           <div className="flex justify-end gap-2">
             <Button
@@ -403,11 +295,11 @@ export function TenantUsersPage() {
               onClick={() =>
                 updateUser.mutate({
                   userId: user.id,
-                  patch: { status: isActive ? 'inactive' : 'active' },
+                  patch: { isActive: !user.isActive },
                 })
               }
             >
-              {isActive ? 'Deactivate' : 'Activate'}
+              {user.isActive ? 'Deactivate' : 'Activate'}
             </Button>
           </div>
         )
@@ -418,19 +310,8 @@ export function TenantUsersPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold text-foreground">Users</h1>
-          {tenant && (
-            <SeatUsageIndicator used={tenant.seatUsage.used} max={tenant.seatUsage.max} />
-          )}
-        </div>
-        {tenant && isSeatLimitReached(tenant.seatUsage.used, tenant.seatUsage.max) ? (
-          <DisabledButtonWithTooltip tooltip="Seat limit reached. Contact your administrator to expand your license.">
-            <Button size="sm">Create User</Button>
-          </DisabledButtonWithTooltip>
-        ) : (
-          <Button size="sm" onClick={() => setCreateOpen(true)}>Create User</Button>
-        )}
+        <h1 className="text-xl font-semibold text-foreground">Users</h1>
+        <Button size="sm" onClick={() => setCreateOpen(true)}>Create User</Button>
       </div>
 
       {!isLoading && users.length === 0 ? (
@@ -454,7 +335,6 @@ export function TenantUsersPage() {
         <EditUserDialog
           user={editUser}
           onClose={() => setEditUser(null)}
-          groups={groups}
           updateUser={updateUser}
         />
       )}

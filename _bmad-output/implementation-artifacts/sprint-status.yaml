@@ -159,6 +159,7 @@ development_status:
   5c-5-audit-log-ui: done                                                   # Phase 5 — demo milestone
   5c-6-commandpalette: done                                          # Phase 5 — demo milestone
   5c-7-wcag-aa-audit-automated-accessibility-tests-and-ci-playwright-activation: done  # Phase 8
+  5c-3b-permission-management-ui: ready-for-dev                                        # Permission add/edit/toggle UI + reactivate backend endpoint
   epic-5c-retrospective: optional
 
   # ─────────────────────────────────────────────────────────────────────────

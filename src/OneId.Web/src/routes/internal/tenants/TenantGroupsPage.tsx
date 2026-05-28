@@ -23,7 +23,7 @@ import {
   useRoles,
   useRoleSets,
 } from '@/queries/hooks'
-import type { Group, Role, RoleSet } from '@/mocks/types'
+import type { GroupDto, RoleDto, RoleSetDto } from '@/api/types'
 
 // ── Generic checkbox list ─────────────────────────────────────────────────────
 
@@ -89,15 +89,19 @@ function GroupFormDialog({
 }: {
   isOpen: boolean
   onClose: () => void
-  initial: Group | null
+  initial: GroupDto | null
   tenantId: string
-  roles: Role[]
-  roleSets: RoleSet[]
+  roles: RoleDto[]
+  roleSets: RoleSetDto[]
 }) {
   const [name, setName] = useState(initial?.name ?? '')
   const [nameError, setNameError] = useState('')
-  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>(initial?.roleIds ?? [])
-  const [selectedRoleSetIds, setSelectedRoleSetIds] = useState<string[]>(initial?.roleSetIds ?? [])
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>(
+    initial?.roles.map((r) => r.id) ?? [],
+  )
+  const [selectedRoleSetIds, setSelectedRoleSetIds] = useState<string[]>(
+    initial?.roleSets.map((rs) => rs.id) ?? [],
+  )
   const createGroup = useCreateGroup(tenantId)
   const updateGroup = useUpdateGroup(tenantId)
 
@@ -120,6 +124,7 @@ function GroupFormDialog({
             name: name.trim(),
             roleIds: selectedRoleIds,
             roleSetIds: selectedRoleSetIds,
+            version: initial.version,
           },
         },
         { onSuccess: onClose },
@@ -127,9 +132,7 @@ function GroupFormDialog({
     } else {
       createGroup.mutate(
         {
-          tenantId,
           name: name.trim(),
-          memberCount: 0,
           roleIds: selectedRoleIds,
           roleSetIds: selectedRoleSetIds,
         },
@@ -141,8 +144,8 @@ function GroupFormDialog({
   const handleClose = () => {
     setName(initial?.name ?? '')
     setNameError('')
-    setSelectedRoleIds(initial?.roleIds ?? [])
-    setSelectedRoleSetIds(initial?.roleSetIds ?? [])
+    setSelectedRoleIds(initial?.roles.map((r) => r.id) ?? [])
+    setSelectedRoleSetIds(initial?.roleSets.map((rs) => rs.id) ?? [])
     onClose()
   }
 
@@ -208,11 +211,11 @@ export function TenantGroupsPage() {
   const deleteGroup = useDeleteGroup(tenantId)
 
   const [createOpen, setCreateOpen] = useState(false)
-  const [editGroup, setEditGroup] = useState<Group | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<Group | null>(null)
+  const [editGroup, setEditGroup] = useState<GroupDto | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<GroupDto | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
-  const columns: ColumnDef<Group, unknown>[] = [
+  const columns: ColumnDef<GroupDto, unknown>[] = [
     {
       accessorKey: 'name',
       header: 'Name',
@@ -221,24 +224,17 @@ export function TenantGroupsPage() {
       ),
     },
     {
-      accessorKey: 'memberCount',
-      header: 'Members',
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">{row.original.memberCount}</span>
-      ),
-    },
-    {
       id: 'roles',
       header: 'Roles',
       cell: ({ row }) => (
-        <span className="text-muted-foreground">{row.original.roleIds.length}</span>
+        <span className="text-muted-foreground">{row.original.roles.length}</span>
       ),
     },
     {
       id: 'roleSets',
       header: 'Role Sets',
       cell: ({ row }) => (
-        <span className="text-muted-foreground">{row.original.roleSetIds.length}</span>
+        <span className="text-muted-foreground">{row.original.roleSets.length}</span>
       ),
     },
     {

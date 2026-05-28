@@ -78,6 +78,12 @@
       "dependsOn": ["docker: start deps", "npm: dev server", "dotnet: build"],
       "dependsOrder": "parallel",
       "problemMatcher": []
+    },
+    {
+      "label": "start: fullstack + sample deps",
+      "dependsOn": ["docker: start deps", "npm: dev server", "dotnet: build", "dotnet: build sample"],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
     }
   ]
 }

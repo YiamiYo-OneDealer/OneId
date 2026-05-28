@@ -12,14 +12,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { SeatUsageIndicator, isSeatLimitReached } from '@/components/shared/SeatUsageIndicator'
 import { DimensionalScopeSummary } from '@/components/shared/DimensionalScopeSummary'
 import { EffectivePermissionsPanel } from '@/features/users/components/EffectivePermissions'
 import { useCreateUser } from '@/queries/hooks'
 import { useGroups } from '@/queries/hooks'
-import { useTenant } from '@/queries/hooks/useTenants'
 import { useTenantStore } from '@/store/tenant-store'
-import type { UserStatus } from '@/mocks/types'
+
+type UserStatus = 'active' | 'inactive'
 
 const STEPS = [
   { id: 1 as const, label: 'User Details' },
@@ -277,7 +276,6 @@ export function NewUserPage() {
   const navigate = useNavigate()
   const activeTenantId = useTenantStore((s) => s.activeTenantId)
   const tenantId = activeTenantId ?? ''
-  const { data: tenant } = useTenant(tenantId)
   const { data: groups = [] } = useGroups(tenantId)
   const createUser = useCreateUser(tenantId)
 
@@ -289,8 +287,7 @@ export function NewUserPage() {
   const [status, setStatus] = useState<UserStatus>('active')
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
 
-  const { used, max } = tenant?.seatUsage ?? { used: 0, max: null }
-  const atSeatLimit = isSeatLimitReached(used, max)
+  const atSeatLimit = false
 
   const validateStep1 = (): boolean => {
     let valid = true
@@ -329,7 +326,7 @@ export function NewUserPage() {
 
   const handleSubmit = () => {
     createUser.mutate(
-      { tenantId, name, email, status, groupIds: selectedGroupIds, lastLogin: null },
+      { email: email.trim(), displayName: name.trim() || null },
       {
         onSuccess: () => {
           toast.success('User created.')
@@ -348,7 +345,6 @@ export function NewUserPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-foreground">New User</h1>
-        <SeatUsageIndicator used={used} max={max} />
       </div>
 
       <div className="flex gap-8">

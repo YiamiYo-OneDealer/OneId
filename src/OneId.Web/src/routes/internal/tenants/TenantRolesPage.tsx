@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { DeleteDialog } from './_delete-dialog'
 import { useRoles, useCreateRole, useUpdateRole, useDeleteRole, usePermissions } from '@/queries/hooks'
-import type { Role, Permission } from '@/mocks/types'
+import type { RoleDto, PermissionDto } from '@/api/types'
 
 // ── Permission multi-select ──────────────────────────────────────────────────
 
@@ -25,15 +25,15 @@ function PermissionSelect({
   selected,
   onChange,
 }: {
-  permissions: Permission[]
+  permissions: PermissionDto[]
   selected: string[]
   onChange: (ids: string[]) => void
 }) {
   const [search, setSearch] = useState('')
   const filtered = permissions.filter(
     (p) =>
-      p.id.toLowerCase().includes(search.toLowerCase()) ||
-      p.description.toLowerCase().includes(search.toLowerCase()),
+      p.permissionId.toLowerCase().includes(search.toLowerCase()) ||
+      p.label.toLowerCase().includes(search.toLowerCase()),
   )
   const toggle = (id: string) =>
     onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id])
@@ -50,15 +50,15 @@ function PermissionSelect({
           <p className="text-sm text-muted-foreground px-1">No matches.</p>
         ) : (
           filtered.map((p) => (
-            <div key={p.id} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-card">
+            <div key={p.permissionId} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-card">
               <Checkbox
-                id={`perm-${p.id}`}
-                checked={selected.includes(p.id)}
-                onCheckedChange={() => toggle(p.id)}
+                id={`perm-${p.permissionId}`}
+                checked={selected.includes(p.permissionId)}
+                onCheckedChange={() => toggle(p.permissionId)}
               />
-              <label htmlFor={`perm-${p.id}`} className="flex-1 cursor-pointer">
-                <span className="text-sm text-foreground font-mono">{p.id}</span>
-                <span className="text-xs text-muted-foreground ml-2">{p.description}</span>
+              <label htmlFor={`perm-${p.permissionId}`} className="flex-1 cursor-pointer">
+                <span className="text-sm text-foreground font-mono">{p.permissionId}</span>
+                <span className="text-xs text-muted-foreground ml-2">{p.label}</span>
               </label>
             </div>
           ))
@@ -80,9 +80,9 @@ function RoleFormDialog({
 }: {
   isOpen: boolean
   onClose: () => void
-  initial: Role | null
+  initial: RoleDto | null
   tenantId: string
-  permissions: Permission[]
+  permissions: PermissionDto[]
 }) {
   const [name, setName] = useState(initial?.name ?? '')
   const [nameError, setNameError] = useState('')
@@ -103,7 +103,7 @@ function RoleFormDialog({
     if (!validateName()) return
     if (isEditing) {
       updateRole.mutate(
-        { roleId: initial.id, patch: { name: name.trim(), permissionIds: selectedPermIds } },
+        { roleId: initial.id, patch: { name: name.trim(), permissionIds: selectedPermIds, version: initial.version } },
         { onSuccess: onClose },
       )
     } else {
@@ -170,8 +170,8 @@ export function TenantRolesPage() {
   const deleteRole = useDeleteRole(tenantId)
 
   const [createOpen, setCreateOpen] = useState(false)
-  const [editRole, setEditRole] = useState<Role | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<Role | null>(null)
+  const [editRole, setEditRole] = useState<RoleDto | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<RoleDto | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const handleDelete = () => {
@@ -190,7 +190,7 @@ export function TenantRolesPage() {
     })
   }
 
-  const columns: ColumnDef<Role, unknown>[] = [
+  const columns: ColumnDef<RoleDto, unknown>[] = [
     {
       accessorKey: 'name',
       header: 'Name',

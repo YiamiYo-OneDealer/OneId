@@ -1,15 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/queries/keys'
-import { mockStore, mockDelay } from '@/mocks/store'
-import type { User } from '@/mocks/types'
+import { apiClient } from '@/lib/api-client'
+import type { UserDto, CreateUserBody, UpdateUserBody, PagedResponse } from '@/api/types'
 
 export function useUsers(tenantId: string) {
   return useQuery({
     queryKey: queryKeys.users(tenantId),
-    queryFn: async () => {
-      await mockDelay()
-      return mockStore.getUsers(tenantId)
-    },
+    queryFn: () =>
+      apiClient
+        .get('api/tenant/users', { searchParams: { pageSize: 100 } })
+        .json<PagedResponse<UserDto>>()
+        .then(r => r.items),
     enabled: !!tenantId,
   })
 }
@@ -17,12 +18,8 @@ export function useUsers(tenantId: string) {
 export function useUser(tenantId: string, userId: string) {
   return useQuery({
     queryKey: queryKeys.user(tenantId, userId),
-    queryFn: async () => {
-      await mockDelay()
-      const user = mockStore.getUser(tenantId, userId)
-      if (!user) throw new Error(`User ${userId} not found`)
-      return user
-    },
+    queryFn: () =>
+      apiClient.get(`api/tenant/users/${userId}`).json<UserDto>(),
     enabled: !!(tenantId && userId),
   })
 }
@@ -30,10 +27,8 @@ export function useUser(tenantId: string, userId: string) {
 export function useCreateUser(tenantId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (data: Omit<User, 'id' | 'createdAt'>) => {
-      await mockDelay(200)
-      return mockStore.createUser(data)
-    },
+    mutationFn: (body: CreateUserBody) =>
+      apiClient.post('api/tenant/users', { json: body }).json<UserDto>(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users(tenantId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.tenant(tenantId) })
@@ -44,13 +39,22 @@ export function useCreateUser(tenantId: string) {
 export function useUpdateUser(tenantId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ userId, patch }: { userId: string; patch: Partial<User> }) => {
-      await mockDelay(200)
-      return mockStore.updateUser(tenantId, userId, patch)
-    },
+    mutationFn: ({ userId, patch }: { userId: string; patch: UpdateUserBody }) =>
+      apiClient.patch(`api/tenant/users/${userId}`, { json: patch }).json<UserDto>(),
     onSuccess: (_data, { userId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users(tenantId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.user(tenantId, userId) })
+    },
+  })
+}
+
+export function useDeleteUser(tenantId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (userId: string) =>
+      apiClient.delete(`api/tenant/users/${userId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users(tenantId) })
     },
   })
 }

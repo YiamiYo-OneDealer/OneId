@@ -14,6 +14,8 @@ public static class TokenPipelineExtensions
         services.AddScoped<IPermissionEvaluator, PermissionEvaluator>();
         services.AddScoped<ITokenClaimsEnricher, PermissionEvaluationEnricher>();
         services.AddScoped<IDimensionEvaluator, DimensionEvaluator>();
+        services.AddScoped<ITokenClaimsEnricher, GroupsAndRolesEnricher>();
+        services.AddScoped<ITokenClaimsEnricher, DimensionsEnricher>();
         services.AddScoped<IntrospectionDataEnricher>();
         services.AddSingleton<IntrospectionResponseEnricher>();
         return services;

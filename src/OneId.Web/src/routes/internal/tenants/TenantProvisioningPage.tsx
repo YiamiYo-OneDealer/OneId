@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate, Link, useBlocker } from 'react-router'
-import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,10 +12,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useCreateTenant } from '@/queries/hooks'
-import { mockStore, mockDelay } from '@/mocks/store'
-import { queryKeys } from '@/queries/keys'
 import { cn } from '@/lib/utils'
-import type { TenantStatus } from '@/mocks/types'
+
+type TenantStatus = 'Active' | 'Suspended'
 
 const STEPS = [
   { id: 1 as const, label: 'Tenant Details' },
@@ -60,19 +58,19 @@ function StepTenantDetails({
         <div className="flex gap-2">
           <Button
             type="button"
-            variant={tenantStatus === 'active' ? 'default' : 'outline'}
+            variant={tenantStatus === 'Active' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => onStatusChange('active')}
-            aria-pressed={tenantStatus === 'active'}
+            onClick={() => onStatusChange('Active')}
+            aria-pressed={tenantStatus === 'Active'}
           >
             Active
           </Button>
           <Button
             type="button"
-            variant={tenantStatus === 'suspended' ? 'default' : 'outline'}
+            variant={tenantStatus === 'Suspended' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => onStatusChange('suspended')}
-            aria-pressed={tenantStatus === 'suspended'}
+            onClick={() => onStatusChange('Suspended')}
+            aria-pressed={tenantStatus === 'Suspended'}
           >
             Suspended
           </Button>
@@ -248,7 +246,6 @@ function StepReview({
 
 export function TenantProvisioningPage() {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const createTenant = useCreateTenant()
 
   // Navigation
@@ -259,7 +256,7 @@ export function TenantProvisioningPage() {
   // Step 1: Tenant Details
   const [tenantName, setTenantName] = useState('')
   const [tenantNameError, setTenantNameError] = useState('')
-  const [tenantStatus, setTenantStatus] = useState<TenantStatus>('active')
+  const [tenantStatus, setTenantStatus] = useState<TenantStatus>('Active')
 
   // Step 2: License Configuration
   const [maxSeats, setMaxSeats] = useState('')
@@ -319,23 +316,7 @@ export function TenantProvisioningPage() {
   const handleSubmit = async () => {
     setSubmitError(null)
     try {
-      const newTenant = await createTenant.mutateAsync({
-        name: tenantName.trim(),
-        status: tenantStatus,
-        seatUsage: { used: 0, max: maxSeats.trim() ? Number(maxSeats.trim()) : null },
-      })
-      if (!skipAdmin && adminName.trim() && adminEmail.trim()) {
-        await mockDelay(200)
-        mockStore.createUser({
-          tenantId: newTenant.id,
-          name: adminName.trim(),
-          email: adminEmail.trim(),
-          status: 'active',
-          groupIds: [],
-          lastLogin: null,
-        })
-        queryClient.invalidateQueries({ queryKey: queryKeys.users(newTenant.id) })
-      }
+      const newTenant = await createTenant.mutateAsync({ name: tenantName.trim() })
       flushSync(() => setIsDirty(false))
       navigate(`/internal/tenants/${newTenant.id}`)
     } catch {

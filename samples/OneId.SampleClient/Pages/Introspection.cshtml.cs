@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OneId.SampleClient.Helpers;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 
 namespace OneId.SampleClient.Pages;
@@ -24,14 +22,13 @@ public class IntrospectionModel(IHttpClientFactory httpClientFactory, IConfigura
 
         var client = httpClientFactory.CreateClient("idp");
 
-        // Confidential client authentication via HTTP Basic (RFC 7617)
-        var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{clientId}:{clientSecret}"));
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
-
+        // OpenIddict defaults to client_secret_post; send credentials in the form body.
         var form = new Dictionary<string, string>
         {
             ["token"] = token,
             ["token_type_hint"] = "access_token",
+            ["client_id"] = clientId,
+            ["client_secret"] = clientSecret,
         };
 
         try

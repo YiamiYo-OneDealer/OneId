@@ -3,34 +3,36 @@ import { DataTable } from '@/components/shared/DataTable'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { Badge } from '@/components/ui/badge'
 import { usePermissions } from '@/queries/hooks'
-import type { Permission } from '@/mocks/types'
+import type { PermissionDto } from '@/api/types'
 
-const columns: ColumnDef<Permission, unknown>[] = [
+const columns: ColumnDef<PermissionDto, unknown>[] = [
   {
-    accessorKey: 'id',
+    accessorKey: 'permissionId',
     header: 'Permission ID',
     cell: ({ row }) => (
-      <span className="font-mono text-sm text-foreground">{row.original.id}</span>
+      <span className="font-mono text-sm text-foreground">{row.original.permissionId}</span>
     ),
   },
   {
-    accessorKey: 'domain',
+    id: 'domain',
     header: 'Domain',
     cell: ({ row }) => (
-      <span className="capitalize text-muted-foreground">{row.original.domain}</span>
+      <span className="capitalize text-muted-foreground">
+        {row.original.permissionId.split('.')[0]}
+      </span>
     ),
   },
   {
-    accessorKey: 'description',
+    accessorKey: 'label',
     header: 'Description',
-    cell: ({ row }) => <span className="text-foreground">{row.original.description}</span>,
+    cell: ({ row }) => <span className="text-foreground">{row.original.label}</span>,
   },
   {
-    accessorKey: 'isActive',
+    accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => (
-      <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
-        {row.original.isActive ? 'Active' : 'Inactive'}
+      <Badge variant={row.original.status === 'Active' ? 'default' : 'secondary'}>
+        {row.original.status}
       </Badge>
     ),
   },
@@ -39,9 +41,13 @@ const columns: ColumnDef<Permission, unknown>[] = [
 export function PermissionsPage() {
   const { data: permissions = [], isLoading } = usePermissions()
 
-  const sorted = [...permissions].sort((a, b) =>
-    a.domain !== b.domain ? a.domain.localeCompare(b.domain) : a.id.localeCompare(b.id),
-  )
+  const sorted = [...permissions].sort((a, b) => {
+    const aDomain = a.permissionId.split('.')[0]
+    const bDomain = b.permissionId.split('.')[0]
+    return aDomain !== bDomain
+      ? aDomain.localeCompare(bDomain)
+      : a.permissionId.localeCompare(b.permissionId)
+  })
 
   return (
     <div className="space-y-4">

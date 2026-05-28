@@ -1,27 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/queries/keys'
-import { mockStore, mockDelay } from '@/mocks/store'
-import type { Tenant } from '@/mocks/types'
+import { apiClient } from '@/lib/api-client'
+import type { TenantDto, CreateTenantBody, UpdateTenantBody } from '@/api/types'
 
 export function useTenants() {
   return useQuery({
     queryKey: queryKeys.tenants(),
-    queryFn: async () => {
-      await mockDelay()
-      return mockStore.getTenants()
-    },
+    queryFn: () =>
+      apiClient.get('api/internal/tenants').json<TenantDto[]>(),
   })
 }
 
 export function useTenant(tenantId: string) {
   return useQuery({
     queryKey: queryKeys.tenant(tenantId),
-    queryFn: async () => {
-      await mockDelay()
-      const tenant = mockStore.getTenant(tenantId)
-      if (!tenant) throw new Error(`Tenant ${tenantId} not found`)
-      return tenant
-    },
+    queryFn: () =>
+      apiClient.get(`api/internal/tenants/${tenantId}`).json<TenantDto>(),
     enabled: !!tenantId,
   })
 }
@@ -29,10 +23,8 @@ export function useTenant(tenantId: string) {
 export function useCreateTenant() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (data: Omit<Tenant, 'id' | 'createdAt'>) => {
-      await mockDelay(200)
-      return mockStore.createTenant(data)
-    },
+    mutationFn: (body: CreateTenantBody) =>
+      apiClient.post('api/internal/tenants', { json: body }).json<TenantDto>(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tenants() })
     },
@@ -42,10 +34,8 @@ export function useCreateTenant() {
 export function useUpdateTenant() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ tenantId, patch }: { tenantId: string; patch: Partial<Tenant> }) => {
-      await mockDelay(200)
-      return mockStore.updateTenant(tenantId, patch)
-    },
+    mutationFn: ({ tenantId, patch }: { tenantId: string; patch: UpdateTenantBody }) =>
+      apiClient.patch(`api/internal/tenants/${tenantId}`, { json: patch }).json<TenantDto>(),
     onSuccess: (_data, { tenantId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tenants() })
       queryClient.invalidateQueries({ queryKey: queryKeys.tenant(tenantId) })

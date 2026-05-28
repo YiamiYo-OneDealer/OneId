@@ -5,16 +5,21 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
-import type { AuditLogEntry } from '@/mocks/types'
+import type { AuditLogDto } from '@/api/types'
 import { formatTimestamp } from '@/routes/_audit-log-columns'
 
 export function AuditEventSheet({
   entry,
   onClose,
 }: {
-  entry: AuditLogEntry | null
+  entry: AuditLogDto | null
   onClose: () => void
 }) {
+  const parsedPayload = (() => {
+    if (!entry?.payload) return null
+    try { return JSON.parse(entry.payload) } catch { return entry.payload }
+  })()
+
   return (
     <Sheet open={!!entry} onOpenChange={(open) => { if (!open) onClose() }}>
       <SheetContent side="right" className="w-[480px] overflow-y-auto">
@@ -30,11 +35,8 @@ export function AuditEventSheet({
 
               <dt className="text-muted-foreground font-medium">Actor</dt>
               <dd className="text-foreground">
-                {entry.actorName ? (
-                  <>
-                    {entry.actorName}
-                    <span className="block text-xs text-muted-foreground">{entry.actorEmail}</span>
-                  </>
+                {entry.actorUserId ? (
+                  <span className="font-mono text-xs">{entry.actorUserId}</span>
                 ) : (
                   <span className="italic text-muted-foreground">System</span>
                 )}
@@ -50,11 +52,13 @@ export function AuditEventSheet({
               <dd className="font-mono text-xs text-foreground">{entry.entityId}</dd>
             </dl>
 
-            {entry.payload && Object.keys(entry.payload).length > 0 && (
+            {parsedPayload && (
               <div>
                 <p className="text-muted-foreground font-medium mb-1">Payload</p>
                 <pre className="rounded-md border border-border bg-card p-3 text-xs text-foreground overflow-x-auto">
-                  {JSON.stringify(entry.payload, null, 2)}
+                  {typeof parsedPayload === 'string'
+                    ? parsedPayload
+                    : JSON.stringify(parsedPayload, null, 2)}
                 </pre>
               </div>
             )}

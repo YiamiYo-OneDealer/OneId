@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OdPermissions = OneId.Server.Application.Common.Permissions;
 using OneId.Server.Domain.Entities;
 using OneId.Server.Domain.Enums;
 using OpenIddict.Abstractions;
@@ -11,10 +12,14 @@ namespace OneId.Server.Infrastructure.Persistence.Seeds;
 public static class DevSeeder
 {
     // Stable well-known IDs — idempotency and TestTokenFactory alignment.
-    public static readonly Guid DevTenantId  = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
-    public static readonly Guid AdminUserId  = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000002");
-    public static readonly Guid TotpUserId   = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000003");
-    public static readonly string TotpUserEmail = "totp@oneid.dev";
+    public static readonly Guid DevTenantId      = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
+    public static readonly Guid AdminUserId      = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000002");
+    public static readonly Guid TotpUserId       = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000003");
+    public static readonly Guid TenantUserId     = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000004");
+    public static readonly Guid DemoGroupId      = Guid.Parse("bbbbbbbb-0000-0000-0000-000000000001");
+    public static readonly Guid DemoRoleId       = Guid.Parse("cccccccc-0000-0000-0000-000000000001");
+    public static readonly string TotpUserEmail  = "totp@oneid.dev";
+    public static readonly string TenantUserEmail = "user@dev-tenant.oneid.dev";
     // Standard OtpNet test vector — stable base32 secret for pre-enrolled integration test user.
     public const string TotpUserTotpSecret = "JBSWY3DPEHPK3PXP";
 
@@ -28,6 +33,7 @@ public static class DevSeeder
         await SeedOpenIddictClientAsync(manager);
         await SeedSampleAppClientAsync(manager);
         await SeedPermissionsAsync(db);
+        await SeedTenantUserWithPermissionsAsync(db);
     }
 
     internal static async Task SeedPermissionsAsync(AppDbContext db)
@@ -151,6 +157,93 @@ public static class DevSeeder
             await manager.CreateAsync(descriptor);
         else
             await manager.UpdateAsync(existing, descriptor);
+    }
+
+    // Seeds a plain tenant user wired to a group → role → permissions so the sample client
+    // demo shows a non-empty permissions array in both the access token and introspection response.
+    private static async Task SeedTenantUserWithPermissionsAsync(AppDbContext db)
+    {
+        var userExists = await db.Users.IgnoreQueryFilters()
+            .AnyAsync(u => u.Id == TenantUserId);
+        if (!userExists)
+        {
+            var user = new User
+            {
+                Id = TenantUserId,
+                TenantId = DevTenantId,
+                Email = TenantUserEmail,
+                DisplayName = "Demo Tenant User",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            };
+            user.PasswordHash = new PasswordHasher<User>().HashPassword(user, "User123!");
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
+        }
+
+        var groupExists = await db.Groups.IgnoreQueryFilters()
+            .AnyAsync(g => g.Id == DemoGroupId);
+        if (!groupExists)
+        {
+            db.Groups.Add(new Group
+            {
+                Id = DemoGroupId,
+                TenantId = DevTenantId,
+                Name = "Demo Operators",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var roleExists = await db.Roles.IgnoreQueryFilters()
+            .AnyAsync(r => r.Id == DemoRoleId);
+        if (!roleExists)
+        {
+            db.Roles.Add(new Role
+            {
+                Id = DemoRoleId,
+                TenantId = DevTenantId,
+                Name = "Demo Operator Role",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        // Wire role → permissions (idempotent via Permission FK lookup).
+        var permissionIdsToGrant = new[]
+        {
+            OdPermissions.CrmRead,
+            OdPermissions.CrmWrite,
+            OdPermissions.FinanceRead,
+            OdPermissions.AdminUsersView,
+            OdPermissions.AdminRolesView,
+            OdPermissions.AdminGroupsView,
+            OdPermissions.AdminAuditView,
+        };
+
+        foreach (var permId in permissionIdsToGrant)
+        {
+            var permEntity = await db.Permissions.FirstOrDefaultAsync(p => p.PermissionId == permId);
+            if (permEntity is null) continue;
+
+            var rpExists = await db.RolePermissions
+                .AnyAsync(rp => rp.RoleId == DemoRoleId && rp.PermissionId == permEntity.Id);
+            if (!rpExists)
+                db.RolePermissions.Add(new RolePermission { RoleId = DemoRoleId, PermissionId = permEntity.Id });
+        }
+        await db.SaveChangesAsync();
+
+        var grExists = await db.GroupRoles.AnyAsync(gr => gr.GroupId == DemoGroupId && gr.RoleId == DemoRoleId);
+        if (!grExists)
+            db.GroupRoles.Add(new GroupRole { GroupId = DemoGroupId, RoleId = DemoRoleId });
+
+        var ugExists = await db.UserGroups.AnyAsync(ug => ug.UserId == TenantUserId && ug.GroupId == DemoGroupId);
+        if (!ugExists)
+            db.UserGroups.Add(new UserGroup { UserId = TenantUserId, GroupId = DemoGroupId });
+
+        await db.SaveChangesAsync();
     }
 
     /// <summary>

@@ -1,15 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/queries/keys'
-import { mockStore, mockDelay } from '@/mocks/store'
-import type { RoleSet } from '@/mocks/types'
+import { apiClient } from '@/lib/api-client'
+import type { RoleSetDto, CreateRoleSetBody, UpdateRoleSetBody, PagedResponse } from '@/api/types'
 
 export function useRoleSets(tenantId: string) {
   return useQuery({
     queryKey: queryKeys.roleSets(tenantId),
-    queryFn: async () => {
-      await mockDelay()
-      return mockStore.getRoleSets(tenantId)
-    },
+    queryFn: () =>
+      apiClient
+        .get('api/tenant/role-sets', { searchParams: { pageSize: 100 } })
+        .json<PagedResponse<RoleSetDto>>()
+        .then(r => r.items),
     enabled: !!tenantId,
   })
 }
@@ -17,12 +18,8 @@ export function useRoleSets(tenantId: string) {
 export function useRoleSet(tenantId: string, roleSetId: string) {
   return useQuery({
     queryKey: queryKeys.roleSet(tenantId, roleSetId),
-    queryFn: async () => {
-      await mockDelay()
-      const roleSet = mockStore.getRoleSet(tenantId, roleSetId)
-      if (!roleSet) throw new Error(`RoleSet ${roleSetId} not found`)
-      return roleSet
-    },
+    queryFn: () =>
+      apiClient.get(`api/tenant/role-sets/${roleSetId}`).json<RoleSetDto>(),
     enabled: !!(tenantId && roleSetId),
   })
 }
@@ -30,10 +27,8 @@ export function useRoleSet(tenantId: string, roleSetId: string) {
 export function useCreateRoleSet(tenantId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (data: Omit<RoleSet, 'id' | 'tenantId'>) => {
-      await mockDelay(200)
-      return mockStore.createRoleSet({ ...data, tenantId })
-    },
+    mutationFn: (body: CreateRoleSetBody) =>
+      apiClient.post('api/tenant/role-sets', { json: body }).json<RoleSetDto>(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.roleSets(tenantId) })
     },
@@ -43,10 +38,8 @@ export function useCreateRoleSet(tenantId: string) {
 export function useUpdateRoleSet(tenantId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ roleSetId, patch }: { roleSetId: string; patch: Partial<RoleSet> }) => {
-      await mockDelay(200)
-      return mockStore.updateRoleSet(tenantId, roleSetId, patch)
-    },
+    mutationFn: ({ roleSetId, patch }: { roleSetId: string; patch: UpdateRoleSetBody }) =>
+      apiClient.put(`api/tenant/role-sets/${roleSetId}`, { json: patch }).json<RoleSetDto>(),
     onSuccess: (_data, { roleSetId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.roleSets(tenantId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.roleSet(tenantId, roleSetId) })
@@ -57,10 +50,8 @@ export function useUpdateRoleSet(tenantId: string) {
 export function useDeleteRoleSet(tenantId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (roleSetId: string) => {
-      await mockDelay(200)
-      mockStore.deleteRoleSet(tenantId, roleSetId)
-    },
+    mutationFn: ({ roleSetId, version }: { roleSetId: string; version: number }) =>
+      apiClient.delete(`api/tenant/role-sets/${roleSetId}`, { json: { version } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.roleSets(tenantId) })
     },

@@ -5,10 +5,10 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { AuditEventSheet } from '@/components/shared/AuditEventSheet'
 import { useAuditLog } from '@/queries/hooks'
 import { useTenantStore } from '@/store/tenant-store'
-import type { AuditLogEntry } from '@/mocks/types'
+import type { AuditLogDto } from '@/api/types'
 import { formatTimestamp } from '@/routes/_audit-log-columns'
 
-const columns: ColumnDef<AuditLogEntry, unknown>[] = [
+const columns: ColumnDef<AuditLogDto, unknown>[] = [
   {
     accessorKey: 'timestamp',
     header: 'Timestamp',
@@ -22,13 +22,10 @@ const columns: ColumnDef<AuditLogEntry, unknown>[] = [
     id: 'actor',
     header: 'Actor',
     cell: ({ row }) => {
-      const { actorName, actorEmail } = row.original
-      if (!actorName) return <span className="text-muted-foreground text-sm italic">System</span>
+      const { actorUserId } = row.original
+      if (!actorUserId) return <span className="text-muted-foreground text-sm italic">System</span>
       return (
-        <div>
-          <p className="text-sm font-medium text-foreground">{actorName}</p>
-          <p className="text-xs text-muted-foreground">{actorEmail}</p>
-        </div>
+        <span className="text-sm font-mono text-foreground">{actorUserId}</span>
       )
     },
   },
@@ -64,7 +61,7 @@ export function TenantAuditLogPage() {
     pageIndex: 0,
     pageSize: PAGE_SIZE,
   })
-  const [selectedEntry, setSelectedEntry] = useState<AuditLogEntry | null>(null)
+  const [selectedEntry, setSelectedEntry] = useState<AuditLogDto | null>(null)
 
   const { data, isLoading } = useAuditLog(tenantId, pagination.pageIndex, pagination.pageSize)
 
