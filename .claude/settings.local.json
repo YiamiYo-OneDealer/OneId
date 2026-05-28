@@ -110,7 +110,8 @@
       "Bash(find /c/Users/georgios.mathioudaki -name \"OpenIddictParameter.cs\" 2>/dev/null | head -5; find /c/Users/georgios.mathioudaki -path \"*/openiddict*\" -name \"*.cs\" 2>/dev/null | head -10)",
       "Read(//c/Users/georgios.mathioudaki/**)",
       "Bash(gh repo *)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(Test-Path \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Web\\\\src\\\\permissions\")"
     ],
     "additionalDirectories": [
       "C:\\Temp",
