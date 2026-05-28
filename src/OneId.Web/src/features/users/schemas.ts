@@ -1,3 +1,14 @@
+import { z } from 'zod'
+
+export const dimensionAxisSchema = z.enum([
+  'Company',
+  'Location',
+  'Branch',
+  'Make',
+  'MarketSegment',
+])
+export type DimensionAxis = z.infer<typeof dimensionAxisSchema>
+
 export type ProvenanceNodeType = 'user' | 'group' | 'roleSet' | 'role' | 'permission'
 
 export interface ProvenanceNode {
