@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { type ColumnDef } from '@tanstack/react-table'
 import { DataTable } from '@/components/shared/DataTable'
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -161,6 +161,12 @@ function EditPermissionDialog({
 
   const updatePermission = useUpdatePermission()
 
+  useEffect(() => {
+    setLabel(permission?.label ?? '')
+    setLabelError('')
+    setServerError('')
+  }, [permission])
+
   const validateLabel = () => {
     if (!label.trim()) {
       setLabelError('Label is required.')
@@ -197,7 +203,7 @@ function EditPermissionDialog({
   if (!permission) return null
 
   return (
-    <Dialog open={!!permission} onOpenChange={(open) => { if (!open) onClose() }}>
+    <Dialog open={!!permission} onOpenChange={(open) => { if (!open && !updatePermission.isPending) onClose() }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Edit Permission</DialogTitle>
@@ -287,6 +293,8 @@ export function PermissionsPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<PermissionDto | null>(null)
   const [deactivateTarget, setDeactivateTarget] = useState<PermissionDto | null>(null)
+  const [pendingActivateId, setPendingActivateId] = useState<string | null>(null)
+  const [activateError, setActivateError] = useState<string | null>(null)
 
   const sorted = [...permissions].sort((a, b) => {
     const aDomain = a.permissionId.split('.')[0]
@@ -296,7 +304,7 @@ export function PermissionsPage() {
       : a.permissionId.localeCompare(b.permissionId)
   })
 
-  const columns: ColumnDef<PermissionDto, unknown>[] = [
+  const columns = useMemo<ColumnDef<PermissionDto, unknown>[]>(() => [
     {
       accessorKey: 'permissionId',
       header: 'Permission ID',
@@ -333,6 +341,7 @@ export function PermissionsPage() {
       cell: ({ row }) => {
         const perm = row.original
         const isActive = perm.status === 'Active'
+        const isPendingThis = pendingActivateId === perm.permissionId
         return (
           <div className="flex items-center gap-2 justify-end">
             <Button variant="outline" size="sm" onClick={() => setEditTarget(perm)}>
@@ -349,17 +358,28 @@ export function PermissionsPage() {
             ) : (
               <Button
                 size="sm"
-                disabled={activatePermission.isPending}
-                onClick={() => activatePermission.mutate(perm.permissionId)}
+                disabled={isPendingThis}
+                onClick={() => {
+                  setPendingActivateId(perm.permissionId)
+                  setActivateError(null)
+                  activatePermission.mutate(perm.permissionId, {
+                    onSuccess: () => setPendingActivateId(null),
+                    onError: () => {
+                      setPendingActivateId(null)
+                      setActivateError('Failed to activate permission.')
+                    },
+                  })
+                }}
               >
-                Activate
+                {isPendingThis ? 'Activating…' : 'Activate'}
               </Button>
             )}
           </div>
         )
       },
     },
-  ]
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [pendingActivateId])
 
   return (
     <div className="space-y-4">
@@ -367,6 +387,8 @@ export function PermissionsPage() {
         <h1 className="text-2xl font-semibold text-foreground">Permissions</h1>
         <Button size="sm" onClick={() => setCreateOpen(true)}>Add Permission</Button>
       </div>
+
+      {activateError && <p className="text-sm text-destructive">{activateError}</p>}
 
       {!isLoading && sorted.length === 0 ? (
         <EmptyState variant="no-data" title="No permissions defined" />

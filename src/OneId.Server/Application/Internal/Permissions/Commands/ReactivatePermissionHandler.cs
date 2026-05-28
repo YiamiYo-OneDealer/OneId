@@ -16,7 +16,7 @@ public sealed class ReactivatePermissionHandler(InternalAdminContext internalAdm
         var permission = await db.Permissions
             .FirstOrDefaultAsync(p => p.PermissionId == permissionId, ct);
 
-        if (permission is null)
+        if (permission is null || permission.Status == PermissionStatus.Active)
             return false;
 
         permission.Status = PermissionStatus.Active;

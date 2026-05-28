@@ -1,6 +1,6 @@
 # Story 5c.3b: Permission Management UI (Add / Edit Label / Toggle Status)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -272,3 +272,15 @@ claude-sonnet-4-6
 ### Change Log
 
 - 2026-05-28: Implemented Story 5c-3b — Permission Management UI. Added `ReactivatePermissionHandler` (backend), `POST /activate` endpoint, 4 frontend mutation hooks, `AddPermissionDialog`, `EditPermissionDialog`, `DeactivateDialog`, and action buttons with Activate/Deactivate toggle. Permissions list now fetches all statuses via `status=All`.
+
+### Review Findings
+
+- [x] [Review][Patch] Guid.Empty used as actor ID in audit log — DISMISSED: Guid.Empty is TenantId (internal admin = no tenant scope); ActorUserId auto-resolved from JWT sub by AuditService
+- [x] [Review][Patch] Reactivating an already-Active permission: no status guard, silently stamps UpdatedAt and emits spurious audit entry [ReactivatePermissionHandler.cs:20]
+- [x] [Review][Patch] All Activate buttons share one isPending flag — any in-flight activation disables every other row's Activate button [permissions.tsx]
+- [x] [Review][Patch] Activate button has no onError callback — failures are completely silent to the user [permissions.tsx]
+- [x] [Review][Patch] EditPermissionDialog label state initialised at mount only — stale label shown when switching edit targets [permissions.tsx]
+- [x] [Review][Patch] EditPermissionDialog closes without isPending guard, unlike DeactivateDialog — allows dialog dismissal mid-PATCH [permissions.tsx]
+- [x] [Review][Patch] columns array redefined inside PermissionsPage on every render — new reference on every state change [permissions.tsx]
+- [x] [Review][Defer] UpdateRoleSetBody.version typed as optional (?: number) while all other update bodies require it [api/types.ts] — deferred, pre-existing in Fixes commit; affects RoleSet entity, out of this story's scope
+- [x] [Review][Defer] pageSize: 200 hardcoded in usePermissions — catalogs > 200 silently truncate with no warning [usePermissions.ts] — deferred, requires API-level pagination; not fixable within this story

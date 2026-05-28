@@ -1,5 +1,10 @@
 # Deferred Work Log
 
+## Deferred from: code review of 5c-3b-permission-management-ui (2026-05-28)
+
+- **D1: UpdateRoleSetBody.version typed as optional** (`src/OneId.Web/src/api/types.ts`) — `version?: number` while all other entity update bodies (`UpdateRoleBody`, `UpdateGroupBody`) require it. Introduced in the Fixes commit as part of the broad api/types.ts consolidation; affects RoleSet entity, not this story's scope. Fix when `useRoleSets` mutations are next touched.
+- **D2: pageSize: 200 hardcoded in usePermissions** (`src/OneId.Web/src/queries/hooks/usePermissions.ts`) — catalogs larger than 200 permissions will be silently truncated with no warning to the user; `totalCount` is discarded. Requires API-side pagination or a raised cap; not fixable within this story alone.
+
 ## Deferred from: code review of 5c-2 and 5c-7 (2026-05-28)
 
 - **D1 (5c-7): Auth tokens persisted to localStorage plaintext** — Intentional fix for Playwright E2E tests requiring tokens to survive page reloads. Security hardening (e.g., HttpOnly cookies for refresh token) is out of scope for mock-mode POC; revisit before production deployment.
