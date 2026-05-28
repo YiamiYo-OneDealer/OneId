@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import {
   Sheet,
   SheetContent,
@@ -19,7 +18,6 @@ import { Button } from '@/components/ui/button'
 import { useHasPermission } from '@/hooks/useHasPermission'
 import { useDeleteOverride, useRevokeUserTokens } from '@/features/users/api'
 import { useFormMutation } from '@/hooks/useFormMutation'
-import { queryKeys } from '@/queries/keys'
 import type { DenyOverride } from '@/features/users/schemas'
 
 function formatDate(iso: string): string {
@@ -45,14 +43,13 @@ export function DenyOverrideSheet({
 }) {
   const [confirmOpen, setConfirmOpen] = React.useState(false)
   const { permitted, isLoading: permLoading } = useHasPermission('od.admin.users.revoke')
-  const queryClient = useQueryClient()
 
   const deleteOverrideMutation = useDeleteOverride(tenantId, userId)
   const revokeTokensMutation = useRevokeUserTokens(userId)
 
   const removeOverride = useFormMutation({
     mutationFn: async () => {
-      if (!override) return
+      if (!override) throw new Error('No override selected')
       await deleteOverrideMutation.mutateAsync(override.id)
     },
     messages: {
@@ -61,8 +58,6 @@ export function DenyOverrideSheet({
       propagationNote: true,
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.effectivePermissions(userId) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.userOverrides(tenantId, userId) })
       setConfirmOpen(false)
       onClose()
     },

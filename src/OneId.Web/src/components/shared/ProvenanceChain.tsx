@@ -35,13 +35,14 @@ export function ProvenanceChain({ chain, collapsed = false, className }: Provena
   const [expanded, setExpanded] = React.useState(false)
 
   if (collapsed) {
-    // Collapsed: show only the most proximate named source (first group node)
-    const groupNode = chain.find((n) => n.nodeType === 'group')
-    if (!groupNode) return null
+    // Collapsed: show the most proximate named source — prefer group, fall back to any intermediate node
+    const sourceNode = chain.find((n) => n.nodeType === 'group')
+      ?? chain.find((n) => n.nodeType !== 'user' && n.nodeType !== 'permission')
+    if (!sourceNode) return null
     return (
       <span className={cn('text-xs text-muted-foreground', className)}>
-        via {NODE_LABELS[groupNode.nodeType]}:{' '}
-        <ProvenanceNodeLink node={groupNode} />
+        via {NODE_LABELS[sourceNode.nodeType]}:{' '}
+        <ProvenanceNodeLink node={sourceNode} />
       </span>
     )
   }

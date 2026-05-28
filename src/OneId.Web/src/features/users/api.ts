@@ -41,7 +41,10 @@ export function useEffectivePermissionsPreview(
       }
     }, 350)
 
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      abortRef.current?.abort()
+    }
   }, [userId, previewPayload])
 
   return { data, isLoading }

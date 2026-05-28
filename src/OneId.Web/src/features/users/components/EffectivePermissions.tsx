@@ -28,7 +28,7 @@ type EffectivePermissionsPanelProps =
   | { mode: 'preview'; userId: string; previewPayload: PreviewPayload }
 
 function formatDistanceToNow(isoDate: string): string {
-  const diffMs = Date.now() - new Date(isoDate).getTime()
+  const diffMs = Math.max(0, Date.now() - new Date(isoDate).getTime())
   const diffMin = Math.floor(diffMs / 60_000)
   if (diffMin < 1) return 'just now'
   if (diffMin === 1) return '1m ago'
@@ -343,8 +343,8 @@ function LivePanel({ userId }: { userId: string }) {
                       <DenyOverrideBadge
                         permissionLabel={getPermissionLabel(perm.id)}
                         onReview={() => {
-                          const ov = overrides?.find((o) => o.permissionId === perm.id) ?? null
-                          setSelectedOverride(ov)
+                          const ov = overrides?.find((o) => o.permissionId === perm.id)
+                          if (ov) setSelectedOverride(ov)
                         }}
                       />
                     )}

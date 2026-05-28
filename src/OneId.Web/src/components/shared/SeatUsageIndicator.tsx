@@ -4,19 +4,19 @@ import { cn } from '@/lib/utils'
 type SeatState = 'unlimited' | 'normal' | 'warning' | 'limit'
 
 function getSeatState(used: number, max: number | null): SeatState {
-  if (max === null) return 'unlimited'
+  if (max === null || max === 0) return 'unlimited'
   if (used >= max) return 'limit'
   if (used / max >= 0.8) return 'warning'
   return 'normal'
 }
 
 export function isSeatLimitReached(used: number, max: number | null): boolean {
-  return max !== null && used >= max
+  return max !== null && max > 0 && used >= max
 }
 
 export function SeatUsageIndicator({ used, max }: { used: number; max: number | null }) {
   const state = getSeatState(used, max)
-  const label = max === null ? `${used} seats used` : `${used} of ${max} seats used`
+  const label = (max === null || max === 0) ? `${used} seats used` : `${used} of ${max} seats used`
 
   return (
     <span

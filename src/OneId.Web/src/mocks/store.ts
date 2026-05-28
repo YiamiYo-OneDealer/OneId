@@ -5,30 +5,43 @@ import { fixtures } from './fixtures'
 export const mockDelay = (ms = 400): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms))
 
-const state = {
-  auditLog: [...fixtures.auditLog],
-  overrides: [
-    {
-      id: 'override-1',
-      permissionId: 'od.users.deactivate',
-      overrideType: 'DENY' as const,
-      reason: 'Pending compliance review',
-      appliedByName: 'System Admin',
-      appliedAt: '2026-05-01T10:00:00.000Z',
-      expiresAt: undefined,
-    },
-  ] as DenyOverride[],
-  tenants: fixtures.tenants.map((t) => ({ ...t, seatUsage: { ...t.seatUsage } })),
-  users: fixtures.users.map((u) => ({ ...u, groupIds: [...u.groupIds] })),
-  groups: fixtures.groups.map((g) => ({
-    ...g,
-    roleIds: [...g.roleIds],
-    roleSetIds: [...g.roleSetIds],
-  })),
-  roles: fixtures.roles.map((r) => ({ ...r, permissionIds: [...r.permissionIds] })),
-  roleSets: fixtures.roleSets.map((rs) => ({ ...rs, roleIds: [...rs.roleIds] })),
-  permissions: [...fixtures.permissions],
+const INITIAL_OVERRIDES: Map<string, DenyOverride[]> = new Map([
+  [
+    'u-acme-alice',
+    [
+      {
+        id: 'override-1',
+        permissionId: 'od.users.deactivate',
+        overrideType: 'DENY' as const,
+        reason: 'Pending compliance review',
+        appliedByName: 'System Admin',
+        appliedAt: '2026-05-01T10:00:00.000Z',
+        expiresAt: undefined,
+      },
+    ],
+  ],
+])
+
+function makeInitialState() {
+  return {
+    auditLog: [...fixtures.auditLog],
+    overrides: new Map(
+      Array.from(INITIAL_OVERRIDES.entries()).map(([k, v]) => [k, v.map((o) => ({ ...o }))]),
+    ) as Map<string, DenyOverride[]>,
+    tenants: fixtures.tenants.map((t) => ({ ...t, seatUsage: { ...t.seatUsage } })),
+    users: fixtures.users.map((u) => ({ ...u, groupIds: [...u.groupIds] })),
+    groups: fixtures.groups.map((g) => ({
+      ...g,
+      roleIds: [...g.roleIds],
+      roleSetIds: [...g.roleSetIds],
+    })),
+    roles: fixtures.roles.map((r) => ({ ...r, permissionIds: [...r.permissionIds] })),
+    roleSets: fixtures.roleSets.map((rs) => ({ ...rs, roleIds: [...rs.roleIds] })),
+    permissions: [...fixtures.permissions],
+  }
 }
+
+let state = makeInitialState()
 
 export const mockStore = {
   // ── Tenants ──────────────────────────────────────────────────────────────
@@ -284,12 +297,20 @@ export const mockStore = {
   },
 
   // ── Overrides ────────────────────────────────────────────────────────────
-  getDenyOverridesForUser: (_userId: string): DenyOverride[] => state.overrides,
-  deleteOverride: (_userId: string, overrideId: string): void => {
-    state.overrides = state.overrides.filter((o) => o.id !== overrideId)
+  getDenyOverridesForUser: (userId: string): DenyOverride[] => state.overrides.get(userId) ?? [],
+  deleteOverride: (userId: string, overrideId: string): void => {
+    const userOverrides = state.overrides.get(userId)
+    if (userOverrides) {
+      state.overrides.set(userId, userOverrides.filter((o) => o.id !== overrideId))
+    }
   },
   revokeUserTokens: (_userId: string): void => {
     // no-op in mock — real backend revokes JTIs
+  },
+
+  // ── Test helpers ─────────────────────────────────────────────────────────
+  resetState: (): void => {
+    state = makeInitialState()
   },
 
   // ── Audit Log ────────────────────────────────────────────────────────────
