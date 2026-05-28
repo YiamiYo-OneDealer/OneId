@@ -13,6 +13,17 @@ export interface PermissionEntry {
   label: string
   isDenied: boolean
   provenanceChain: ProvenanceNode[]
+  diffStatus?: 'added' | 'removed' | 'unchanged'
+}
+
+export interface PreviewPayload {
+  groupIds?: string[]
+  roleSets?: string[]
+  overrides?: Array<{ permissionId: string; effect: 'ALLOW' | 'DENY' }>
+}
+
+export interface EffectivePermissionsPreviewResponse extends EffectivePermissionsResponse {
+  permissions: PermissionEntry[]
 }
 
 export interface EffectivePermissionsResponse {

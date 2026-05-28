@@ -12,16 +12,18 @@ import {
 import { EmptyState } from '@/components/shared/EmptyState'
 import { DenyOverrideBadge } from '@/components/shared/DenyOverrideBadge'
 import { ProvenanceChain } from '@/components/shared/ProvenanceChain'
-import { useEffectivePermissionsLive } from '@/features/users/api'
+import { useEffectivePermissionsLive, useEffectivePermissionsPreview } from '@/features/users/api'
 import { getPermissionLabel } from '@/permissions/registry'
 import { queryKeys } from '@/queries/keys'
 import { cn } from '@/lib/utils'
 import { Users, ShieldAlert } from 'lucide-react'
 import { useTenantStore } from '@/store/tenant-store'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import type { PreviewPayload } from '@/features/users/schemas'
 
 type EffectivePermissionsPanelProps =
   | { mode: 'live'; userId: string }
-  | { mode: 'preview'; userId: string; previewPayload: unknown }
+  | { mode: 'preview'; userId: string; previewPayload: PreviewPayload }
 
 function formatDistanceToNow(isoDate: string): string {
   const diffMs = Date.now() - new Date(isoDate).getTime()
@@ -49,14 +51,138 @@ function SkeletonRows() {
 
 export function EffectivePermissionsPanel(props: EffectivePermissionsPanelProps) {
   if (props.mode === 'preview') {
-    return (
-      <p className="text-sm text-muted-foreground py-4">
-        Preview mode coming in Story 5b-4.
-      </p>
-    )
+    return <PreviewPanel userId={props.userId} previewPayload={props.previewPayload} />
   }
 
   return <LivePanel userId={props.userId} />
+}
+
+function PreviewPanel({ userId, previewPayload }: { userId: string; previewPayload: PreviewPayload }) {
+  const { data, isLoading } = useEffectivePermissionsPreview(userId, previewPayload)
+  const [search, setSearch] = React.useState('')
+
+  const showNoPermissionsWarning =
+    !previewPayload.groupIds?.length ||
+    (data !== null && data.permissions.length === 0)
+
+  const filteredPermissions = React.useMemo(() => {
+    if (!data?.permissions) return []
+    const q = search.trim().toLowerCase()
+    if (!q) return data.permissions
+    return data.permissions.filter(
+      (p) =>
+        p.id.toLowerCase().includes(q) ||
+        getPermissionLabel(p.id).toLowerCase().includes(q),
+    )
+  }, [data?.permissions, search])
+
+  if (isLoading) {
+    return (
+      <div aria-busy="true" aria-label="Loading preview">
+        <SkeletonRows />
+      </div>
+    )
+  }
+
+  if (showNoPermissionsWarning) {
+    return (
+      <Alert variant="default" className="border-amber-500 bg-amber-950/20 text-amber-400">
+        <AlertDescription>This user will have no permissions.</AlertDescription>
+      </Alert>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <input
+        type="search"
+        placeholder="Search permissions…"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        aria-label="Search permissions"
+      />
+
+      <Tabs defaultValue="capabilities">
+        <TabsList>
+          <TabsTrigger value="capabilities">Capabilities</TabsTrigger>
+          <TabsTrigger value="details">Permission Details</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="capabilities">
+          <div className="flex flex-col divide-y divide-border">
+            {filteredPermissions.length === 0 && search && (
+              <EmptyState variant="no-results" />
+            )}
+            {filteredPermissions.map((perm) => (
+              <div
+                key={perm.id}
+                className={cn(
+                  'flex items-start justify-between gap-2 py-2.5',
+                  perm.diffStatus === 'added' && 'border-l-2 border-green-500 pl-2',
+                  perm.diffStatus === 'removed' && 'opacity-60',
+                )}
+              >
+                <div className="flex flex-col gap-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span
+                            className={cn(
+                              'text-sm font-medium cursor-default',
+                              perm.diffStatus === 'removed' && 'line-through text-red-400',
+                              perm.diffStatus === 'added' && 'text-green-400',
+                              perm.diffStatus !== 'removed' && perm.diffStatus !== 'added' && 'text-foreground',
+                            )}
+                          >
+                            {getPermissionLabel(perm.id)}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <code className="font-mono text-xs">{perm.id}</code>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    {perm.isDenied && (
+                      <DenyOverrideBadge permissionLabel={getPermissionLabel(perm.id)} />
+                    )}
+                  </div>
+                  <ProvenanceChain chain={perm.provenanceChain} collapsed />
+                </div>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="details">
+          <div className="flex flex-col divide-y divide-border">
+            {filteredPermissions.length === 0 && search && (
+              <EmptyState variant="no-results" />
+            )}
+            {filteredPermissions.map((perm) => (
+              <div key={perm.id} className="flex flex-col gap-1.5 py-2.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <code
+                    className={cn(
+                      'font-mono text-[13px]',
+                      perm.diffStatus === 'removed' ? 'line-through text-red-400' : 'text-indigo-300',
+                    )}
+                  >
+                    {perm.id}
+                  </code>
+                  {perm.isDenied && (
+                    <DenyOverrideBadge permissionLabel={getPermissionLabel(perm.id)} />
+                  )}
+                </div>
+                <ProvenanceChain chain={perm.provenanceChain} collapsed={false} />
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
 }
 
 function LivePanel({ userId }: { userId: string }) {

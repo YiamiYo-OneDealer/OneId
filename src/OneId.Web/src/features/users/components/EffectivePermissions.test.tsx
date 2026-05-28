@@ -1,12 +1,21 @@
 import * as React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { expect, describe, it, vi } from 'vitest'
+import { expect, describe, it, vi, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router'
 import { EffectivePermissionsPanel } from './EffectivePermissions'
 import type { EffectivePermissionsResponse } from '@/features/users/schemas'
 import { queryKeys } from '@/queries/keys'
+
+// Module-level mock for preview hook — controlled per-test via mockReturnValue
+vi.mock('@/features/users/api', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('@/features/users/api')>()
+  return {
+    ...mod,
+    useEffectivePermissionsPreview: vi.fn(() => ({ data: null, isLoading: true })),
+  }
+})
 
 // Seed a QueryClient with pre-loaded data (bypasses mockDelay)
 function makeQueryClient(data: EffectivePermissionsResponse) {
@@ -187,16 +196,95 @@ describe('EffectivePermissionsPanel', () => {
   })
 
   describe('preview mode', () => {
-    it('renders placeholder for preview mode', () => {
+    // Import the mocked version of the hook for control
+    let mockPreviewHook: ReturnType<typeof vi.fn>
+
+    beforeEach(async () => {
+      const apiModule = await import('@/features/users/api')
+      mockPreviewHook = vi.mocked(apiModule.useEffectivePermissionsPreview)
+      // Default: loading
+      mockPreviewHook.mockReturnValue({ data: null, isLoading: true })
+    })
+
+    function renderPreview(payload: Record<string, unknown> = {}) {
       const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-      render(
+      return render(
         <QueryClientProvider client={qc}>
           <MemoryRouter>
-            <EffectivePermissionsPanel mode="preview" userId={USER_ID} previewPayload={{}} />
+            <EffectivePermissionsPanel mode="preview" userId={USER_ID} previewPayload={payload} />
           </MemoryRouter>
         </QueryClientProvider>,
       )
-      expect(screen.getByText(/preview mode coming in story 5b-4/i)).toBeInTheDocument()
+    }
+
+    it('renders Skeleton during preview loading', () => {
+      mockPreviewHook.mockReturnValue({ data: null, isLoading: true })
+      const { container } = renderPreview({ groupIds: ['g-1'] })
+      const busyEl = container.querySelector('[aria-busy="true"]')
+      expect(busyEl).not.toBeNull()
+    })
+
+    it('shows amber alert when no groupIds in payload', () => {
+      mockPreviewHook.mockReturnValue({ data: null, isLoading: false })
+      renderPreview({})
+      expect(screen.getByText('This user will have no permissions.')).toBeInTheDocument()
+    })
+
+    it('shows amber alert when groupIds is empty array', () => {
+      mockPreviewHook.mockReturnValue({ data: null, isLoading: false })
+      renderPreview({ groupIds: [] })
+      expect(screen.getByText('This user will have no permissions.')).toBeInTheDocument()
+    })
+
+    it('renders diff highlights — added permission has green class, removed has strikethrough', () => {
+      mockPreviewHook.mockReturnValue({
+        data: {
+          userId: USER_ID,
+          resolvedAt: new Date().toISOString(),
+          hasGroupAssignments: true,
+          permissions: [
+            { id: 'od.admin.users.view', label: 'View Users', isDenied: false, provenanceChain: [], diffStatus: 'added' as const },
+            { id: 'od.admin.users.deactivate', label: 'Deactivate Users', isDenied: false, provenanceChain: [], diffStatus: 'removed' as const },
+            { id: 'od.admin.roles.view', label: 'View Roles', isDenied: false, provenanceChain: [], diffStatus: 'unchanged' as const },
+          ],
+        },
+        isLoading: false,
+      })
+
+      renderPreview({ groupIds: ['g-1'] })
+
+      const addedEl = screen.getByText('View Users')
+      expect(addedEl.className).toContain('text-green-400')
+
+      const removedEl = screen.getByText('Deactivate Users')
+      expect(removedEl.className).toContain('line-through')
+
+      const unchangedEl = screen.getByText('View Roles')
+      expect(unchangedEl.className).not.toContain('text-green-400')
+      expect(unchangedEl.className).not.toContain('line-through')
+    })
+
+    it('search filter works in preview mode', async () => {
+      mockPreviewHook.mockReturnValue({
+        data: {
+          userId: USER_ID,
+          resolvedAt: new Date().toISOString(),
+          hasGroupAssignments: true,
+          permissions: [
+            { id: 'od.admin.users.view', label: 'View Users', isDenied: false, provenanceChain: [], diffStatus: 'unchanged' as const },
+            { id: 'od.admin.roles.view', label: 'View Roles', isDenied: false, provenanceChain: [], diffStatus: 'unchanged' as const },
+          ],
+        },
+        isLoading: false,
+      })
+
+      const user = userEvent.setup()
+      renderPreview({ groupIds: ['g-1'] })
+
+      const input = screen.getByRole('searchbox', { name: /search permissions/i })
+      await user.type(input, 'users')
+      expect(screen.getByText('View Users')).toBeInTheDocument()
+      expect(screen.queryByText('View Roles')).not.toBeInTheDocument()
     })
   })
 })

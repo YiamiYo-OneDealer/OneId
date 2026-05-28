@@ -1,5 +1,5 @@
 import type { Tenant, User, Group, Role, RoleSet, Permission, AuditLogEntry, Paginated } from './types'
-import type { EffectivePermissionsResponse } from '@/features/users/schemas'
+import type { EffectivePermissionsResponse, PreviewPayload } from '@/features/users/schemas'
 import { fixtures } from './fixtures'
 
 export const mockDelay = (ms = 400): Promise<void> =>
@@ -220,6 +220,49 @@ export const mockStore = {
         provenanceChain: chain,
       }
     })
+
+    return {
+      userId,
+      resolvedAt: new Date().toISOString(),
+      hasGroupAssignments: true,
+      permissions,
+    }
+  },
+
+  getEffectivePermissionsPreview: (userId: string, payload: PreviewPayload): EffectivePermissionsResponse => {
+    // Build a simulated preview response based on the payload
+    const hasGroupIds = (payload.groupIds?.length ?? 0) > 0
+
+    if (!hasGroupIds) {
+      return {
+        userId,
+        resolvedAt: new Date().toISOString(),
+        hasGroupAssignments: false,
+        permissions: [],
+      }
+    }
+
+    // Get the current live permissions as a baseline
+    const live = mockStore.getEffectivePermissions(userId)
+    const liveIds = new Set(live.permissions.map((p) => p.id))
+
+    // Simulate: first permission becomes 'added' (new from payload), one becomes 'removed'
+    const permissions = live.permissions.map((p, i) => ({
+      ...p,
+      diffStatus: (i === 0 ? 'removed' : 'unchanged') as 'added' | 'removed' | 'unchanged',
+    }))
+
+    // Add a synthetic 'added' permission to demonstrate diff
+    const addedPerm: EffectivePermissionsResponse['permissions'][number] = {
+      id: 'od.reports.export',
+      label: 'od.reports.export',
+      isDenied: false,
+      provenanceChain: [],
+      diffStatus: 'added',
+    }
+    if (!liveIds.has('od.reports.export')) {
+      permissions.push(addedPerm)
+    }
 
     return {
       userId,
