@@ -53,7 +53,7 @@ const columns: ColumnDef<Tenant, unknown>[] = [
   },
   {
     id: 'actions',
-    header: '',
+    header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => (
       <Button variant="outline" size="sm" asChild>
         <Link to={`/internal/tenants/${row.original.id}`}>View</Link>

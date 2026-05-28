@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { type ColumnDef } from '@tanstack/react-table'
+import { axe } from 'vitest-axe'
 import { DataTable } from './DataTable'
 
 interface TestRow {
@@ -68,5 +69,10 @@ describe('DataTable', () => {
     // After click: asc sort — Alice still first alphabetically
     const sortedRows = screen.getAllByRole('row')
     expect(sortedRows[1]).toHaveTextContent('Alice')
+  })
+
+  it('has no axe violations with data', async () => {
+    const { container } = render(<DataTable columns={columns} data={data} />)
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

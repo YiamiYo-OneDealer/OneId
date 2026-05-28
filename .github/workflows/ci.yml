@@ -88,8 +88,21 @@ jobs:
         env:
           PGPASSWORD: postgres
 
+  vitest-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+        working-directory: src/OneId.Web
+      - name: Run vitest
+        run: npm test -- --run
+        working-directory: src/OneId.Web
+
   playwright-tests:
-    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -103,5 +116,7 @@ jobs:
         run: npx playwright install --with-deps
         working-directory: src/OneId.Web
       - name: Run Playwright tests
-        run: npx playwright test --pass-with-no-tests
+        run: npx playwright test
         working-directory: src/OneId.Web
+        env:
+          CI: 'true'

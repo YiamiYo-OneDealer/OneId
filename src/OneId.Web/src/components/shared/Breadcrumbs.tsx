@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { useMatches, Link } from 'react-router'
 import {
   Breadcrumb,
@@ -42,7 +43,7 @@ export function Breadcrumbs() {
     <Breadcrumb>
       <BreadcrumbList>
         {crumbs.map((crumb, i) => (
-          <span key={crumb.to} className="flex items-center gap-1.5">
+          <Fragment key={crumb.to}>
             {i > 0 && <BreadcrumbSeparator />}
             <BreadcrumbItem>
               {i === crumbs.length - 1 ? (
@@ -53,7 +54,7 @@ export function Breadcrumbs() {
                 </BreadcrumbLink>
               )}
             </BreadcrumbItem>
-          </span>
+          </Fragment>
         ))}
       </BreadcrumbList>
     </Breadcrumb>

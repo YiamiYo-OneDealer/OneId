@@ -68,9 +68,9 @@
     --accent: 218 7% 89%;                  /* Platinum — subtle hover surface */
     --accent-foreground: 211 10% 23%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 72.2% 44%;      /* red-700 — passes WCAG AA 4.5:1 with white text */
     --destructive-foreground: 0 0% 98%;
-    --destructive-fg: 0 84.2% 60.2%;
+    --destructive-fg: 0 72.2% 44%;
     --destructive-bg: 0 84.2% 95%;
 
     --admin-banner-bg: 207 88% 10%;        /* Maastricht Blue for admin banner */
@@ -111,9 +111,9 @@
     --accent: 207 35% 20%;                 /* subtle hover surface */
     --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 72.2% 44%;      /* red-700 — passes WCAG AA 4.5:1 with white text */
     --destructive-foreground: 0 0% 98%;
-    --destructive-fg: 0 84.2% 60.2%;
+    --destructive-fg: 0 72.2% 44%;
     --destructive-bg: 0 72.2% 16.5%;
 
     --admin-banner-bg: 211 40% 35%;        /* Metallic Blue #36587D */

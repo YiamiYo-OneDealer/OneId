@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
+import { axe } from 'vitest-axe'
 import { useTenantStore } from '@/store/tenant-store'
 import { useUiStore } from '@/store/ui-store'
 import { AdminTierBanner } from './AdminTierBanner'
@@ -48,5 +49,11 @@ describe('AdminTierBanner', () => {
     useTenantStore.setState({ activeTenantId: 'test-tenant' })
     renderBanner()
     expect(screen.getByText(/All Tenants/)).toBeInTheDocument()
+  })
+
+  it('has no axe violations', async () => {
+    useTenantStore.setState({ activeTenantId: 'test-tenant' })
+    const { container } = renderBanner()
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

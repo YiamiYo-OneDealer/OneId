@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
+import { axe } from 'vitest-axe'
 import { GlobalNav } from './GlobalNav'
 
 function renderNav(tier: 'internal' | 'tenant', initialPath = '/tenant/users') {
@@ -59,5 +60,10 @@ describe('GlobalNav', () => {
     localStorage.setItem('oneid:sidebar:collapsed', 'true')
     renderNav('tenant')
     expect(screen.getByRole('button', { name: /expand sidebar/i })).toBeInTheDocument()
+  })
+
+  it('has no axe violations (tenant tier)', async () => {
+    const { container } = renderNav('tenant')
+    expect(await axe(container)).toHaveNoViolations()
   })
 })
