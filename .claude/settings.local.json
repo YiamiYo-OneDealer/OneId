@@ -95,7 +95,22 @@
       "Read(//mnt/c/Users/georgios.mathioudaki/Dev/OneId/tests/OneId.Server.IntegrationTests/**)",
       "Bash(grep -rn \"SeedSecondTenant\\\\|DevSeeder\\\\.\" /mnt/c/Users/georgios.mathioudaki/Dev/OneId/tests/OneId.Server.IntegrationTests/ --include=\"*.cs\" | head -20)",
       "Read(//mnt/c/Users/georgios.mathioudaki/Dev/OneId/tests/**)",
-      "Bash(xargs grep -l \"PermissionEvaluator\\\\|ICacheService\\\\|CacheService\")"
+      "Bash(xargs grep -l \"PermissionEvaluator\\\\|ICacheService\\\\|CacheService\")",
+      "Bash(ls -la \"/Users/georgios.mathioudaki/Dev/OneId/src/OneId.Server/Infrastructure/Cache/\" 2>&1 | head -20)",
+      "Read(//Users/georgios.mathioudaki/Dev/OneId/src/OneId.Server/Infrastructure/**)",
+      "Bash(xargs -I{} dotnet-dump analyze {} --command \"clrstack\")",
+      "Read(//c/Users/georgios.mathioudaki/.nuget/packages/openiddict.abstractions/7.5.0/lib/**)",
+      "Read(//c/Users/georgios.mathioudaki/.nuget/packages/openiddict.abstractions/7.5.0/**)",
+      "Bash(grep -r \"IMemoryCache\\\\|MemoryCache\" \"c:/Users/georgios.mathioudaki/.nuget/packages/microsoft.extensions.caching.memory/9.0.0/lib/net8.0/\" 2>/dev/null | grep \"Clear\\\\|Compact\" | head -5; dotnet --version)",
+      "Read(//c/Users/georgios.mathioudaki/.nuget/packages/microsoft.extensions.caching.memory/9.0.0/lib/net8.0/**)",
+      "Bash(grep \"Response.*{\\\\\\\\|permissions\\\\|active\\\\|Error Message\\\\|Stack Trace\\\\|assert\\\\|must\")",
+      "Bash(find ~/.nuget -name \"OpenIddict.Abstractions.dll\" -path \"*/7.5*\" 2>/dev/null | head -5)",
+      "Read(//c/Users/georgios.mathioudaki/.nuget/**)",
+      "Bash(dotnet-ildasm OpenIddict.Abstractions.dll)",
+      "Bash(find /c/Users/georgios.mathioudaki -name \"OpenIddictParameter.cs\" 2>/dev/null | head -5; find /c/Users/georgios.mathioudaki -path \"*/openiddict*\" -name \"*.cs\" 2>/dev/null | head -10)",
+      "Read(//c/Users/georgios.mathioudaki/**)",
+      "Bash(gh repo *)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "additionalDirectories": [
       "C:\\Temp",

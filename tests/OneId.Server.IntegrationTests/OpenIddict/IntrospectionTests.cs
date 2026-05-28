@@ -81,7 +81,7 @@ public class IntrospectionTests(OneIdWebApplicationFactory factory) : Integratio
             ["client_secret"] = "sample-app-secret",
         });
 
-    // ── AC1: active token ───────────────────────────────────────────────────
+    // ── AC1: active token with enriched fields ──────────────────────────────
 
     [Fact]
     public async Task ActiveToken_IntrospectionReturnsActiveTrue()
@@ -95,21 +95,43 @@ public class IntrospectionTests(OneIdWebApplicationFactory factory) : Integratio
 
         Assert.True(body.GetProperty("active").GetBoolean(), "Expected active: true for a valid, non-revoked token");
 
-        // Verify expected claims are present in introspection response (AC1)
+        // Verify standard claims present in introspection response
         Assert.True(body.TryGetProperty("sub", out _), "sub claim must be present");
         Assert.True(body.TryGetProperty("exp", out _), "exp claim must be present");
         Assert.True(body.TryGetProperty("jti", out _), "jti claim must be present");
         Assert.True(body.TryGetProperty("iss", out _), "iss claim must be present");
 
+        // AC1: permissions array must be present (populated by PermissionEvaluationEnricher via JWT)
+        Assert.True(body.TryGetProperty("permissions", out var permsProp),
+            "permissions must be present in introspection response");
+        Assert.Equal(JsonValueKind.Array, permsProp.ValueKind);
+
+        // AC1: dimensional_attributes object with all 5 axes always present
+        Assert.True(body.TryGetProperty("dimensional_attributes", out var dimProp),
+            "dimensional_attributes must be present in introspection response");
+        Assert.Equal(JsonValueKind.Object, dimProp.ValueKind);
+        foreach (var axis in new[] { "Company", "Location", "Branch", "Make", "MarketSegment" })
+        {
+            Assert.True(dimProp.TryGetProperty(axis, out var axisProp),
+                $"dimensional_attributes must contain axis '{axis}'");
+            Assert.Equal(JsonValueKind.Array, axisProp.ValueKind);
+        }
+
+        // AC1: license object with required shape
+        Assert.True(body.TryGetProperty("license", out var licenseProp),
+            "license must be present in introspection response");
+        Assert.Equal(JsonValueKind.Object, licenseProp.ValueKind);
+        Assert.True(licenseProp.TryGetProperty("status", out _), "license.status must be present");
+        Assert.True(licenseProp.TryGetProperty("seats_used", out _), "license.seats_used must be present");
+        Assert.True(licenseProp.TryGetProperty("max_seats", out _), "license.max_seats must be present");
+
         // Verify jti is present in the JWT and the token is tracked in the OpenIddict store.
-        // OpenIddict embeds oi_tkn_id (internal store PK) in self-contained JWTs for revocation.
         var jti = ExtractJti(accessToken);
         Assert.False(string.IsNullOrEmpty(jti), "jti must be present in the issued JWT");
 
         var internalTokenId = ExtractOpenIddictTokenId(accessToken);
         if (internalTokenId is not null)
         {
-            // Token is tracked in the store — verify it's found and valid
             using var scope = Factory.Services.CreateScope();
             var tokenManager = scope.ServiceProvider.GetRequiredService<IOpenIddictTokenManager>();
             var storedToken = await tokenManager.FindByIdAsync(internalTokenId);
@@ -117,6 +139,36 @@ public class IntrospectionTests(OneIdWebApplicationFactory factory) : Integratio
             Assert.True(
                 await tokenManager.HasStatusAsync(storedToken, OpenIddictConstants.Statuses.Valid),
                 "Token in store must have Valid status");
+        }
+    }
+
+    // ── AC2: no assignments → empty enriched fields ──────────────────────────
+
+    [Fact]
+    public async Task NoAssignments_EnrichedFieldsAreEmpty()
+    {
+        // DevSeeder TotpUser has no Group or DimensionAssignment records — ideal for this test.
+        var accessToken = await IssueMfaTokenAsync();
+
+        var response = await Client.PostAsync("/connect/introspect", IntrospectRequest(accessToken));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.True(body.GetProperty("active").GetBoolean(), "Token must be active");
+
+        // permissions must be an empty array (no group assignments)
+        Assert.True(body.TryGetProperty("permissions", out var permsProp));
+        Assert.Equal(JsonValueKind.Array, permsProp.ValueKind);
+        Assert.Equal(0, permsProp.GetArrayLength());
+
+        // dimensional_attributes must have all 5 axes, each an empty array
+        Assert.True(body.TryGetProperty("dimensional_attributes", out var dimProp));
+        foreach (var axis in new[] { "Company", "Location", "Branch", "Make", "MarketSegment" })
+        {
+            Assert.True(dimProp.TryGetProperty(axis, out var axisProp),
+                $"axis '{axis}' must be present even with no assignments");
+            Assert.Equal(JsonValueKind.Array, axisProp.ValueKind);
+            Assert.Equal(0, axisProp.GetArrayLength());
         }
     }
 

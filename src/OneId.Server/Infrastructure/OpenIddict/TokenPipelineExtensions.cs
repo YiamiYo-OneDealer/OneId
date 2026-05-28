@@ -1,3 +1,4 @@
+using OneId.Server.Application.Dimensions;
 using OneId.Server.Application.Permissions;
 using OneId.Server.Application.TokenPipeline;
 using OneId.Server.Domain.Services;
@@ -12,6 +13,9 @@ public static class TokenPipelineExtensions
         services.AddScoped<ITokenClaimsEnricher, RoleClaimsEnricher>();
         services.AddScoped<IPermissionEvaluator, PermissionEvaluator>();
         services.AddScoped<ITokenClaimsEnricher, PermissionEvaluationEnricher>();
+        services.AddScoped<IDimensionEvaluator, DimensionEvaluator>();
+        services.AddScoped<IntrospectionDataEnricher>();
+        services.AddSingleton<IntrospectionResponseEnricher>();
         return services;
     }
 }

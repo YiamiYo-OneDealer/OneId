@@ -168,6 +168,13 @@ try
                    .EnableAuthorizationEndpointPassthrough()
                    .EnableTokenEndpointPassthrough()
                    .DisableTransportSecurityRequirement();
+
+            // Enrich introspection responses with permissions, dimensional_attributes, and license.
+            // Stage 1: evaluate and store data on transaction (needs GenericTokenPrincipal).
+            options.AddEventHandler(IntrospectionDataEnricher.Descriptor);
+
+            // Stage 2: write enrichment data to response (needs AddParameter to preserve empty arrays).
+            options.AddEventHandler(IntrospectionResponseEnricher.Descriptor);
         })
         .AddValidation(options =>
         {

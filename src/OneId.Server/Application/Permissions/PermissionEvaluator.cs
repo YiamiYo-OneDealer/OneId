@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OneId.Server.Application.Common;
 using OneId.Server.Domain.Enums;
 using OneId.Server.Domain.Services;
 using OneId.Server.Infrastructure.Persistence;
@@ -7,11 +8,17 @@ namespace OneId.Server.Application.Permissions;
 
 // Called during token issuance where ITenantContext is not yet initialized.
 // Uses explicit tenantId parameter for isolation instead of EF query filters.
-// Caching is deferred to Story 4b-3 (where the 40ms performance gate validates it).
-public sealed class PermissionEvaluator(AppDbContext db) : IPermissionEvaluator
+public sealed class PermissionEvaluator(AppDbContext db, ICacheService cache) : IPermissionEvaluator
 {
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(5);
+
     public async Task<IReadOnlySet<string>> EvaluateAsync(Guid userId, Guid tenantId, CancellationToken ct = default)
     {
+        var cacheKey = $"permissions:{userId}:{tenantId}";
+        var cached = cache.Get<HashSet<string>>(cacheKey);
+        if (cached is not null)
+            return cached;
+
         // Collect role IDs from direct Group → GroupRole chain.
         // UserGroups and GroupRoles have no tenant query filter — safe to query directly.
         var directRoleIds = await db.UserGroups
@@ -67,6 +74,7 @@ public sealed class PermissionEvaluator(AppDbContext db) : IPermissionEvaluator
                 permissions.Add(allow.PermissionId);
         }
 
+        cache.Set(cacheKey, permissions, CacheTtl);
         return permissions;
     }
 }
