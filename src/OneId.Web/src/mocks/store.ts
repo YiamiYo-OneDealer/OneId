@@ -73,6 +73,8 @@ export const mockStore = {
   createUser: (data: Omit<User, 'id' | 'createdAt'>): User => {
     const user: User = { ...data, id: `user-${Date.now()}`, createdAt: new Date().toISOString() }
     state.users.push(user)
+    const tenant = state.tenants.find((t) => t.id === data.tenantId)
+    if (tenant) tenant.seatUsage.used += 1
     return user
   },
   updateUser: (tenantId: string, userId: string, patch: Partial<User>): User => {
@@ -271,7 +273,7 @@ export const mockStore = {
     const liveIds = new Set(live.permissions.map((p) => p.id))
 
     // Simulate: first permission becomes 'added' (new from payload), one becomes 'removed'
-    const permissions = live.permissions.map((p, i) => ({
+    const permissions: EffectivePermissionsResponse['permissions'] = live.permissions.map((p, i) => ({
       ...p,
       diffStatus: (i === 0 ? 'removed' : 'unchanged') as 'added' | 'removed' | 'unchanged',
     }))

@@ -1,5 +1,3 @@
-import * as React from 'react'
-
 interface DenyOverrideBadgeProps {
   permissionLabel: string
   onReview?: () => void

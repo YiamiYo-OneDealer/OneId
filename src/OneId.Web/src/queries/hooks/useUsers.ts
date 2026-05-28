@@ -36,6 +36,7 @@ export function useCreateUser(tenantId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users(tenantId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenant(tenantId) })
     },
   })
 }

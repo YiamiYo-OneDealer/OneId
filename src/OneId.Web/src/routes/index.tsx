@@ -22,6 +22,8 @@ import { StubPage } from './_stub-page'
 import { TenantAuditLogPage } from './tenant/audit-log'
 import { InternalAuditLogPage } from './internal/audit-log'
 import { UserPermissionsPage } from './tenant/users/$userId/permissions'
+import { TenantUsersListPage } from './tenant/users/index'
+import { NewUserPage } from './tenant/users/new'
 import { effectivePermissionsLiveOptions } from '@/features/users/api'
 import { ForgotPasswordPage } from './forgot-password'
 import { ResetPasswordPage } from './reset-password'
@@ -72,7 +74,8 @@ export const router = createBrowserRouter([
         },
         children: [
           { index: true, element: <TenantAdminDashboard /> },
-          { path: 'users', element: <StubPage title="Users" /> },
+          { path: 'users', element: <TenantUsersListPage /> },
+          { path: 'users/new', element: <NewUserPage /> },
           {
             path: 'users/:userId/permissions',
             element: <UserPermissionsPage />,
