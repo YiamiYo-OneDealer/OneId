@@ -8,7 +8,7 @@ export function useUsers(tenantId: string) {
     queryKey: queryKeys.users(tenantId),
     queryFn: () =>
       apiClient
-        .get('api/tenant/users', { searchParams: { pageSize: 100 } })
+        .get('api/tenant/users', { searchParams: { pageSize: 500 } })
         .json<PagedResponse<UserDto>>()
         .then(r => r.items),
     enabled: !!tenantId,

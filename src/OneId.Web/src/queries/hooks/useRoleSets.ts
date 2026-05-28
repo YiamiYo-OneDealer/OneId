@@ -8,7 +8,7 @@ export function useRoleSets(tenantId: string) {
     queryKey: queryKeys.roleSets(tenantId),
     queryFn: () =>
       apiClient
-        .get('api/tenant/role-sets', { searchParams: { pageSize: 100 } })
+        .get('api/tenant/role-sets', { searchParams: { pageSize: 500 } })
         .json<PagedResponse<RoleSetDto>>()
         .then(r => r.items),
     enabled: !!tenantId,

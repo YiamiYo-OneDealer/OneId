@@ -8,7 +8,7 @@ export function useRoles(tenantId: string) {
     queryKey: queryKeys.roles(tenantId),
     queryFn: () =>
       apiClient
-        .get('api/tenant/roles', { searchParams: { pageSize: 100 } })
+        .get('api/tenant/roles', { searchParams: { pageSize: 500 } })
         .json<PagedResponse<RoleDto>>()
         .then(r => r.items),
     enabled: !!tenantId,

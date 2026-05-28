@@ -50,10 +50,13 @@ public sealed class IntrospectionDataEnricher(
             .Select(ug => ug.Group.Name)
             .ToListAsync(context.CancellationToken);
 
+        // Include roles from both direct GroupRoles and GroupRoleSet → RoleSet → Roles paths.
         var roles = await db.UserGroups
             .IgnoreQueryFilters()
             .Where(ug => ug.UserId == userId && ug.Group.TenantId == tenantId)
-            .SelectMany(ug => ug.Group.GroupRoles.Select(gr => gr.Role.Name))
+            .SelectMany(ug =>
+                ug.Group.GroupRoles.Select(gr => gr.Role.Name)
+                .Concat(ug.Group.GroupRoleSets.SelectMany(grs => grs.RoleSet.RoleSetRoles.Select(rsr => rsr.Role.Name))))
             .Distinct()
             .ToListAsync(context.CancellationToken);
 

@@ -8,7 +8,7 @@ export function useGroups(tenantId: string) {
     queryKey: queryKeys.groups(tenantId),
     queryFn: () =>
       apiClient
-        .get('api/tenant/groups', { searchParams: { pageSize: 100 } })
+        .get('api/tenant/groups', { searchParams: { pageSize: 500 } })
         .json<PagedResponse<GroupDto>>()
         .then(r => r.items),
     enabled: !!tenantId,

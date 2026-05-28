@@ -17,6 +17,7 @@ import { EffectivePermissionsPanel } from '@/features/users/components/Effective
 import { useCreateUser } from '@/queries/hooks'
 import { useGroups } from '@/queries/hooks'
 import { useTenantStore } from '@/store/tenant-store'
+import { apiClient } from '@/lib/api-client'
 
 type UserStatus = 'active' | 'inactive'
 
@@ -324,17 +325,21 @@ export function NewUserPage() {
     )
   }
 
-  const handleSubmit = () => {
-    createUser.mutate(
-      { email: email.trim(), displayName: name.trim() || null },
-      {
-        onSuccess: () => {
-          toast.success('User created.')
-          navigate('/tenant/users')
-        },
-        onError: () => toast.error('Failed to create user.'),
-      },
-    )
+  const handleSubmit = async () => {
+    try {
+      const newUser = await createUser.mutateAsync({ email: email.trim(), displayName: name.trim() || null })
+      if (selectedGroupIds.length > 0) {
+        await Promise.all(
+          selectedGroupIds.map(groupId =>
+            apiClient.put(`api/tenant/groups/${groupId}/members`, { json: { userId: newUser.id } })
+          )
+        )
+      }
+      toast.success('User created.')
+      navigate('/tenant/users')
+    } catch {
+      toast.error('Failed to create user.')
+    }
   }
 
   const groupNames = groups

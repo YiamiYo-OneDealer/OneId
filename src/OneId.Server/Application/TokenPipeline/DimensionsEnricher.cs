@@ -7,6 +7,10 @@ public sealed class DimensionsEnricher(IDimensionEvaluator evaluator) : ITokenCl
 {
     public async Task EnrichAsync(ClaimsIdentity identity, TokenEnrichmentContext context, CancellationToken ct)
     {
+        // Remove stale dim_* claims — identity is seeded from the old token on refresh.
+        foreach (var c in identity.Claims.Where(c => c.Type.StartsWith("dim_")).ToList())
+            identity.RemoveClaim(c);
+
         var dimensions = await evaluator.EvaluateAsync(context.UserId, context.TenantId, ct);
 
         foreach (var (axis, values) in dimensions)
