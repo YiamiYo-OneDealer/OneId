@@ -111,7 +111,10 @@
       "Read(//c/Users/georgios.mathioudaki/**)",
       "Bash(gh repo *)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(Test-Path \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Web\\\\src\\\\permissions\")"
+      "Bash(Test-Path \"c:\\\\Users\\\\georgios.mathioudaki\\\\Dev\\\\OneId\\\\src\\\\OneId.Web\\\\src\\\\permissions\")",
+      "Bash(*)",
+      "WebFetch(*)",
+      "Read(*)"
     ],
     "additionalDirectories": [
       "C:\\Temp",

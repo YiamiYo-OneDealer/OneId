@@ -1,4 +1,5 @@
 import type { Tenant, User, Group, Role, RoleSet, Permission, AuditLogEntry, Paginated } from './types'
+import type { EffectivePermissionsResponse } from '@/features/users/schemas'
 import { fixtures } from './fixtures'
 
 export const mockDelay = (ms = 400): Promise<void> =>
@@ -146,6 +147,87 @@ export const mockStore = {
   // ── Permissions ──────────────────────────────────────────────────────────
   getPermissions: (): Permission[] => state.permissions,
   getCurrentUserPermissions: (): string[] => state.permissions.map((p) => p.id),
+
+  // ── Effective Permissions ────────────────────────────────────────────────
+  getEffectivePermissions: (userId: string): EffectivePermissionsResponse => {
+    const user = state.users.find((u) => u.id === userId)
+    if (!user) {
+      return {
+        userId,
+        resolvedAt: new Date().toISOString(),
+        hasGroupAssignments: false,
+        permissions: [],
+      }
+    }
+    const tenantId = user.tenantId
+    const userGroups = state.groups.filter(
+      (g) => g.tenantId === tenantId && user.groupIds.includes(g.id),
+    )
+
+    if (userGroups.length === 0) {
+      return {
+        userId,
+        resolvedAt: new Date().toISOString(),
+        hasGroupAssignments: false,
+        permissions: [],
+      }
+    }
+
+    const permissionMap = new Map<string, { groupName: string; groupId: string; roleId: string; roleName: string; roleSetId?: string; roleSetName?: string }>()
+
+    for (const group of userGroups) {
+      // Direct roles
+      for (const roleId of group.roleIds) {
+        const role = state.roles.find((r) => r.id === roleId)
+        if (!role) continue
+        for (const permId of role.permissionIds) {
+          if (!permissionMap.has(permId)) {
+            permissionMap.set(permId, { groupName: group.name, groupId: group.id, roleId, roleName: role.name })
+          }
+        }
+      }
+      // Roles via role sets
+      for (const rsId of group.roleSetIds) {
+        const rs = state.roleSets.find((r) => r.id === rsId)
+        if (!rs) continue
+        for (const roleId of rs.roleIds) {
+          const role = state.roles.find((r) => r.id === roleId)
+          if (!role) continue
+          for (const permId of role.permissionIds) {
+            if (!permissionMap.has(permId)) {
+              permissionMap.set(permId, { groupName: group.name, groupId: group.id, roleId, roleName: role.name, roleSetId: rs.id, roleSetName: rs.name })
+            }
+          }
+        }
+      }
+    }
+
+    // Build the permissions list; mark od.users.deactivate as DENY-overridden for demo purposes
+    const DEMO_DENY_IDS = new Set(['od.users.deactivate'])
+
+    const permissions = Array.from(permissionMap.entries()).map(([permId, source]) => {
+      const chain = [
+        { nodeType: 'user' as const, id: userId, label: user.name, href: '' },
+        { nodeType: 'group' as const, id: source.groupId, label: source.groupName, href: `/tenant/groups/${source.groupId}` },
+        ...(source.roleSetId ? [{ nodeType: 'roleSet' as const, id: source.roleSetId, label: source.roleSetName!, href: `/tenant/role-sets/${source.roleSetId}` }] : []),
+        { nodeType: 'role' as const, id: source.roleId, label: source.roleName, href: `/tenant/roles/${source.roleId}` },
+        { nodeType: 'permission' as const, id: permId, label: permId, href: '' },
+      ]
+      return {
+        id: permId,
+        label: permId,
+        isDenied: DEMO_DENY_IDS.has(permId),
+        provenanceChain: chain,
+      }
+    })
+
+    return {
+      userId,
+      resolvedAt: new Date().toISOString(),
+      hasGroupAssignments: true,
+      permissions,
+    }
+  },
 
   // ── Audit Log ────────────────────────────────────────────────────────────
   getAuditLog: (

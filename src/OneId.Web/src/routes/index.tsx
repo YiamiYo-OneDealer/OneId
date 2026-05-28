@@ -21,6 +21,8 @@ import { TenantAdminDashboard } from './tenant/index'
 import { StubPage } from './_stub-page'
 import { TenantAuditLogPage } from './tenant/audit-log'
 import { InternalAuditLogPage } from './internal/audit-log'
+import { UserPermissionsPage } from './tenant/users/$userId/permissions'
+import { effectivePermissionsLiveOptions } from '@/features/users/api'
 import { ForgotPasswordPage } from './forgot-password'
 import { ResetPasswordPage } from './reset-password'
 
@@ -71,6 +73,18 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <TenantAdminDashboard /> },
           { path: 'users', element: <StubPage title="Users" /> },
+          {
+            path: 'users/:userId/permissions',
+            element: <UserPermissionsPage />,
+            loader: async ({ params }) => {
+              if (params.userId) {
+                await queryClient.ensureQueryData(
+                  effectivePermissionsLiveOptions(params.userId),
+                )
+              }
+              return null
+            },
+          },
           { path: 'groups', element: <StubPage title="Groups" /> },
           { path: 'roles', element: <StubPage title="Roles" /> },
           { path: 'role-sets', element: <StubPage title="Role Sets" /> },
