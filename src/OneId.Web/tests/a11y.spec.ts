@@ -79,22 +79,22 @@ test.describe('WCAG AA accessibility — Tenant Admin pages', () => {
   })
 
   test('Tenant users page has no axe violations', async ({ page }) => {
-    await page.goto('/tenant/users')
+    await page.goto('/tenant/acme-corp/users')
     await checkA11y(page)
   })
 
   test('Tenant groups page has no axe violations', async ({ page }) => {
-    await page.goto('/tenant/groups')
+    await page.goto('/tenant/acme-corp/groups')
     await checkA11y(page)
   })
 
   test('Tenant roles page has no axe violations', async ({ page }) => {
-    await page.goto('/tenant/roles')
+    await page.goto('/tenant/acme-corp/roles')
     await checkA11y(page)
   })
 
   test('Tenant audit log page has no axe violations', async ({ page }) => {
-    await page.goto('/tenant/audit-log')
+    await page.goto('/tenant/acme-corp/audit-log')
     await checkA11y(page)
   })
 })

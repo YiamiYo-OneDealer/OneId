@@ -1,5 +1,12 @@
 # Deferred Work Log
 
+## Deferred from: code review of 5c-2 and 5c-7 (2026-05-28)
+
+- **D1 (5c-7): Auth tokens persisted to localStorage plaintext** — Intentional fix for Playwright E2E tests requiring tokens to survive page reloads. Security hardening (e.g., HttpOnly cookies for refresh token) is out of scope for mock-mode POC; revisit before production deployment.
+- **D2 (5c-7): Hydration guard returns `null` briefly on page load** — `_authenticated.tsx` returns `null` while Zustand persist rehydrates from localStorage, causing a brief blank screen flash. Intentional trade-off; improve with a loading skeleton/spinner in a future story.
+- **D3 (5c-2): Duplicate validation logic in validateStep1 vs onBlur handlers** — Same name/email validation rules written twice in `new.tsx`. Works correctly but is a divergence risk. Consolidate into a shared `validateField` function when touching this file again.
+- **D4 (5c-2): onError uses toast instead of inline field error** — AC6 specifies inline errors for server validation, but dev notes explicitly chose the simpler `toast.error` pattern (consistent with TenantProvisioningPage). Only matters with a real backend; revisit during real backend integration.
+
 ## Deferred from: code review of 4a-7-user-lifecycle-management-tenant-admin (2026-05-27)
 
 - **W1: AuditService TenantId guard removal** — Guard was removed intentionally to allow InternalAdmin operations to audit under a TenantId different from the calling user's context. No replacement guard added; callers are trusted by contract to pass the correct TenantId. Revisit if cross-tenant audit poisoning becomes a concern.

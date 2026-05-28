@@ -5,7 +5,7 @@
 - **Story ID:** 5c-7
 - **Story Key:** 5c-7-wcag-aa-audit-automated-accessibility-tests-and-ci-playwright-activation
 - **Epic:** 5c — Admin Pages & Accessibility
-- **Status:** review
+- **Status:** done
 - **Phase:** 8 (requires Epic 4b)
 - **Estimated effort:** Medium
 
@@ -371,3 +371,9 @@ From 5a-5 (Playwright setup story):
 - `.github/workflows/ci.yml` — activated `playwright-tests` job, added `vitest-tests` job
 
 **Final test count:** 138 vitest tests ✅ | 7 Playwright tests ✅
+
+### Review Findings
+
+- [x] [Review][Patch] Playwright a11y tests navigate to wrong tenant URL paths — tests use `/tenant/users`, `/tenant/groups`, etc., but the router requires `/tenant/:tenantId/users` (e.g., `/tenant/acme-corp/users`). Tests likely hit a not-found route and assert axe on the wrong page. [src/OneId.Web/tests/a11y.spec.ts]
+- [x] [Review][Defer] Auth tokens persisted to localStorage plaintext [src/OneId.Web/src/store/auth-store.ts] — deferred, pre-existing design for POC; security hardening out of scope
+- [x] [Review][Defer] Hydration guard returns null briefly on page load [src/OneId.Web/src/routes/_authenticated.tsx] — deferred, intentional trade-off per 5c-7 learnings; could be improved with a loading spinner later

@@ -1,6 +1,6 @@
 # Story 5c-2: F-1 New User Stepper with Real-Time Permissions Preview
 
-Status: review
+Status: done
 
 ## Story
 
@@ -484,6 +484,11 @@ claude-sonnet-4-6
 - `src/OneId.Web/src/components/shared/DenyOverrideBadge.tsx` — removed unused `import * as React from 'react'`
 - `src/OneId.Web/src/components/shared/DenyOverrideSheet.test.tsx` — removed unused `import * as React from 'react'`
 - `src/OneId.Web/src/features/users/components/EffectivePermissions.test.tsx` — removed unused `import * as React from 'react'`
+
+### Review Findings
+
+- [x] [Review][Defer] Duplicate validation logic in validateStep1 vs onBlur handlers [src/OneId.Web/src/routes/tenant/users/new.tsx] — deferred, pre-existing style choice; works correctly
+- [x] [Review][Defer] onError uses toast instead of inline field error for server validation [src/OneId.Web/src/routes/tenant/users/new.tsx] — deferred, dev notes explicitly chose simpler toast pattern; inline validation only relevant with real backend
 
 ## Change Log
 
