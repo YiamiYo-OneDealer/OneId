@@ -145,6 +145,7 @@ export const mockStore = {
 
   // ── Permissions ──────────────────────────────────────────────────────────
   getPermissions: (): Permission[] => state.permissions,
+  getCurrentUserPermissions: (): string[] => state.permissions.map((p) => p.id),
 
   // ── Audit Log ────────────────────────────────────────────────────────────
   getAuditLog: (

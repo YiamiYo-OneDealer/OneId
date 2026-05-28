@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-28  # epic 4b done
+last_updated: 2026-05-28  # 5b-1 implemented
 project: OneId
 project_key: NOKEY
 tracking_system: file-system
@@ -135,8 +135,8 @@ development_status:
   # Phase 4 (no 4b dependency): 5b.1, 5b.2, 5b.6 — parallel with Epic 4a
   # Phase 8 (requires Epic 4b): 5b.3, 5b.4, 5b.5 — introspection-dependent
   # ─────────────────────────────────────────────────────────────────────────
-  epic-5b: backlog
-  5b-1-useformmutation-and-usehaspermission-hooks: backlog           # Phase 4 (parallel with 4a)
+  epic-5b: in-progress
+  5b-1-useformmutation-and-usehaspermission-hooks: review             # Phase 4 (parallel with 4a)
   5b-2-permission-label-map-and-disabledbuttonwithtooltip: backlog   # Phase 4 (parallel with 4a)
   5b-3-effectivepermissionspanel-live-mode: backlog                  # Phase 8 (requires 4b)
   5b-4-effectivepermissionspanel-preview-mode: backlog               # Phase 8 (requires 4b)

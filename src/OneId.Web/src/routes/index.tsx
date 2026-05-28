@@ -1,4 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router'
+import { queryClient } from '@/lib/query-client'
+import { getCurrentUserPermissionsOptions } from '@/queries/hooks/usePermissions'
 import { AuthenticatedLayout } from './_authenticated'
 import { ErrorPage } from './error'
 import { LoginPage } from './login'
@@ -36,6 +38,10 @@ export const router = createBrowserRouter([
       {
         path: 'internal',
         element: <InternalLayout />,
+        loader: async () => {
+          await queryClient.ensureQueryData(getCurrentUserPermissionsOptions())
+          return null
+        },
         children: [
           { index: true, element: <InternalDashboard /> },
           { path: 'tenants', element: <TenantListPage /> },
@@ -58,6 +64,10 @@ export const router = createBrowserRouter([
       {
         path: 'tenant',
         element: <TenantAdminLayout />,
+        loader: async () => {
+          await queryClient.ensureQueryData(getCurrentUserPermissionsOptions())
+          return null
+        },
         children: [
           { index: true, element: <TenantAdminDashboard /> },
           { path: 'users', element: <StubPage title="Users" /> },
