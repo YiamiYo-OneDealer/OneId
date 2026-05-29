@@ -65,10 +65,11 @@ public sealed class EffectivePermissionsPreviewHandler(AppDbContext db, ITenantC
                 .ToListAsync(ct)
             : [];
 
-        var directRoleSetPaths = validRoleSetIds.Count > 0
+        var rsIds = validRoleSetIds.Select(rs => rs.Id).ToList();
+        var directRoleSetPaths = rsIds.Count > 0
             ? await (
                 from rsr in db.RoleSetRoles
-                where validRoleSetIds.Select(rs => rs.Id).Contains(rsr.RoleSetId)
+                where rsIds.Contains(rsr.RoleSetId)
                 join r in db.Roles on rsr.RoleId equals r.Id
                 join rp in db.RolePermissions on r.Id equals rp.RoleId
                 join p in db.Permissions on rp.PermissionId equals p.Id
@@ -133,7 +134,8 @@ public sealed class EffectivePermissionsPreviewHandler(AppDbContext db, ITenantC
 
         // Apply request-body DENY overrides (no DB overrides in preview mode).
         var deniedFromRequest = request.Overrides
-            .Where(o => string.Equals(o.Effect, "DENY", StringComparison.OrdinalIgnoreCase))
+            .Where(o => !string.IsNullOrEmpty(o.PermissionId) &&
+                        string.Equals(o.Effect, "DENY", StringComparison.OrdinalIgnoreCase))
             .Select(o => o.PermissionId)
             .ToHashSet();
 
@@ -143,7 +145,7 @@ public sealed class EffectivePermissionsPreviewHandler(AppDbContext db, ITenantC
         return new EffectivePermissionsResponse(
             "",
             DateTimeOffset.UtcNow.ToString("O"),
-            request.GroupIds.Count > 0,
+            validGroupIds.Count > 0,
             permissionMap.Values.ToList());
     }
 }

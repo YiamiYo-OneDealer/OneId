@@ -16,6 +16,16 @@ public class TenantEffectivePermissionsController(
     [HttpPost("preview")]
     public async Task<IActionResult> Preview([FromBody] PreviewBody body, CancellationToken ct)
     {
+        const int maxListSize = 100;
+        if ((body.GroupIds?.Count ?? 0) > maxListSize ||
+            (body.RoleSets?.Count ?? 0) > maxListSize ||
+            (body.Overrides?.Count ?? 0) > maxListSize)
+            return BadRequest(new { error = $"Each list field may contain at most {maxListSize} items." });
+
+        if (body.Overrides?.Any(o => string.IsNullOrEmpty(o.PermissionId) ||
+                !string.Equals(o.Effect, "DENY", StringComparison.OrdinalIgnoreCase)) == true)
+            return BadRequest(new { error = "Each override must have a non-empty permissionId and effect must be \"DENY\"." });
+
         var request = new PreviewRequest(
             body.GroupIds ?? [],
             body.RoleSets ?? [],

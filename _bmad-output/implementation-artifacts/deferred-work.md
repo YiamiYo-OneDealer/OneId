@@ -1,5 +1,11 @@
 # Deferred Work Log
 
+## Deferred from: code review of gap-1-effective-permissions-and-revoke-backend (2026-05-29)
+
+- **D1: EF Core named query filter refactor** (`AppDbContext.cs` + all entity configurations) — Current `User` filter combines `!u.DeletedAt.HasValue && u.TenantId == tenantContext.TenantId` in one lambda. `IgnoreQueryFilters()` bypasses both; any future caller that adds it to query soft-deleted users would silently lose tenant isolation unless they remember to add an explicit `tenantId` guard (as the DENY override path does). Refactor to EF Core 10 named filters (`"tenant"` / `"softDelete"`) per entity so that `IgnoreQueryFilters("softDelete")` is safe by construction. Reason: refactor after poc.
+
+- **W1: Soft-deleted users: `RevokeTokens` returns 204, `GetEffectivePermissions` returns 404** (`TenantUsersController.cs`) — pre-existing inconsistency between `GetUserHandler` (uses `IgnoreQueryFilters` + explicit `tenantId`) and the effective-permissions handler (uses `db.Users.AnyAsync` with EF query filter). Soft-deleted users are excluded by the filter, so `GetEffectivePermissions` returns 404; `GetUserHandler` intentionally includes them, so `RevokeTokens` returns 204. No behavioral risk (revoking a deleted user's tokens is harmless); fix when `GetUserHandler` or soft-delete semantics are revisited.
+
 ## Deferred from: code review of 5c-3b-permission-management-ui (2026-05-28)
 
 - **D1: UpdateRoleSetBody.version typed as optional** (`src/OneId.Web/src/api/types.ts`) — `version?: number` while all other entity update bodies (`UpdateRoleBody`, `UpdateGroupBody`) require it. Introduced in the Fixes commit as part of the broad api/types.ts consolidation; affects RoleSet entity, not this story's scope. Fix when `useRoleSets` mutations are next touched.

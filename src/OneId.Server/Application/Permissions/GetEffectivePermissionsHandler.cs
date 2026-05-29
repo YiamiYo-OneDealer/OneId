@@ -58,16 +58,24 @@ public sealed class GetEffectivePermissionsHandler(AppDbContext db, ITenantConte
             ).ToListAsync(ct)
             : [];
 
-        // DENY overrides: bypass tenant query filter, apply explicit tenantId.
-        var denyOverrideIds = await db.UserPermissionOverrides
+        // All overrides: bypass tenant query filter, apply explicit tenantId.
+        var allOverrides = await db.UserPermissionOverrides
             .IgnoreQueryFilters()
             .Where(o => o.UserId == targetUserId && o.TenantId == tenantId
-                        && o.OverrideType == PermissionOverrideType.Deny
                         && (o.ExpiresAt == null || o.ExpiresAt > now))
-            .Select(o => o.PermissionId)
+            .Select(o => new { o.PermissionId, o.OverrideType })
             .ToListAsync(ct);
 
-        var deniedSet = denyOverrideIds.ToHashSet();
+        var deniedSet = allOverrides
+            .Where(o => o.OverrideType == PermissionOverrideType.Deny)
+            .Select(o => o.PermissionId)
+            .ToHashSet();
+
+        var allowSet = allOverrides
+            .Where(o => o.OverrideType == PermissionOverrideType.Allow)
+            .Select(o => o.PermissionId)
+            .ToHashSet();
+
         var permissionMap = new Dictionary<string, PermissionEntryDto>();
 
         // Build provenance map: first path wins (groups ordered by name, then roles by name).
@@ -106,12 +114,23 @@ public sealed class GetEffectivePermissionsHandler(AppDbContext db, ITenantConte
             }
         }
 
+        // Apply ALLOW overrides: permissions granted explicitly, not via any group, and not denied.
+        foreach (var permId in allowSet)
+        {
+            if (!permissionMap.ContainsKey(permId) && !deniedSet.Contains(permId))
+            {
+                permissionMap[permId] = new PermissionEntryDto(
+                    permId, "", false,
+                    [new ProvenanceNodeDto("user", targetUserId.ToString(), "", "")]);
+            }
+        }
+
         // Apply DENY overrides: add or mark existing entries.
         foreach (var permId in deniedSet)
         {
             if (permissionMap.TryGetValue(permId, out var existing))
             {
-                // Permission was also group-granted: keep chain, mark denied.
+                // Permission was also group-granted or allow-granted: keep chain, mark denied.
                 permissionMap[permId] = existing with { IsDenied = true };
             }
             else

@@ -1,6 +1,6 @@
 # Story gap-1: Effective Permissions & Token Revoke — Backend Endpoints
 
-**Status:** review
+**Status:** done
 **Epic:** Phase 8 completion
 **Story ID:** gap-1
 **Prerequisite:** Epic 4b complete ✓ — `PermissionEvaluator`, `UserPermissionOverride`, `UserGroup`/`GroupRole`/`RoleSetRole` tables all stable.
@@ -151,6 +151,18 @@ interface EffectivePermissionsResponse { userId: string; resolvedAt: string; has
 - [x] Task 8: Add missing Permissions constants (CrmRead, CrmWrite, FinanceRead, FinanceWrite) and catalog entries (fixes pre-existing compile error in PermissionEvaluationPipelineTests)
 - [x] Task 9: Write integration tests — EffectivePermissionsIntegrationTests, EffectivePermissionsPreviewIntegrationTests, RevokeUserTokensIntegrationTests
 - [x] Task 10: Verify all new tests pass (13/13 pass), no regression in unit tests (11/11 pass)
+
+### Review Findings
+
+- [x] [Review][Defer] Tenant isolation in `GetEffectivePermissionsHandler`: user existence check relies on EF query filter; DENY path uses `IgnoreQueryFilters()` + explicit `tenantId` — refactor to EF Core 10 named query filters (`"tenant"` / `"softDelete"`) to make isolation bypass-safe across all entities. [`GetEffectivePermissionsHandler.cs`] — deferred, refactor after poc
+- [x] [Review][Patch] Add ALLOW overrides to `GetEffectivePermissionsHandler` — query both DENY and ALLOW overrides to mirror `PermissionEvaluator`; ALLOW-only permissions get provenance `[{ nodeType: "user", id: userId }]` with `isDenied: false` [`GetEffectivePermissionsHandler.cs`]
+- [x] [Review][Dismiss] `GET /api/account/permissions` caching — `IPermissionEvaluator` already uses `ICacheService` internally; spec requirement met transitively. No controller-level cache needed.
+- [x] [Review][Dismiss] Preview endpoint `TenantAdmin` requirement — intent confirmed; spec's "Given a Tenant Admin calls…" language implies the gate; all tenant-scoped data endpoints consistently require TenantAdmin.
+- [x] [Review][Patch] `HasGroupAssignments` in preview uses `request.GroupIds.Count > 0` instead of `validGroupIds.Count > 0` — fixed to use `validGroupIds.Count > 0` [`EffectivePermissionsPreviewHandler.cs`]
+- [x] [Review][Patch] `validRoleSetIds.Select(rs => rs.Id).Contains(rsr.RoleSetId)` inside LINQ-to-SQL — pre-materialized to `rsIds` list [`EffectivePermissionsPreviewHandler.cs`]
+- [x] [Review][Patch] No size cap on `PreviewRequest.GroupIds`, `RoleSets`, `Overrides` — added 100-item guard in controller returning 400 [`TenantEffectivePermissionsController.cs`]
+- [x] [Review][Patch] `PreviewOverrideEntry.Effect` not validated — null/empty PermissionId guard added in handler; Effect="DENY" enforcement added in controller returning 400 [`EffectivePermissionsPreviewHandler.cs`, `TenantEffectivePermissionsController.cs`]
+- [x] [Review][Defer] Soft-deleted users: `RevokeTokens` returns 204, `GetEffectivePermissions` returns 404 — pre-existing inconsistency between `GetUserHandler` (IgnoreQueryFilters + explicit tenantId check) and `db.Users.AnyAsync` (EF query filter excludes deleted users) [`TenantUsersController.cs`] — deferred, pre-existing
 
 ---
 
