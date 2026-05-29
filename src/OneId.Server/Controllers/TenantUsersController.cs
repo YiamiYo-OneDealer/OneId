@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OneId.Server.Application.Common;
+using OneId.Server.Application.Permissions;
 using OneId.Server.Application.TenantAdmin.Users.Commands;
 using OneId.Server.Application.TenantAdmin.Users.Queries;
 using OpenIddict.Validation.AspNetCore;
@@ -17,7 +19,9 @@ public class TenantUsersController(
     GetUserHandler getHandler,
     CreateUserHandler createHandler,
     UpdateUserHandler updateHandler,
-    DeleteUserHandler deleteHandler) : ControllerBase
+    DeleteUserHandler deleteHandler,
+    GetEffectivePermissionsHandler effectivePermissionsHandler,
+    IUserTokenRevoker tokenRevoker) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List(
@@ -71,6 +75,23 @@ public class TenantUsersController(
     {
         var found = await deleteHandler.HandleAsync(id, ct);
         return found ? NoContent() : NotFound();
+    }
+
+    [HttpGet("{id:guid}/effective-permissions")]
+    public async Task<IActionResult> GetEffectivePermissions(Guid id, CancellationToken ct)
+    {
+        var result = await effectivePermissionsHandler.HandleAsync(id, ct);
+        return result is null ? NotFound() : Ok(result);
+    }
+
+    [HttpPost("{id:guid}/revoke-tokens")]
+    public async Task<IActionResult> RevokeTokens(Guid id, CancellationToken ct)
+    {
+        var user = await getHandler.HandleAsync(id, ct);
+        if (user is null) return NotFound();
+
+        await tokenRevoker.RevokeAllUserTokensAsync(id, ct);
+        return NoContent();
     }
 }
 

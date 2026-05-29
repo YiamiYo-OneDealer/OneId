@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using OneId.Server.Application.Permissions;
 using OneId.Server.Application.TenantAdmin.Dimensions.Commands;
 using OneId.Server.Application.TenantAdmin.Dimensions.Queries;
 using OneId.Server.Application.TenantAdmin.Groups.Commands;
@@ -48,6 +49,8 @@ public static class TenantServiceExtensions
         services.AddScoped<ListUserOverridesHandler>();
         services.AddScoped<CreateUserOverrideHandler>();
         services.AddScoped<DeleteUserOverrideHandler>();
+        services.AddScoped<GetEffectivePermissionsHandler>();
+        services.AddScoped<EffectivePermissionsPreviewHandler>();
         return services;
     }
 }

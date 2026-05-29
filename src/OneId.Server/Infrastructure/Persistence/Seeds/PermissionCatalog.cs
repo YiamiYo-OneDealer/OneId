@@ -77,6 +77,12 @@ internal static class PermissionCatalog
         new(Permissions.OdAfterSalesJobCardCreate, "After Sales — Add Job Card"),
 
         new(Permissions.OdCalendarView, "Calendar — View"),
+
+        new(Permissions.CrmRead,  "CRM — Read"),
+        new(Permissions.CrmWrite, "CRM — Write"),
+
+        new(Permissions.FinanceRead,  "Finance — Read"),
+        new(Permissions.FinanceWrite, "Finance — Write"),
     ];
 }
 

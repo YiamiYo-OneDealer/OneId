@@ -1,6 +1,6 @@
 # Story gap-1: Effective Permissions & Token Revoke — Backend Endpoints
 
-**Status:** draft
+**Status:** review
 **Epic:** Phase 8 completion
 **Story ID:** gap-1
 **Prerequisite:** Epic 4b complete ✓ — `PermissionEvaluator`, `UserPermissionOverride`, `UserGroup`/`GroupRole`/`RoleSetRole` tables all stable.
@@ -136,3 +136,68 @@ interface EffectivePermissionsResponse { userId: string; resolvedAt: string; has
 - Frontend wiring (covered in gap-2)
 - Seat usage in the response (covered in Phase 6 licensing stories)
 - Dimensional attributes in the response (these are in the introspection response; not needed for the EffectivePermissionsPanel which only shows permissions)
+
+---
+
+## Tasks / Subtasks
+
+- [x] Task 1: Create EffectivePermissionsDto types (ProvenanceNodeDto, PermissionEntryDto, EffectivePermissionsResponse)
+- [x] Task 2: Implement GetEffectivePermissionsHandler (AC2 — user inspect with provenance)
+- [x] Task 3: Implement EffectivePermissionsPreviewHandler (AC3 — preview mode)
+- [x] Task 4: Add AccountPermissionsController with GET /api/account/permissions (AC1)
+- [x] Task 5: Add effective-permissions + revoke-tokens actions to TenantUsersController (AC2, AC4)
+- [x] Task 6: Create TenantEffectivePermissionsController with POST /api/tenant/effective-permissions/preview (AC3)
+- [x] Task 7: Register new handlers in TenantServiceExtensions
+- [x] Task 8: Add missing Permissions constants (CrmRead, CrmWrite, FinanceRead, FinanceWrite) and catalog entries (fixes pre-existing compile error in PermissionEvaluationPipelineTests)
+- [x] Task 9: Write integration tests — EffectivePermissionsIntegrationTests, EffectivePermissionsPreviewIntegrationTests, RevokeUserTokensIntegrationTests
+- [x] Task 10: Verify all new tests pass (13/13 pass), no regression in unit tests (11/11 pass)
+
+---
+
+## Dev Notes
+
+- `GetEffectivePermissionsHandler` uses EF query filters (ITenantContext is initialized on TenantAdmin requests) for Group, Role, RoleSet isolation. UserPermissionOverride uses IgnoreQueryFilters + explicit tenantId (same pattern as PermissionEvaluator).
+- Provenance: first-path-wins, deterministic order (group name → role name). Direct-role paths take precedence over roleSet paths.
+- DENY overrides always produce isDenied:true. If also group-granted, the group provenance chain is kept with isDenied:true set. If DENY-only, provenance is a single user node.
+- Preview mode applies DENY only from the request body (no DB overrides). Cross-tenant groupIds are silently ignored via the EF query filter on db.Groups.
+- Revoke tokens delegates to IUserTokenRevoker.RevokeAllUserTokensAsync (same service used by password reset in AccountController).
+- Tests seed in SystemTenantId (TotpUser's tenant) to ensure tenant isolation works correctly.
+
+---
+
+## Dev Agent Record
+
+### Completion Notes
+
+Implemented all 4 endpoints satisfying AC1–AC6:
+- `GET /api/account/permissions` on `AccountPermissionsController` — delegates to `IPermissionEvaluator` (caching already built-in with 5-min TTL)
+- `GET /api/tenant/users/{id}/effective-permissions` on `TenantUsersController` via `GetEffectivePermissionsHandler` — returns `EffectivePermissionsResponse` with full provenance chains
+- `POST /api/tenant/effective-permissions/preview` on `TenantEffectivePermissionsController` via `EffectivePermissionsPreviewHandler` — hypothetical group evaluation, no DB overrides, tenant isolation via query filter
+- `POST /api/tenant/users/{id}/revoke-tokens` on `TenantUsersController` — delegates to `IUserTokenRevoker`
+
+Also fixed pre-existing compile error in `PermissionEvaluationPipelineTests`: added `Permissions.CrmRead/Write/FinanceRead/Write` constants and `PermissionCatalog` entries.
+
+13 new integration tests all pass. 11 unit tests all pass. Pre-existing test failures (45) are unrelated to this story.
+
+---
+
+## File List
+
+- `src/OneId.Server/Application/Permissions/EffectivePermissionsDto.cs` (new)
+- `src/OneId.Server/Application/Permissions/GetEffectivePermissionsHandler.cs` (new)
+- `src/OneId.Server/Application/Permissions/EffectivePermissionsPreviewHandler.cs` (new)
+- `src/OneId.Server/Controllers/AccountPermissionsController.cs` (new)
+- `src/OneId.Server/Controllers/TenantEffectivePermissionsController.cs` (new)
+- `src/OneId.Server/Controllers/TenantUsersController.cs` (modified — added 2 actions + handler injections)
+- `src/OneId.Server/Application/TenantAdmin/TenantServiceExtensions.cs` (modified — registered 2 handlers)
+- `src/OneId.Server/Application/Common/Permissions.cs` (modified — added 4 constants)
+- `src/OneId.Server/Infrastructure/Persistence/Seeds/PermissionCatalog.cs` (modified — added 4 entries)
+- `tests/OneId.Server.IntegrationTests/EffectivePermissionsIntegrationTests.cs` (new)
+- `tests/OneId.Server.IntegrationTests/EffectivePermissionsPreviewIntegrationTests.cs` (new)
+- `tests/OneId.Server.IntegrationTests/RevokeUserTokensIntegrationTests.cs` (new)
+
+---
+
+## Change Log
+
+- 2026-05-29: Implemented gap-1 — 4 backend endpoints for effective permissions and token revocation. Added provenance handler, preview handler, and 3 integration test suites (13 tests). Fixed pre-existing `PermissionEvaluationPipelineTests` compile error by adding missing permission constants.

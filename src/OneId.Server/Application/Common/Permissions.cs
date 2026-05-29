@@ -81,4 +81,12 @@ public static class Permissions
 
     // OneDealer sample permissions — Calendar
     public const string OdCalendarView = "onedealer.calendar.view";
+
+    // OneDealer sample permissions — CRM (used in permission evaluation tests)
+    public const string CrmRead  = "od.crm.read";
+    public const string CrmWrite = "od.crm.write";
+
+    // OneDealer sample permissions — Finance (used in permission evaluation tests)
+    public const string FinanceRead  = "od.finance.read";
+    public const string FinanceWrite = "od.finance.write";
 }
