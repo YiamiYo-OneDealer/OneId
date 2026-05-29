@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { type ColumnDef } from '@tanstack/react-table'
 import { DataTable } from '@/components/shared/DataTable'
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -16,6 +17,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useUsers, useCreateUser, useUpdateUser, useGroups } from '@/queries/hooks'
+import { queryKeys } from '@/queries/keys'
+import { apiClient } from '@/lib/api-client'
 import type { UserDto, GroupDto } from '@/api/types'
 
 // ── Group select list ─────────────────────────────────────────────────────────
@@ -84,8 +87,10 @@ function CreateUserDialog({
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
   const createUser = useCreateUser(tenantId)
+  const queryClient = useQueryClient()
 
   const validateEmail = () => {
     if (!email.trim()) { setEmailError('Email is required.'); return false }
@@ -94,21 +99,38 @@ function CreateUserDialog({
     return true
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateEmail()) return
-    createUser.mutate(
-      { email: email.trim(), displayName: displayName.trim() || null },
-      {
-        onSuccess: () => {
-          setDisplayName(''); setEmail(''); setSelectedGroupIds([])
-          onClose()
-        },
-      },
-    )
+    setSubmitError(null)
+    try {
+      const newUser = await createUser.mutateAsync(
+        { email: email.trim(), displayName: displayName.trim() || null },
+      )
+      if (selectedGroupIds.length > 0) {
+        const results = await Promise.allSettled(
+          selectedGroupIds.map((groupId) =>
+            apiClient.put(`api/tenant/groups/${groupId}/members`, { json: { userId: newUser.id } }),
+          ),
+        )
+        const failed = results.filter((r) => r.status === 'rejected')
+        if (failed.length > 0) {
+          queryClient.invalidateQueries({ queryKey: queryKeys.users(tenantId) })
+          setSubmitError(
+            'User created but some group assignments failed. Please check the user\'s group memberships.',
+          )
+          return
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.users(tenantId) })
+      setDisplayName(''); setEmail(''); setSelectedGroupIds([])
+      onClose()
+    } catch {
+      setSubmitError('Failed to create user. Please try again.')
+    }
   }
 
   const handleClose = () => {
-    setDisplayName(''); setEmail(''); setEmailError(''); setSelectedGroupIds([])
+    setDisplayName(''); setEmail(''); setEmailError(''); setSubmitError(null); setSelectedGroupIds([])
     onClose()
   }
 
@@ -144,6 +166,7 @@ function CreateUserDialog({
             <Label>Groups</Label>
             <GroupSelectList groups={groups} selected={selectedGroupIds} onChange={setSelectedGroupIds} />
           </div>
+          {submitError && <p className="text-sm text-destructive">{submitError}</p>}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={createUser.isPending}>

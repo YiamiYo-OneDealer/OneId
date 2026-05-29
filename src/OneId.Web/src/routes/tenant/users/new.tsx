@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -18,6 +19,8 @@ import { useCreateUser } from '@/queries/hooks'
 import { useGroups } from '@/queries/hooks'
 import { useTenantStore } from '@/store/tenant-store'
 import { apiClient } from '@/lib/api-client'
+import { queryKeys } from '@/queries/keys'
+import type { PagedResponse, UserDto } from '@/api/types'
 
 type UserStatus = 'active' | 'inactive'
 
@@ -288,7 +291,17 @@ export function NewUserPage() {
   const [status, setStatus] = useState<UserStatus>('active')
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
 
-  const atSeatLimit = false
+  // Seat limit: totalCount from users endpoint vs maxSeats (null until Phase 6 licensing is built)
+  const { data: seatUsage } = useQuery({
+    queryKey: queryKeys.seatUsage(tenantId),
+    queryFn: () =>
+      apiClient
+        .get('api/tenant/users', { searchParams: { pageSize: 1 } })
+        .json<PagedResponse<UserDto>>()
+        .then((r) => ({ used: r.totalCount, max: null as number | null })),
+    enabled: !!tenantId,
+  })
+  const atSeatLimit = seatUsage !== undefined && seatUsage.max !== null && seatUsage.used >= seatUsage.max
 
   const validateStep1 = (): boolean => {
     let valid = true

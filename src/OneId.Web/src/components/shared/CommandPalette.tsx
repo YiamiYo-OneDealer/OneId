@@ -9,8 +9,8 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command'
-import { mockStore, mockDelay } from '@/mocks/store'
-import type { User, Group, Role } from '@/mocks/types'
+import { apiClient } from '@/lib/api-client'
+import type { UserDto, GroupDto, RoleDto, PagedResponse } from '@/api/types'
 import {
   Users,
   Users2,
@@ -93,20 +93,19 @@ function buildRegistry(
       icon: Users,
       entityLabel: 'User',
       search: async (query: string): Promise<EntitySearchResult[]> => {
-        await mockDelay(200)
-        const allUsers: User[] = tenantId
-          ? mockStore.getUsers(tenantId)
-          : mockStore.getTenants().flatMap((t) => mockStore.getUsers(t.id))
-        return allUsers
+        if (!tenantId) return []
+        const r = await apiClient
+          .get('api/tenant/users', { searchParams: { pageSize: 10 } })
+          .json<PagedResponse<UserDto>>()
+        return r.items
           .filter(
             (u) =>
-              u.name.toLowerCase().includes(query.toLowerCase()) ||
-              u.email.toLowerCase().includes(query.toLowerCase()),
+              u.email.toLowerCase().includes(query.toLowerCase()) ||
+              (u.displayName ?? '').toLowerCase().includes(query.toLowerCase()),
           )
-          .slice(0, 5)
           .map((u) => ({
             id: u.id,
-            label: u.name,
+            label: u.displayName ?? u.email,
             sublabel: u.email,
             to: tier === 'internal'
               ? `/internal/tenants/${u.tenantId}/users`
@@ -122,18 +121,17 @@ function buildRegistry(
       icon: Users2,
       entityLabel: 'Group',
       search: async (query: string): Promise<EntitySearchResult[]> => {
-        await mockDelay(200)
-        const allGroups: Group[] = tenantId
-          ? mockStore.getGroups(tenantId)
-          : mockStore.getTenants().flatMap((t) => mockStore.getGroups(t.id))
-        return allGroups
+        if (!tenantId) return []
+        const r = await apiClient
+          .get('api/tenant/groups', { searchParams: { pageSize: 10 } })
+          .json<PagedResponse<GroupDto>>()
+        return r.items
           .filter((g) => g.name.toLowerCase().includes(query.toLowerCase()))
-          .slice(0, 5)
           .map((g) => ({
             id: g.id,
             label: g.name,
             to: tier === 'internal'
-              ? `/internal/tenants/${g.tenantId}/groups`
+              ? `/internal/tenants/${tenantId}/groups`
               : '/tenant/groups',
           }))
       },
@@ -146,18 +144,17 @@ function buildRegistry(
       icon: Shield,
       entityLabel: 'Role',
       search: async (query: string): Promise<EntitySearchResult[]> => {
-        await mockDelay(200)
-        const allRoles: Role[] = tenantId
-          ? mockStore.getRoles(tenantId)
-          : mockStore.getTenants().flatMap((t) => mockStore.getRoles(t.id))
-        return allRoles
-          .filter((r) => r.name.toLowerCase().includes(query.toLowerCase()))
-          .slice(0, 5)
-          .map((r) => ({
-            id: r.id,
-            label: r.name,
+        if (!tenantId) return []
+        const r = await apiClient
+          .get('api/tenant/roles', { searchParams: { pageSize: 10 } })
+          .json<PagedResponse<RoleDto>>()
+        return r.items
+          .filter((role) => role.name.toLowerCase().includes(query.toLowerCase()))
+          .map((role) => ({
+            id: role.id,
+            label: role.name,
             to: tier === 'internal'
-              ? `/internal/tenants/${r.tenantId}/roles`
+              ? `/internal/tenants/${tenantId}/roles`
               : '/tenant/roles',
           }))
       },
@@ -227,6 +224,8 @@ export function CommandPalette({ open, onOpenChange, tier, tenantId }: CommandPa
     handleOpenChange(false)
   }
 
+  const noTenantSelected = tier === 'internal' && !tenantId && query.length >= 2
+
   return (
     <CommandDialog open={open} onOpenChange={handleOpenChange} showCloseButton={false}>
       <CommandInput
@@ -235,7 +234,13 @@ export function CommandPalette({ open, onOpenChange, tier, tenantId }: CommandPa
         onValueChange={setQuery}
       />
       <CommandList>
-        <CommandEmpty>{query.length >= 2 && entityResults.length === 0 ? 'Searching…' : 'No results found.'}</CommandEmpty>
+        <CommandEmpty>
+          {noTenantSelected
+            ? 'Select a tenant first to search users, groups, or roles.'
+            : query.length >= 2 && entityResults.length === 0
+              ? 'No results found.'
+              : 'No results found.'}
+        </CommandEmpty>
 
         {filteredNav.length > 0 && (
           <CommandGroup heading="Navigation">

@@ -4,18 +4,14 @@ import { queryKeys } from '@/queries/keys'
 import { apiClient } from '@/lib/api-client'
 import type { UserOverrideDto, CreateOverrideBody } from '@/api/types'
 import type { EffectivePermissionsResponse, PreviewPayload } from './schemas'
-import { mockStore, mockDelay } from '@/mocks/store'
 
-// Effective permissions require a confidential-client introspection call that the SPA cannot
-// make directly. These hooks remain on mock data until a dedicated /api/account/permissions
-// endpoint is added.
 export const effectivePermissionsLiveOptions = (userId: string) =>
   queryOptions({
     queryKey: queryKeys.effectivePermissions(userId),
-    queryFn: async (): Promise<EffectivePermissionsResponse> => {
-      await mockDelay()
-      return mockStore.getEffectivePermissions(userId)
-    },
+    queryFn: (): Promise<EffectivePermissionsResponse> =>
+      apiClient
+        .get(`api/tenant/users/${userId}/effective-permissions`)
+        .json<EffectivePermissionsResponse>(),
     enabled: Boolean(userId),
   })
 
@@ -39,8 +35,15 @@ export function useEffectivePermissionsPreview(
       abortRef.current = controller
       setIsLoading(true)
       try {
-        const result = await mockStore.getEffectivePermissionsPreview(userId, previewPayload)
+        const result = await apiClient
+          .post('api/tenant/effective-permissions/preview', {
+            json: previewPayload,
+            signal: controller.signal,
+          })
+          .json<EffectivePermissionsResponse>()
         if (!controller.signal.aborted) setData(result)
+      } catch {
+        // request aborted or network error — no state update
       } finally {
         if (!controller.signal.aborted) setIsLoading(false)
       }

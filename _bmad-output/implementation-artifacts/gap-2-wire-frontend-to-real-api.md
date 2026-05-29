@@ -1,6 +1,6 @@
 # Story gap-2: Wire Frontend Off All Mock Data
 
-**Status:** draft
+**Status:** review
 **Epic:** Phase 8 completion
 **Story ID:** gap-2
 **Prerequisite:** Story gap-1 complete ✓ — all four backend endpoints live and returning correct responses.
@@ -122,3 +122,100 @@ Three areas of the frontend are explicitly on mock data. This story removes ever
 - Adding a `search` query param to backend list endpoints (CommandPalette uses client-side filtering)
 - Seat usage display / SeatUsageIndicator in the users list header (depends on Phase 6 licensing)
 - EffectivePermissionsPanel diff highlighting between live and preview (visual enhancement, existing component handles it)
+
+---
+
+## Tasks / Subtasks
+
+- [x] **Task 1 — AC1: Wire `useCurrentUserPermissions` to real API**
+  - [x] 1.1 Replace stub `queryFn` in `getCurrentUserPermissionsOptions` with `apiClient.get('api/account/permissions').json<{permissions: string[]}>().then(r => r.permissions)`
+  - [x] 1.2 Remove stub comment
+
+- [x] **Task 2 — AC2 + AC3: Wire effective permissions hooks in `features/users/api.ts`**
+  - [x] 2.1 Replace `effectivePermissionsLiveOptions` queryFn with real `apiClient.get` call
+  - [x] 2.2 Replace `useEffectivePermissionsPreview` body with real `apiClient.post` call (keep AbortController)
+  - [x] 2.3 Remove `mockStore` and `mockDelay` imports from `api.ts`
+
+- [x] **Task 3 — AC4: Wire CommandPalette entity search to real API**
+  - [x] 3.1 Remove `mockStore`, `mockDelay`, and `User/Group/Role` mock-type imports
+  - [x] 3.2 Add `apiClient` and real type imports
+  - [x] 3.3 Rewrite `buildRegistry` search fns to use `apiClient.get` with `pageSize: 10`, client-side filter
+  - [x] 3.4 When `tenantId` is null (internal admin at root), show "Select a tenant first"
+
+- [x] **Task 4 — AC5: Fix `CreateUserDialog` group assignment in `TenantUsersPage.tsx`**
+  - [x] 4.1 Change `createUser.mutate` → `createUser.mutateAsync`
+  - [x] 4.2 After successful user creation, call `PUT /api/tenant/groups/{id}/members` for each selected group
+  - [x] 4.3 Show partial-failure error message if any group assignment fails
+  - [x] 4.4 Import `useQueryClient` and `apiClient`
+
+- [x] **Task 5 — AC6: Fix `atSeatLimit` in `routes/tenant/users/new.tsx`**
+  - [x] 5.1 Add a `useSeatUsage` query using `queryKeys.seatUsage(tenantId)` that fetches user totalCount
+  - [x] 5.2 Replace `const atSeatLimit = false` with computed value (false until Phase 6 adds maxSeats)
+
+- [x] **Task 6 — AC8: Update `useEffectivePermissionsPreview.test.ts`**
+  - [x] 6.1 Replace `vi.spyOn(mockStore, ...)` with `vi.mock('@/lib/api-client')` approach
+  - [x] 6.2 Verify debounce test still passes with `apiClient.post` spy
+
+- [x] **Task 7 — Run full test suite and verify**
+  - [x] 7.1 Run `npm test -- --run` in `src/OneId.Web`
+  - [x] 7.2 Fix any regressions
+
+---
+
+## Dev Notes
+
+### Architecture Context
+- `apiClient` is a `ky` singleton with auth/refresh interceptors in `src/OneId.Web/src/lib/api-client.ts`
+- Tenant routing is JWT-based (`tid` claim), not URL-based — tenant-scoped endpoints work for both tenant admins and internal admins when viewing a tenant context
+- `AbortController` pattern in `useEffectivePermissionsPreview`: abort the in-flight request on new payload; check `controller.signal.aborted` before state updates
+
+### Key Backend Endpoints (gap-1 delivered)
+- `GET /api/account/permissions` → `{ permissions: string[] }`
+- `GET /api/tenant/users/{userId}/effective-permissions` → `EffectivePermissionsResponse`
+- `POST /api/tenant/effective-permissions/preview` → body: `{ groupIds, roleSets, overrides }` → `EffectivePermissionsResponse`
+- `PUT /api/tenant/groups/{id}/members` → body: `{ userId: Guid }` → `200 Ok`
+
+### AC6 Seat Usage Note
+`TenantDto` does not currently include `seatUsage` (Phase 6 is backlog). The fallback is:
+- Use `queryKeys.seatUsage(tenantId)` with `GET api/tenant/users?pageSize=1` to read `totalCount`
+- `max` is `null` until Phase 6 licensing endpoint is built → `atSeatLimit = false`
+- The plumbing is wired and ready; only the `maxSeats` source needs updating in Phase 6
+
+### CommandPalette Search
+Backend list endpoints accept `pageSize` but not `search`. Pattern: fetch first 10, filter client-side. When `tenantId` is null, return `[]` and show "Select a tenant first" via updated CommandEmpty.
+
+### Test Update Strategy (AC8)
+`useEffectivePermissionsPreview.test.ts` spies on `mockStore.getEffectivePermissionsPreview`. After AC3 the hook calls `apiClient.post`. Replace with `vi.mock('@/lib/api-client', ...)` and spy on `apiClient.post`.
+
+---
+
+## Dev Agent Record
+
+### Implementation Plan
+Implement ACs 1–6 sequentially. Run tests after all changes. Update story file with file list and change log.
+
+### Completion Notes
+- AC1: `getCurrentUserPermissionsOptions` queryFn now calls `GET api/account/permissions`; stub comment removed.
+- AC2: `effectivePermissionsLiveOptions` queryFn now calls `apiClient.get(…/effective-permissions).json<>()`; mock imports removed.
+- AC3: `useEffectivePermissionsPreview` now calls `apiClient.post` with AbortController signal; userId not sent to API.
+- AC4: CommandPalette removes all mock imports; search fns fetch from real API with client-side filtering; null tenantId shows "Select a tenant first".
+- AC5: `CreateUserDialog` upgraded to `mutateAsync`; group member PUT calls fire after user creation with partial-failure error handling.
+- AC6: `atSeatLimit` derived from `queryKeys.seatUsage` via user totalCount; evaluates `false` until Phase 6 adds maxSeats.
+- AC8: `useEffectivePermissionsPreview.test.ts` migrated to `vi.mock('@/lib/api-client')` approach.
+
+---
+
+## File List
+
+- `src/OneId.Web/src/queries/hooks/usePermissions.ts` — AC1
+- `src/OneId.Web/src/features/users/api.ts` — AC2, AC3
+- `src/OneId.Web/src/components/shared/CommandPalette.tsx` — AC4
+- `src/OneId.Web/src/routes/internal/tenants/TenantUsersPage.tsx` — AC5
+- `src/OneId.Web/src/routes/tenant/users/new.tsx` — AC6
+- `src/OneId.Web/src/features/users/useEffectivePermissionsPreview.test.ts` — AC8
+
+---
+
+## Change Log
+
+- 2026-05-29 — gap-2 implementation: wire all mock data to real API endpoints (AC1–AC6), update debounce test for apiClient.post (AC8)

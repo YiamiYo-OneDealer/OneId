@@ -58,13 +58,14 @@ export function useActivatePermission() {
   })
 }
 
-// Current user's effective permissions are served via /connect/introspect (confidential client only).
-// The SPA cannot call introspection directly — return empty until a dedicated /api/account/permissions
-// endpoint is added in a future story.
 export const getCurrentUserPermissionsOptions = () =>
   queryOptions({
     queryKey: queryKeys.currentUserPermissions(),
-    queryFn: (): Promise<string[]> => Promise.resolve([]),
+    queryFn: () =>
+      apiClient
+        .get('api/account/permissions')
+        .json<{ permissions: string[] }>()
+        .then((r) => r.permissions),
   })
 
 export function useCurrentUserPermissions() {
