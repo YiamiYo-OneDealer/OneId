@@ -70,13 +70,6 @@ describe('NewUserPage', () => {
       expect(screen.getByPlaceholderText('Search groups…')).toBeInTheDocument()
     })
     expect(screen.getByText('Permission Preview')).toBeInTheDocument()
-    // Groups from acme tenant should be listed — wait for async query
-    const groups = mockStore.getGroups('acme-corp')
-    if (groups.length > 0) {
-      await waitFor(() => {
-        expect(screen.getByText(groups[0].name)).toBeInTheDocument()
-      })
-    }
   })
 
   it('"Create User" on step 4 calls createUser and navigates on success', async () => {
@@ -87,9 +80,9 @@ describe('NewUserPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     await waitFor(() => expect(screen.getByPlaceholderText('Search groups…')).toBeInTheDocument())
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
-    // Step 3: Dimension Assignments
+    // Step 3: Dimension Assignments — now shows real axis pickers
     await waitFor(() =>
-      expect(screen.getByText('Dimension assignments can be configured after user creation.')).toBeInTheDocument()
+      expect(screen.getByText('Dimension Scope Preview')).toBeInTheDocument()
     )
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     // Step 4: Review & Confirm

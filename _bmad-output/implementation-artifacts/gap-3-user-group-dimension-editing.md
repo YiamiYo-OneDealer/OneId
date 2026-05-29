@@ -1,6 +1,6 @@
 # Story gap-3: User Group Membership and Dimension Assignment Editing
 
-**Status:** draft
+**Status:** review
 **Epic:** Phase 8 completion / 5c.1 completion
 **Story ID:** gap-3
 **Prerequisite:** Epic 4a complete ✓ — `UserGroup`, `UserDimensionAssignment`, `DimensionValue` all in DB. Backend endpoints exist: `PUT /api/tenant/groups/{id}/members`, `DELETE /api/tenant/groups/{id}/members/{userId}`, `POST /api/tenant/users/{userId}/dimensions`, `DELETE /api/tenant/users/{userId}/dimensions`, `GET /api/tenant/users/{userId}/dimensions`.
@@ -156,3 +156,98 @@ Clicking a user row in the Users list navigates to `/tenant/users/:userId/permis
 - Dimension value reference list management (adding/removing available values from the per-tenant lists) — that is handled in the Internal Admin's tenant detail pages
 - Permission override creation/deletion from the user detail page (handled by DenyOverrideSheet in the Permissions tab, which already exists once gap-1 and gap-2 are done)
 - Seat usage enforcement (Phase 6)
+
+---
+
+## Tasks / Subtasks
+
+- [x] T1 (AC9) Backend: Add `GetUserGroupsHandler.cs` and `GET /api/tenant/users/{userId}/groups` to TenantUsersController
+- [x] T2 Backend: Update `UserDimensionsGroupedDto` to return IDs with values; update `GetUserDimensionsHandler`
+- [x] T3 Backend: Add `GET /api/tenant/dimensions` all-axes endpoint to TenantDimensionsController
+- [x] T4 (AC8) Frontend: Add `userGroups`, `userDimensions`, `dimensionValues` query keys to `keys.ts`
+- [x] T5 Frontend: Add new DTO types to `api/types.ts`
+- [x] T6 (AC7) Frontend: Create `queries/hooks/useGroupMembers.ts` (`useUserGroups`, `useAddGroupMember`, `useRemoveGroupMember`)
+- [x] T7 (AC7) Frontend: Create `queries/hooks/useDimensions.ts` (`useUserDimensions`, `useSetUserDimensions`, `useDimensionValues`)
+- [x] T8 (AC7) Frontend: Export new hooks from `queries/hooks/index.ts`
+- [x] T9 (AC1/AC2/AC3/AC4/AC5) Frontend: Update `$userId/permissions.tsx` to full tabbed user detail page with Groups + Dimensions tabs
+- [x] T10 (AC6) Frontend: Update `new.tsx` Step 3 with functional dimension assignment UI
+- [x] T11 (AC10) Run `npm test -- --run` and fix any regressions
+
+---
+
+## Dev Notes
+
+### Architecture Context
+- `apiClient` is a `ky` singleton with auth/refresh interceptors in `src/OneId.Web/src/lib/api-client.ts`
+- Tenant routing is JWT-based (`tid` claim), not URL-based — tenant-scoped endpoints work automatically
+- `AppDbContext` applies `HasQueryFilter(g => g.TenantId == tenantContext.TenantId)` on `Group` entity — querying `db.Groups` auto-scopes to the current tenant
+
+### Backend API Discrepancy from Story Draft
+The story originally assumed individual `POST`/`DELETE` endpoints for dimension assignment and a `GET /api/tenant/dimensions` all-axes endpoint. Actual backend has:
+- `PUT /api/tenant/users/{userId}/dimensions` — replace-on-save (takes full list of `valueIds: Guid[]`)
+- `GET /api/tenant/dimensions/{axis}/values` — per-axis only
+- `GET /api/tenant/users/{userId}/dimensions` — returns string values, NOT IDs (must be updated)
+
+**Adaptations:**
+1. Update `UserDimensionsGroupedDto` to return `{id, value}` objects so frontend knows value IDs
+2. Add `GET /api/tenant/dimensions` convenience endpoint that groups all 5 axes
+3. Frontend `useSetUserDimensions` uses the replace-on-save `PUT` with full ID list
+
+### Dimension Tabs UX Pattern
+For the dimensions tab, maintain a local state of current value IDs (initialized from query data). Add/remove values update local state and call `PUT` with the full updated set. This is simpler than individual POST/DELETE.
+
+### Query Key Hierarchy
+- `userGroups(tenantId, userId)` → `['tenants', tenantId, 'users', userId, 'groups']`
+- `userDimensions(tenantId, userId)` → `['tenants', tenantId, 'users', userId, 'dimensions']`
+- `dimensionValues(tenantId)` → `['tenants', tenantId, 'dimension-values']`
+
+### Deep Link Tab Routing
+Use `useSearchParams()` from `react-router` in `permissions.tsx` to read `?tab=groups` / `?tab=dimensions`. Default to `permissions` tab.
+
+---
+
+## Dev Agent Record
+
+### Implementation Plan
+Implement T1–T11 sequentially. Backend first (T1–T3), then frontend (T4–T10), then tests (T11).
+
+### Debug Log
+- API discrepancy: story assumed individual POST/DELETE for dimensions and `GET /api/tenant/dimensions`. Actual backend has replace-on-save `PUT` and per-axis routes. Adapted by: updating `UserDimensionsGroupedDto` to return IDs, adding `GET /api/tenant/dimensions` all-axes endpoint, and using replace-on-save pattern in hooks.
+- `GroupDto` has no member data → Implemented Option B (backend `GET /api/tenant/users/{userId}/groups`).
+- Pre-existing test failures (11 total) from gap-2 apiClient migration: `useTenants.test.ts` (5), `index.test.tsx` (3), `TenantProvisioningPage.test.tsx` (2), `new.test.tsx > "Create User"` (1). Not caused by gap-3 changes.
+
+### Completion Notes
+- T1 (AC9): `GetUserGroupsHandler` queries `db.Groups` with `UserGroups.Any(ug => ug.UserId == userId)` — auto-scoped to tenant via global query filter. Endpoint returns `{ items: GroupDto[] }`.
+- T2: `UserDimensionsGroupedDto` now uses `UserDimensionValueDto(Guid Id, string Value)` per axis instead of bare strings. Frontend now has IDs to call the replace-on-save PUT.
+- T3: `GET /api/tenant/dimensions` runs all 5 axes in parallel via `Task.WhenAll` and returns a dictionary keyed by axis name.
+- T4–T8 (AC7/AC8): 3 new query keys, 2 new hook files (`useGroupMembers.ts`, `useDimensions.ts`), barrel updated.
+- T9 (AC1–AC5): `permissions.tsx` replaced with full tabbed page. `useSearchParams` drives `?tab=groups|dimensions` deep links. Groups tab uses `CommandDialog` picker for add-to-group; Dimensions tab uses per-axis `CommandDialog` pickers with replace-on-save `useSetUserDimensions`.
+- T10 (AC6): `StepDimensionAssignments` now renders 5 axis pickers using local state + `useDimensionValues`. On submit, dimensions sent via single `PUT` call; partial failure shows warning toast but user creation succeeds.
+- T11 (AC10): Fixed 2 `new.test.tsx` tests broken by Step 3 changes. 11 pre-existing failures from gap-2 (apiClient not mocked in tests) left unchanged.
+
+---
+
+## File List
+
+**Backend:**
+- `src/OneId.Server/Application/TenantAdmin/Groups/Queries/GetUserGroupsHandler.cs` — new: AC9
+- `src/OneId.Server/Application/TenantAdmin/Dimensions/UserDimensionsGroupedDto.cs` — updated: IDs
+- `src/OneId.Server/Application/TenantAdmin/Dimensions/Queries/GetUserDimensionsHandler.cs` — updated: returns IDs
+- `src/OneId.Server/Controllers/TenantUsersController.cs` — updated: GET /users/{id}/groups endpoint
+- `src/OneId.Server/Controllers/TenantDimensionsController.cs` — updated: GET /api/tenant/dimensions endpoint
+- `src/OneId.Server/Application/TenantAdmin/TenantServiceExtensions.cs` — updated: register GetUserGroupsHandler
+
+**Frontend:**
+- `src/OneId.Web/src/queries/keys.ts` — updated: userGroups, userDimensions, dimensionValues keys
+- `src/OneId.Web/src/api/types.ts` — updated: DimensionValueDto, UserDimensionValueDto, UserDimensionsDto, AllDimensionValuesDto, SetUserDimensionsBody
+- `src/OneId.Web/src/queries/hooks/useGroupMembers.ts` — new: AC7
+- `src/OneId.Web/src/queries/hooks/useDimensions.ts` — new: AC7
+- `src/OneId.Web/src/queries/hooks/index.ts` — updated: barrel exports
+- `src/OneId.Web/src/routes/tenant/users/$userId/permissions.tsx` — updated: full tabbed user detail page (AC1–AC5)
+- `src/OneId.Web/src/routes/tenant/users/new.tsx` — updated: Step 3 functional dimension UI + review step (AC6)
+- `src/OneId.Web/src/routes/tenant/users/new.test.tsx` — updated: AC10 test fixes
+
+---
+
+## Change Log
+- 2026-05-29 — gap-3 implementation: backend user groups endpoint (AC9), dimension DTO IDs, all-dimensions endpoint; frontend query keys (AC8), hooks (AC7), tabbed user detail page (AC1–AC5), Step 3 dimension UI (AC6), test updates (AC10)

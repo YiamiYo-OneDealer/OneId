@@ -170,3 +170,29 @@ export interface UpdatePermissionBody {
   label: string
   version: number
 }
+
+export interface DimensionValueDto {
+  id: string
+  axis: string
+  value: string
+  version: number
+}
+
+export interface UserDimensionValueDto {
+  id: string
+  value: string
+}
+
+export interface UserDimensionsDto {
+  Company: UserDimensionValueDto[]
+  Location: UserDimensionValueDto[]
+  Branch: UserDimensionValueDto[]
+  Make: UserDimensionValueDto[]
+  MarketSegment: UserDimensionValueDto[]
+}
+
+export type AllDimensionValuesDto = Record<string, DimensionValueDto[]>
+
+export interface SetUserDimensionsBody {
+  valueIds: string[]
+}

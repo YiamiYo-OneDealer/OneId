@@ -18,7 +18,11 @@ public sealed class GetUserDimensionsHandler(AppDbContext db)
 
         var grouped = assignments
             .GroupBy(a => a.DimensionValue.Axis)
-            .ToDictionary(g => g.Key, g => g.Select(a => a.DimensionValue.Value).ToList());
+            .ToDictionary(
+                g => g.Key,
+                g => (IReadOnlyList<UserDimensionValueDto>)g
+                    .Select(a => new UserDimensionValueDto(a.DimensionValueId, a.DimensionValue.Value))
+                    .ToList());
 
         return new UserDimensionsGroupedDto(
             Company:       grouped.GetValueOrDefault(DimensionAxis.Company, []),

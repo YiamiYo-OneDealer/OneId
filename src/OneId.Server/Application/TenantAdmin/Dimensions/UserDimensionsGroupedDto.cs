@@ -1,8 +1,10 @@
 namespace OneId.Server.Application.TenantAdmin.Dimensions;
 
+public sealed record UserDimensionValueDto(Guid Id, string Value);
+
 public sealed record UserDimensionsGroupedDto(
-    IReadOnlyList<string> Company,
-    IReadOnlyList<string> Location,
-    IReadOnlyList<string> Branch,
-    IReadOnlyList<string> Make,
-    IReadOnlyList<string> MarketSegment);
+    IReadOnlyList<UserDimensionValueDto> Company,
+    IReadOnlyList<UserDimensionValueDto> Location,
+    IReadOnlyList<UserDimensionValueDto> Branch,
+    IReadOnlyList<UserDimensionValueDto> Make,
+    IReadOnlyList<UserDimensionValueDto> MarketSegment);

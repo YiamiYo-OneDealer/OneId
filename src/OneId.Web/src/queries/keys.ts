@@ -21,6 +21,10 @@ export const queryKeys = {
 
   seatUsage: (tenantId: string) => ['tenants', tenantId, 'seatUsage'] as const,
 
+  userGroups: (tenantId: string, userId: string) => ['tenants', tenantId, 'users', userId, 'groups'] as const,
+  userDimensions: (tenantId: string, userId: string) => ['tenants', tenantId, 'users', userId, 'dimensions'] as const,
+  dimensionValues: (tenantId: string) => ['tenants', tenantId, 'dimension-values'] as const,
+
   permissions: () => ['permissions'] as const,
   tenantAdmins: (tenantId: string) => ['tenants', tenantId, 'admins'] as const,
 

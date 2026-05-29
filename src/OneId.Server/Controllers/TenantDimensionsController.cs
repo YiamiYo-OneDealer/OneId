@@ -17,9 +17,22 @@ public class TenantDimensionsController(
     AddDimensionValueHandler addHandler,
     DeactivateDimensionValueHandler deactivateHandler) : ControllerBase
 {
+    private static readonly DimensionAxis[] AllAxes =
+        [DimensionAxis.Company, DimensionAxis.Location, DimensionAxis.Branch, DimensionAxis.Make, DimensionAxis.MarketSegment];
+
     private static bool TryParseAxis(string raw, out DimensionAxis axis)
         => Enum.TryParse(raw, ignoreCase: true, out axis)
            && !char.IsDigit(raw[0]);
+
+    [HttpGet("/api/tenant/dimensions")]
+    public async Task<IActionResult> ListAll(CancellationToken ct)
+    {
+        var tasks = AllAxes.Select(axis => listHandler.HandleAsync(axis, ct));
+        var results = await Task.WhenAll(tasks);
+        var grouped = AllAxes.Zip(results, (axis, values) => new { axis = axis.ToString(), values })
+            .ToDictionary(x => x.axis, x => x.values);
+        return Ok(grouped);
+    }
 
     [HttpGet]
     public async Task<IActionResult> List(string axis, CancellationToken ct)

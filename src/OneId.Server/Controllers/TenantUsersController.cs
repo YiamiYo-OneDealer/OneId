@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneId.Server.Application.Common;
 using OneId.Server.Application.Permissions;
+using OneId.Server.Application.TenantAdmin.Groups.Queries;
 using OneId.Server.Application.TenantAdmin.Users.Commands;
 using OneId.Server.Application.TenantAdmin.Users.Queries;
 using OpenIddict.Validation.AspNetCore;
@@ -21,6 +22,7 @@ public class TenantUsersController(
     UpdateUserHandler updateHandler,
     DeleteUserHandler deleteHandler,
     GetEffectivePermissionsHandler effectivePermissionsHandler,
+    GetUserGroupsHandler getUserGroupsHandler,
     IUserTokenRevoker tokenRevoker) : ControllerBase
 {
     [HttpGet]
@@ -82,6 +84,20 @@ public class TenantUsersController(
     {
         var result = await effectivePermissionsHandler.HandleAsync(id, ct);
         return result is null ? NotFound() : Ok(result);
+    }
+
+    [HttpGet("{id:guid}/groups")]
+    public async Task<IActionResult> GetUserGroups(Guid id, CancellationToken ct)
+    {
+        try
+        {
+            var groups = await getUserGroupsHandler.HandleAsync(id, ct);
+            return Ok(new { items = groups });
+        }
+        catch (GetUserGroupsUserNotFoundException)
+        {
+            return NotFound(new { error = "user_not_found" });
+        }
     }
 
     [HttpPost("{id:guid}/revoke-tokens")]

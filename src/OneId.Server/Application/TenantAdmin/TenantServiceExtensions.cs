@@ -31,6 +31,7 @@ public static class TenantServiceExtensions
         services.AddScoped<DeleteRoleSetHandler>();
         services.AddScoped<ListGroupsHandler>();
         services.AddScoped<GetGroupHandler>();
+        services.AddScoped<GetUserGroupsHandler>();
         services.AddScoped<CreateGroupHandler>();
         services.AddScoped<UpdateGroupHandler>();
         services.AddScoped<DeleteGroupHandler>();
