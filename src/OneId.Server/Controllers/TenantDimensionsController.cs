@@ -27,10 +27,9 @@ public class TenantDimensionsController(
     [HttpGet("/api/tenant/dimensions")]
     public async Task<IActionResult> ListAll(CancellationToken ct)
     {
-        var tasks = AllAxes.Select(axis => listHandler.HandleAsync(axis, ct));
-        var results = await Task.WhenAll(tasks);
-        var grouped = AllAxes.Zip(results, (axis, values) => new { axis = axis.ToString(), values })
-            .ToDictionary(x => x.axis, x => x.values);
+        var grouped = new Dictionary<string, object>();
+        foreach (var axis in AllAxes)
+            grouped[axis.ToString()] = await listHandler.HandleAsync(axis, ct);
         return Ok(grouped);
     }
 

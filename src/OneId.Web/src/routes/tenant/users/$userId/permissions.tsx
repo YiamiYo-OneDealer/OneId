@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useParams, useSearchParams } from 'react-router'
 import { X } from 'lucide-react'
 import { EffectivePermissionsPanel } from '@/features/users/components/EffectivePermissions'
@@ -19,10 +20,15 @@ import { useGroups } from '@/queries/hooks'
 import { useUserGroups, useAddGroupMember, useRemoveGroupMember } from '@/queries/hooks'
 import { useUserDimensions, useSetUserDimensions, useDimensionValues } from '@/queries/hooks'
 import { useTenantStore } from '@/store/tenant-store'
-import type { GroupDto, UserDimensionValueDto, DimensionValueDto } from '@/api/types'
+import { queryKeys } from '@/queries/keys'
+import type { GroupDto, UserDimensionValueDto, DimensionValueDto, UserDimensionsDto } from '@/api/types'
 
 const DIMENSION_AXES = ['Company', 'Location', 'Branch', 'Make', 'MarketSegment'] as const
 type DimensionAxis = typeof DIMENSION_AXES[number]
+
+// Maps PascalCase display axis name to camelCase property on UserDimensionsDto
+const dimKey = (axis: DimensionAxis): keyof UserDimensionsDto =>
+  (axis.charAt(0).toLowerCase() + axis.slice(1)) as keyof UserDimensionsDto
 
 // ── Groups Tab ────────────────────────────────────────────────────────────────
 
@@ -224,7 +230,8 @@ function AxisRow({
 }
 
 function DimensionsTab({ tenantId, userId }: { tenantId: string; userId: string }) {
-  const { data: dims, isLoading: dimsLoading } = useUserDimensions(tenantId, userId)
+  const queryClient = useQueryClient()
+  const { data: dims, isLoading: dimsLoading, isError: dimsError } = useUserDimensions(tenantId, userId)
   const { data: dimValues, isLoading: valuesLoading } = useDimensionValues(tenantId)
   const setDimensions = useSetUserDimensions(tenantId, userId)
 
@@ -238,16 +245,22 @@ function DimensionsTab({ tenantId, userId }: { tenantId: string; userId: string 
     )
   }
 
-  const allCurrentIds = dims
-    ? DIMENSION_AXES.flatMap((axis) => (dims[axis] ?? []).map((v) => v.id))
-    : []
+  if (dimsError || !dims) {
+    return <p className="text-sm text-muted-foreground">Failed to load dimension assignments.</p>
+  }
+
+  const getCurrentIds = (): string[] => {
+    const fresh = queryClient.getQueryData<UserDimensionsDto>(queryKeys.userDimensions(tenantId, userId))
+    const source = fresh ?? dims
+    return DIMENSION_AXES.flatMap((axis) => (source[dimKey(axis)] ?? []).map((v) => v.id))
+  }
 
   const handleAdd = (valueId: string) => {
-    setDimensions.mutate({ valueIds: [...allCurrentIds, valueId] })
+    setDimensions.mutate({ valueIds: [...getCurrentIds(), valueId] })
   }
 
   const handleRemove = (valueId: string) => {
-    setDimensions.mutate({ valueIds: allCurrentIds.filter((id) => id !== valueId) })
+    setDimensions.mutate({ valueIds: getCurrentIds().filter((id) => id !== valueId) })
   }
 
   return (
@@ -256,7 +269,7 @@ function DimensionsTab({ tenantId, userId }: { tenantId: string; userId: string 
         <AxisRow
           key={axis}
           axis={axis}
-          assigned={dims?.[axis] ?? []}
+          assigned={dims[dimKey(axis)] ?? []}
           available={dimValues?.[axis] ?? []}
           onAdd={handleAdd}
           onRemove={handleRemove}
@@ -277,7 +290,8 @@ export function UserPermissionsPage() {
   const activeTenantId = useTenantStore((s) => s.activeTenantId)
   const tenantId = activeTenantId ?? ''
 
-  const tab = (searchParams.get('tab') ?? 'permissions') as TabValue
+  const rawTab = searchParams.get('tab')
+  const tab: TabValue = rawTab === 'groups' || rawTab === 'dimensions' ? rawTab : 'permissions'
   const { data: user } = useUser(tenantId, userId ?? '')
 
   if (!userId) return null

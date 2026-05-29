@@ -1,6 +1,6 @@
 # Story gap-3: User Group Membership and Dimension Assignment Editing
 
-**Status:** review
+**Status:** done
 **Epic:** Phase 8 completion / 5c.1 completion
 **Story ID:** gap-3
 **Prerequisite:** Epic 4a complete ✓ — `UserGroup`, `UserDimensionAssignment`, `DimensionValue` all in DB. Backend endpoints exist: `PUT /api/tenant/groups/{id}/members`, `DELETE /api/tenant/groups/{id}/members/{userId}`, `POST /api/tenant/users/{userId}/dimensions`, `DELETE /api/tenant/users/{userId}/dimensions`, `GET /api/tenant/users/{userId}/dimensions`.
@@ -172,6 +172,23 @@ Clicking a user row in the Users list navigates to `/tenant/users/:userId/permis
 - [x] T9 (AC1/AC2/AC3/AC4/AC5) Frontend: Update `$userId/permissions.tsx` to full tabbed user detail page with Groups + Dimensions tabs
 - [x] T10 (AC6) Frontend: Update `new.tsx` Step 3 with functional dimension assignment UI
 - [x] T11 (AC10) Run `npm test -- --run` and fix any regressions
+
+### Review Findings
+
+**Decision-needed:**
+- [x] [Review][Decision] AC7 hook naming deviation — accepted: replace-on-save pattern is canonical; `useSetUserDimensions` (plural) is correct; no `useRemoveUserDimension` needed.
+
+**Patches:**
+- [x] [Review][Patch] `UserDimensionsDto` PascalCase keys produce `undefined` at runtime — fixed: changed interface to camelCase (`company`/`location`/`branch`/`make`/`marketSegment`); added `dimKey()` helper in `permissions.tsx` to map display axis names to dto keys. [`src/OneId.Web/src/api/types.ts`]
+- [x] [Review][Patch] `DimensionsTab` stale-closure + undefined-dims data loss — fixed: undefined dims now show error message; handlers read fresh data via `queryClient.getQueryData` instead of render-time closure. [`src/OneId.Web/src/routes/tenant/users/$userId/permissions.tsx`]
+- [x] [Review][Patch] `TenantDimensionsController.ListAll` concurrent DbContext — fixed: replaced `Task.WhenAll` with sequential `foreach`/`await` to avoid concurrent use of the scoped `DbContext`. [`src/OneId.Server/Controllers/TenantDimensionsController.cs`]
+- [x] [Review][Patch] `?tab=` URL param cast to `TabValue` without validation — fixed: added explicit whitelist check (`rawTab === 'groups' || rawTab === 'dimensions'`), defaulting to `'permissions'`. [`src/OneId.Web/src/routes/tenant/users/$userId/permissions.tsx`]
+- [x] [Review][Patch] `isSubmitting` prematurely false mid-submit — fixed: added local `submitting` state; `handleSubmit` sets it true at entry and clears in `finally`; prop is now `submitting || createUser.isPending`. [`src/OneId.Web/src/routes/tenant/users/new.tsx`]
+
+**Deferred:**
+- [x] [Review][Defer] `xmin` concurrency token in EF projection — deferred, pre-existing pattern used by all other GroupDto projections in the codebase
+- [x] [Review][Defer] `effectivePermissions` cache key excludes `tenantId` — deferred, pre-existing key shape defined in earlier stories
+- [x] [Review][Defer] `useGroups` pageSize:500 silently truncates groups beyond 500 — deferred, pre-existing limitation not introduced here
 
 ---
 

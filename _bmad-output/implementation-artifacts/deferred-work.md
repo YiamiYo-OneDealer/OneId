@@ -1,5 +1,11 @@
 # Deferred Work Log
 
+## Deferred from: code review of gap-3-user-group-dimension-editing (2026-05-29)
+
+- **D1: `xmin` concurrency token in EF projection** (`GetUserGroupsHandler.cs`) — `EF.Property<uint>(g, "xmin")` used inside `Select` LINQ projection when building `GroupDto`. Pre-existing pattern used by all other GroupDto projections in the codebase; not introduced by this story.
+- **D2: `effectivePermissions` cache key excludes `tenantId`** (`src/OneId.Web/src/queries/keys.ts`) — key is `['effectivePermissions', userId]` with no tenant dimension; invalidations in `useAddGroupMember`/`useRemoveGroupMember`/`useSetUserDimensions` are technically over-broad in a user-per-multiple-tenants scenario. Pre-existing key shape from earlier stories.
+- **D3: `useGroups` pageSize:500 silently truncates group list** (`src/OneId.Web/src/queries/hooks/useGroups.ts`) — `GroupsTab` add-picker only shows the first 500 tenant groups; no pagination or truncation warning. Pre-existing limitation not introduced by this story.
+
 ## Deferred from: code review of gap-2-wire-frontend-to-real-api (2026-05-29)
 
 - **D1: Seat limit tooltip text truncated** (`src/OneId.Web/src/routes/tenant/users/new.tsx:264`) — tooltip reads "Seat limit reached" but spec requires "Seat limit reached. Contact your administrator to expand your license." Pre-existing in file, not changed by this story. Fix when Phase 6 licensing is wired and `atSeatLimit` can actually become `true`.

@@ -184,11 +184,11 @@ export interface UserDimensionValueDto {
 }
 
 export interface UserDimensionsDto {
-  Company: UserDimensionValueDto[]
-  Location: UserDimensionValueDto[]
-  Branch: UserDimensionValueDto[]
-  Make: UserDimensionValueDto[]
-  MarketSegment: UserDimensionValueDto[]
+  company: UserDimensionValueDto[]
+  location: UserDimensionValueDto[]
+  branch: UserDimensionValueDto[]
+  make: UserDimensionValueDto[]
+  marketSegment: UserDimensionValueDto[]
 }
 
 export type AllDimensionValuesDto = Record<string, DimensionValueDto[]>

@@ -436,6 +436,7 @@ export function NewUserPage() {
   const [status, setStatus] = useState<UserStatus>('active')
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
   const [selectedDimensionValueIds, setSelectedDimensionValueIds] = useState<string[]>([])
+  const [submitting, setSubmitting] = useState(false)
 
   // Seat limit: totalCount from users endpoint vs maxSeats (null until Phase 6 licensing is built)
   const { data: seatUsage } = useQuery({
@@ -491,6 +492,7 @@ export function NewUserPage() {
   }
 
   const handleSubmit = async () => {
+    setSubmitting(true)
     try {
       const newUser = await createUser.mutateAsync({ email: email.trim(), displayName: name.trim() || null })
       if (selectedGroupIds.length > 0) {
@@ -515,6 +517,8 @@ export function NewUserPage() {
       navigate('/tenant/users')
     } catch {
       toast.error('Failed to create user.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -612,7 +616,7 @@ export function NewUserPage() {
               dimensionValueLabels={dimensionValueLabels}
               onEditStep={(step) => setCurrentStep(step)}
               atSeatLimit={atSeatLimit}
-              isSubmitting={createUser.isPending}
+              isSubmitting={submitting || createUser.isPending}
               onSubmit={handleSubmit}
             />
           )}
