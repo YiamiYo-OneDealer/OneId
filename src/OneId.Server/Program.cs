@@ -110,7 +110,8 @@ try
             options.SetAuthorizationEndpointUris("/connect/authorize")
                    .SetTokenEndpointUris("/connect/token")
                    .SetIntrospectionEndpointUris("/connect/introspect")
-                   .SetUserInfoEndpointUris("/connect/userinfo");
+                   .SetUserInfoEndpointUris("/connect/userinfo")
+                   .SetRevocationEndpointUris("/connect/revoke");
 
             // Flows
             options.AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange();
@@ -187,6 +188,15 @@ try
 
     var app = builder.Build();
 
+    // Runs in all environments — migrations and system bootstrap are always required.
+    if (!app.Environment.IsEnvironment("Testing"))
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.Database.MigrateAsync();
+        await SystemSeeder.SeedAsync(db);
+    }
+
     if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
     {
         app.MapOpenApi();
@@ -195,7 +205,6 @@ try
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
         var dp = app.Services.GetRequiredService<IDataProtectionProvider>();
-        await db.Database.MigrateAsync();
         await DevSeeder.SeedAsync(db, manager, dp);
     }
 

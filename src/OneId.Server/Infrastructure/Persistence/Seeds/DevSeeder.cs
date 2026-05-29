@@ -103,24 +103,32 @@ public static class DevSeeder
     {
         var exists = await db.Users.IgnoreQueryFilters()
             .AnyAsync(u => u.Id == TotpUserId);
-        if (exists) return;
-
-        var user = new User
+        if (!exists)
         {
-            Id = TotpUserId,
-            TenantId = DevTenantId,
-            Email = TotpUserEmail,
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow,
-            IsTotpEnrolled = true,
-            IsTenantAdmin = true,
-            IsInternalAdmin = true,
-            TotpSecret = dp.CreateProtector("totp.secret.v1").Protect(TotpUserTotpSecret),
-        };
-        user.PasswordHash = new PasswordHasher<User>().HashPassword(user, "Admin123!");
+            var user = new User
+            {
+                Id = TotpUserId,
+                TenantId = SystemSeeder.SystemTenantId,
+                Email = TotpUserEmail,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+                IsTotpEnrolled = true,
+                TotpSecret = dp.CreateProtector("totp.secret.v1").Protect(TotpUserTotpSecret),
+            };
+            user.PasswordHash = new PasswordHasher<User>().HashPassword(user, "Admin123!");
 
-        db.Users.Add(user);
-        await db.SaveChangesAsync();
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
+        }
+
+        // Add to OneId Admins group (idempotent).
+        var ugExists = await db.UserGroups.IgnoreQueryFilters()
+            .AnyAsync(ug => ug.UserId == TotpUserId && ug.GroupId == SystemSeeder.OneIdAdminsGroupId);
+        if (!ugExists)
+        {
+            db.UserGroups.Add(new UserGroup { UserId = TotpUserId, GroupId = SystemSeeder.OneIdAdminsGroupId });
+            await db.SaveChangesAsync();
+        }
     }
 
     private static async Task SeedOpenIddictClientAsync(IOpenIddictApplicationManager manager)
@@ -135,6 +143,7 @@ public static class DevSeeder
             {
                 Permissions.Endpoints.Authorization,
                 Permissions.Endpoints.Token,
+                Permissions.Endpoints.Revocation,
                 Permissions.GrantTypes.AuthorizationCode,
                 Permissions.GrantTypes.Password,
                 Permissions.GrantTypes.RefreshToken,

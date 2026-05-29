@@ -2,26 +2,29 @@ namespace OneId.Server.Application.Common;
 
 public static class Permissions
 {
-    // Internal Admin — Tenant management (FR-12, FR-14)
-    public const string AdminTenantsView    = "od.admin.tenants.view";
-    public const string AdminTenantsCreate  = "od.admin.tenants.create";
-    public const string AdminTenantsUpdate  = "od.admin.tenants.update";
-    public const string AdminTenantsSuspend = "od.admin.tenants.suspend";
+    // OneId platform — Tenant management (FR-12, FR-14)
+    public const string OneIdTenantsView    = "oneid.tenants.view";
+    public const string OneIdTenantsCreate  = "oneid.tenants.create";
+    public const string OneIdTenantsUpdate  = "oneid.tenants.update";
+    public const string OneIdTenantsSuspend = "oneid.tenants.suspend";
 
-    // Internal Admin — Permission catalog management (FR-6)
-    public const string AdminPermissionsView       = "od.admin.permissions.view";
-    public const string AdminPermissionsCreate     = "od.admin.permissions.create";
-    public const string AdminPermissionsUpdate     = "od.admin.permissions.update";
-    public const string AdminPermissionsDeactivate = "od.admin.permissions.deactivate";
+    // OneId platform — Permission catalog management (FR-6)
+    public const string OneIdPermissionsView       = "oneid.permissions.view";
+    public const string OneIdPermissionsCreate     = "oneid.permissions.create";
+    public const string OneIdPermissionsUpdate     = "oneid.permissions.update";
+    public const string OneIdPermissionsDeactivate = "oneid.permissions.deactivate";
 
-    // Internal Admin — License management (FR-15, FR-19)
-    public const string AdminLicensesView   = "od.admin.licenses.view";
-    public const string AdminLicensesCreate = "od.admin.licenses.create";
-    public const string AdminLicensesUpdate = "od.admin.licenses.update";
+    // OneId platform — License management (FR-15, FR-19)
+    public const string OneIdLicensesView   = "oneid.licenses.view";
+    public const string OneIdLicensesCreate = "oneid.licenses.create";
+    public const string OneIdLicensesUpdate = "oneid.licenses.update";
 
-    // Internal Admin — IDP federation configuration (FR-16, FR-17)
-    public const string AdminIdpView      = "od.admin.idp.view";
-    public const string AdminIdpConfigure = "od.admin.idp.configure";
+    // OneId platform — IDP federation configuration (FR-16, FR-17)
+    public const string OneIdIdpView      = "oneid.idp.view";
+    public const string OneIdIdpConfigure = "oneid.idp.configure";
+
+    // OneId platform — Audit log
+    public const string OneIdAuditView = "oneid.audit.view";
 
     // Tenant Admin — User lifecycle management (FR-14, FR-21)
     public const string AdminUsersView       = "od.admin.users.view";
@@ -53,7 +56,7 @@ public static class Permissions
     public const string AdminDimensionsView   = "od.admin.dimensions.view";
     public const string AdminDimensionsAssign = "od.admin.dimensions.assign";
 
-    // Audit log read (FR-22)
+    // Tenant Admin — Audit log read (FR-22)
     public const string AdminAuditView = "od.admin.audit.view";
 
     // Business permissions — CRM module

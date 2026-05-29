@@ -35,6 +35,7 @@ public sealed class OneIdWebApplicationFactory : WebApplicationFactory<Program>,
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.Database.MigrateAsync();
+        await SystemSeeder.SeedAsync(db);
 
         // Checkpoint created ONCE after migrations — captures post-migration baseline.
         await using var conn = new NpgsqlConnection(_dbContainer.GetConnectionString());
@@ -78,6 +79,7 @@ public sealed class OneIdWebApplicationFactory : WebApplicationFactory<Program>,
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
         var dp = scope.ServiceProvider.GetRequiredService<IDataProtectionProvider>();
+        await SystemSeeder.SeedAsync(db);
         await DevSeeder.SeedAsync(db, manager, dp);
     }
 

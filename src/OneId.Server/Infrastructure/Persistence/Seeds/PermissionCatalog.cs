@@ -7,25 +7,32 @@ namespace OneId.Server.Infrastructure.Persistence.Seeds;
 // PermissionCatalogSyncTests.cs asserts the two are in sync.
 internal static class PermissionCatalog
 {
+    // Seeded by SystemSeeder in all environments (including production).
+    public static readonly IReadOnlyList<PermissionSeedEntry> OneIdEntries =
+    [
+        new(Permissions.OneIdTenantsView,    "View Tenants"),
+        new(Permissions.OneIdTenantsCreate,  "Create Tenants"),
+        new(Permissions.OneIdTenantsUpdate,  "Update Tenants"),
+        new(Permissions.OneIdTenantsSuspend, "Suspend Tenants"),
+
+        new(Permissions.OneIdPermissionsView,       "View Permission Catalog"),
+        new(Permissions.OneIdPermissionsCreate,     "Create Permissions"),
+        new(Permissions.OneIdPermissionsUpdate,     "Update Permissions"),
+        new(Permissions.OneIdPermissionsDeactivate, "Deactivate Permissions"),
+
+        new(Permissions.OneIdLicensesView,   "View Licenses"),
+        new(Permissions.OneIdLicensesCreate, "Create Licenses"),
+        new(Permissions.OneIdLicensesUpdate, "Update Licenses"),
+
+        new(Permissions.OneIdIdpView,      "View IDP Configuration"),
+        new(Permissions.OneIdIdpConfigure, "Configure IDP Federation"),
+
+        new(Permissions.OneIdAuditView, "View Platform Audit Log"),
+    ];
+
+    // Seeded by DevSeeder in development only — tenant admin and demo business permissions.
     public static readonly IReadOnlyList<PermissionSeedEntry> SeedEntries =
     [
-        new(Permissions.AdminTenantsView,    "View Tenants"),
-        new(Permissions.AdminTenantsCreate,  "Create Tenants"),
-        new(Permissions.AdminTenantsUpdate,  "Update Tenants"),
-        new(Permissions.AdminTenantsSuspend, "Suspend Tenants"),
-
-        new(Permissions.AdminPermissionsView,       "View Permission Catalog"),
-        new(Permissions.AdminPermissionsCreate,     "Create Permissions"),
-        new(Permissions.AdminPermissionsUpdate,     "Update Permissions"),
-        new(Permissions.AdminPermissionsDeactivate, "Deactivate Permissions"),
-
-        new(Permissions.AdminLicensesView,   "View Licenses"),
-        new(Permissions.AdminLicensesCreate, "Create Licenses"),
-        new(Permissions.AdminLicensesUpdate, "Update Licenses"),
-
-        new(Permissions.AdminIdpView,      "View IDP Configuration"),
-        new(Permissions.AdminIdpConfigure, "Configure IDP Federation"),
-
         new(Permissions.AdminUsersView,       "View Users"),
         new(Permissions.AdminUsersCreate,     "Create Users"),
         new(Permissions.AdminUsersUpdate,     "Update Users"),

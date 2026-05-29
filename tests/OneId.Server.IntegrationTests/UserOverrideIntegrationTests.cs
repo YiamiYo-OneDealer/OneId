@@ -72,7 +72,7 @@ public class UserOverrideIntegrationTests(OneIdWebApplicationFactory factory) : 
         return user.Id;
     }
 
-    private static string ActivePermissionId() => Permissions.AdminTenantsView;
+    private static string ActivePermissionId() => Permissions.OneIdTenantsView;
 
     // ── AC2: POST creates override ─────────────────────────────────────────────
 

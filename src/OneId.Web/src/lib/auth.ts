@@ -25,7 +25,7 @@ export async function passwordGrant(
       username: email,
       password,
       client_id: 'oneid-dev-client',
-      scope: 'openid email profile offline_access',
+      scope: 'openid email profile roles offline_access',
     }),
   })
   if (!res.ok) throw new Error('invalid_credentials')
@@ -44,11 +44,23 @@ export async function mfaGrant(
       mfa_session_token: mfaSessionToken,
       totp_code: totpCode,
       client_id: 'oneid-dev-client',
-      scope: 'openid email profile offline_access',
+      scope: 'openid email profile roles offline_access',
     }),
   })
   if (!res.ok) throw new Error('invalid_mfa')
   return res.json()
+}
+
+export async function revokeGrant(token: string): Promise<void> {
+  await fetch('/connect/revoke', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      token,
+      token_type_hint: 'refresh_token',
+      client_id: 'oneid-dev-client',
+    }),
+  })
 }
 
 export async function refreshGrant(refreshToken: string): Promise<TokenResponse> {

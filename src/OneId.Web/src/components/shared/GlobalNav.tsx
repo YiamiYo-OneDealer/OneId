@@ -1,4 +1,4 @@
-import { NavLink, useMatch } from 'react-router'
+import { NavLink, useMatch, useNavigate } from 'react-router'
 import { cn } from '@/lib/utils'
 import { useSidebarState } from '@/hooks/useSidebarState'
 import { TenantSwitcher } from './TenantSwitcher'
@@ -16,8 +16,21 @@ import {
   CreditCard,
   PanelLeftClose,
   PanelLeftOpen,
+  LogOut,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { useAuthStore } from '@/store/auth-store'
+import { revokeGrant } from '@/lib/auth'
+
+function parseJwtEmail(token: string | null): string | null {
+  if (!token) return null
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+    return payload.email ?? null
+  } catch {
+    return null
+  }
+}
 
 interface NavConfig {
   to: string
@@ -81,7 +94,18 @@ function NavItem({ item, collapsed }: { item: NavConfig; collapsed: boolean }) {
 
 export function GlobalNav({ tier }: GlobalNavProps) {
   const { collapsed, toggle } = useSidebarState()
+  const { accessToken, refreshToken, clearTokens } = useAuthStore()
+  const navigate = useNavigate()
   const navItems = tier === 'internal' ? INTERNAL_ADMIN_NAV : TENANT_ADMIN_NAV
+  const userEmail = parseJwtEmail(accessToken)
+
+  async function handleLogout() {
+    if (refreshToken) {
+      await revokeGrant(refreshToken).catch(() => {})
+    }
+    clearTokens()
+    navigate('/login')
+  }
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -117,7 +141,34 @@ export function GlobalNav({ tier }: GlobalNavProps) {
           )}
         </div>
 
-        <div className="border-t border-border p-2">
+        <div className="border-t border-border p-2 flex flex-col gap-1">
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleLogout}
+                  aria-label="Log out"
+                  className="flex w-full items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-card hover:text-foreground"
+                >
+                  <LogOut size={18} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">{userEmail ?? 'Log out'}</TooltipContent>
+            </Tooltip>
+          ) : (
+            <div className="flex items-center gap-2 rounded-md px-3 py-2">
+              <div className="flex-1 min-w-0">
+                <p className="truncate text-xs text-muted-foreground">{userEmail ?? 'User'}</p>
+              </div>
+              <button
+                onClick={handleLogout}
+                aria-label="Log out"
+                className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-card hover:text-foreground"
+              >
+                <LogOut size={15} />
+              </button>
+            </div>
+          )}
           <button
             onClick={toggle}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}

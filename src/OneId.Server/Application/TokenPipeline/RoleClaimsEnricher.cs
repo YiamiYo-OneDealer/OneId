@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
 using OneId.Server.Infrastructure.Persistence;
+using OneId.Server.Infrastructure.Persistence.Seeds;
 using System.Security.Claims;
 
 namespace OneId.Server.Application.TokenPipeline;
@@ -25,7 +26,7 @@ public sealed class RoleClaimsEnricher(AppDbContext db) : ITokenClaimsEnricher
                 "OpenIddict"));
         }
 
-        if (user?.IsInternalAdmin == true)
+        if (user?.TenantId == SystemSeeder.SystemTenantId)
         {
             identity.AddClaim(new Claim(
                 OpenIddictConstants.Claims.Role,

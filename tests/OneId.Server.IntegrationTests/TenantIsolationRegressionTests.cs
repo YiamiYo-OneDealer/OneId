@@ -610,7 +610,7 @@ public class UserPermissionOverrideIsolationRegressionTests(OneIdWebApplicationF
     public async Task UserPermissionOverride_IsNotVisible_FromOtherTenant()
     {
         var userId = Guid.NewGuid();
-        var permId = OneId.Server.Application.Common.Permissions.AdminTenantsView;
+        var permId = OneId.Server.Application.Common.Permissions.OneIdTenantsView;
 
         using (var scope = Factory.Services.CreateScope())
         {
