@@ -210,11 +210,11 @@ public class PermissionEvaluationPipelineTests(OneIdWebApplicationFactory factor
     [Fact]
     public async Task PermissionUnionIntegrationTest_DeduplicatesAcrossGroupsAndRoleSets()
     {
-        // R1: od.crm.read + od.crm.write (direct role on G1)
-        var r1Id = await SeedRoleWithPermissionsAsync("R1", Permissions.CrmRead, Permissions.CrmWrite);
+        // R1: onedealer.bp.view + onedealer.bp.create (direct role on G1)
+        var r1Id = await SeedRoleWithPermissionsAsync("R1", Permissions.OdBpView, Permissions.OdBpCreate);
 
-        // R2: od.crm.write + od.finance.read (via RoleSet RS1 on G2)
-        var r2Id = await SeedRoleWithPermissionsAsync("R2", Permissions.CrmWrite, Permissions.FinanceRead);
+        // R2: onedealer.bp.create + onedealer.leads.view (via RoleSet RS1 on G2)
+        var r2Id = await SeedRoleWithPermissionsAsync("R2", Permissions.OdBpCreate, Permissions.OdLeadsView);
 
         var g1Id = await SeedGroupWithDirectRoleAsync("G1", r1Id);
         var g2Id = await SeedGroupWithRoleSetAsync("G2", "RS1", r2Id);
@@ -225,10 +225,10 @@ public class PermissionEvaluationPipelineTests(OneIdWebApplicationFactory factor
         var payload = await GetJwtPayloadForTotpUserAsync();
         var permissions = ExtractPermissions(payload);
 
-        // Deduplicated union: CrmRead + CrmWrite + FinanceRead (CrmWrite appears in both roles but only once)
-        Assert.Contains(Permissions.CrmRead, permissions);
-        Assert.Contains(Permissions.CrmWrite, permissions);
-        Assert.Contains(Permissions.FinanceRead, permissions);
+        // Deduplicated union: OdBpView + OdBpCreate + OdLeadsView (OdBpCreate appears in both roles but only once)
+        Assert.Contains(Permissions.OdBpView, permissions);
+        Assert.Contains(Permissions.OdBpCreate, permissions);
+        Assert.Contains(Permissions.OdLeadsView, permissions);
         Assert.Equal(3, permissions.Count);
     }
 

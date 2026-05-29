@@ -101,11 +101,12 @@ public static class DevSeeder
 
     private static async Task SeedTotpUserAsync(AppDbContext db, IDataProtectionProvider dp)
     {
-        var exists = await db.Users.IgnoreQueryFilters()
-            .AnyAsync(u => u.Id == TotpUserId);
-        if (!exists)
+        var totpUser = await db.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Id == TotpUserId);
+
+        if (totpUser is null)
         {
-            var user = new User
+            totpUser = new User
             {
                 Id = TotpUserId,
                 TenantId = SystemSeeder.SystemTenantId,
@@ -113,11 +114,17 @@ public static class DevSeeder
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow,
                 IsTotpEnrolled = true,
+                IsTenantAdmin = true,
                 TotpSecret = dp.CreateProtector("totp.secret.v1").Protect(TotpUserTotpSecret),
             };
-            user.PasswordHash = new PasswordHasher<User>().HashPassword(user, "Admin123!");
-
-            db.Users.Add(user);
+            totpUser.PasswordHash = new PasswordHasher<User>().HashPassword(totpUser, "Admin123!");
+            db.Users.Add(totpUser);
+            await db.SaveChangesAsync();
+        }
+        else if (!totpUser.IsTenantAdmin)
+        {
+            totpUser.IsTenantAdmin = true;
+            totpUser.UpdatedAt = DateTimeOffset.UtcNow;
             await db.SaveChangesAsync();
         }
 
@@ -223,13 +230,15 @@ public static class DevSeeder
         // Wire role → permissions (idempotent via Permission FK lookup).
         var permissionIdsToGrant = new[]
         {
-            OdPermissions.CrmRead,
-            OdPermissions.CrmWrite,
-            OdPermissions.FinanceRead,
-            OdPermissions.AdminUsersView,
-            OdPermissions.AdminRolesView,
-            OdPermissions.AdminGroupsView,
-            OdPermissions.AdminAuditView,
+            OdPermissions.OdBpView,
+            OdPermissions.OdBpCreate,
+            OdPermissions.OdBpEdit,
+            OdPermissions.OdLeadsView,
+            OdPermissions.OdLeadsCreate,
+            OdPermissions.OdOpportunitiesView,
+            OdPermissions.OdVehiclesView,
+            OdPermissions.OdAfterSalesJobCardView,
+            OdPermissions.OdCalendarView,
         };
 
         foreach (var permId in permissionIdsToGrant)

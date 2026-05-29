@@ -53,7 +53,7 @@ public class TenantRolesIntegrationTests(OneIdWebApplicationFactory factory) : I
     }
 
     // A valid permissionId that exists in DevSeeder (seeded from PermissionCatalog)
-    private const string ValidPermissionId = "od.admin.roles.view";
+    private const string ValidPermissionId = "oneid.admin.roles.view";
 
     // ── AC1: POST creates role ────────────────────────────────────────────────
 

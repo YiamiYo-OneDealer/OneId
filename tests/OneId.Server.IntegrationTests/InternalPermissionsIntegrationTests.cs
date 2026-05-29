@@ -104,7 +104,7 @@ public class InternalPermissionsIntegrationTests(OneIdWebApplicationFactory fact
     {
         var client = await AuthClientAsync();
         // Deactivate one seeded permission first
-        await client.DeleteAsync("/api/internal/permissions/od.crm.read");
+        await client.DeleteAsync("/api/internal/permissions/onedealer.bp.view");
 
         var activeResponse = await client.GetAsync("/api/internal/permissions?status=Active&pageSize=100");
         var allResponse    = await client.GetAsync("/api/internal/permissions?status=All&pageSize=100");
@@ -123,11 +123,11 @@ public class InternalPermissionsIntegrationTests(OneIdWebApplicationFactory fact
     public async Task Get_ById_ExistingPermission_Returns200()
     {
         var client = await AuthClientAsync();
-        var response = await client.GetAsync("/api/internal/permissions/od.crm.read");
+        var response = await client.GetAsync("/api/internal/permissions/onedealer.bp.view");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.Equal("od.crm.read", body.GetProperty("permissionId").GetString());
+        Assert.Equal("onedealer.bp.view", body.GetProperty("permissionId").GetString());
     }
 
     [Fact]
@@ -147,17 +147,17 @@ public class InternalPermissionsIntegrationTests(OneIdWebApplicationFactory fact
         var client = await AuthClientAsync();
 
         // Get current version
-        var getResp = await client.GetAsync("/api/internal/permissions/od.crm.read");
+        var getResp = await client.GetAsync("/api/internal/permissions/onedealer.bp.view");
         var current = await getResp.Content.ReadFromJsonAsync<JsonElement>();
         var version = current.GetProperty("version").GetUInt32();
 
         var patchResp = await client.PatchAsJsonAsync(
-            "/api/internal/permissions/od.crm.read",
-            new { label = "CRM — Read (Updated)", version });
+            "/api/internal/permissions/onedealer.bp.view",
+            new { label = "Business Partners — View List (Updated)", version });
 
         Assert.Equal(HttpStatusCode.OK, patchResp.StatusCode);
         var body = await patchResp.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.Equal("CRM — Read (Updated)", body.GetProperty("label").GetString());
+        Assert.Equal("Business Partners — View List (Updated)", body.GetProperty("label").GetString());
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public class InternalPermissionsIntegrationTests(OneIdWebApplicationFactory fact
     {
         var client = await AuthClientAsync();
         var response = await client.PatchAsJsonAsync(
-            "/api/internal/permissions/od.crm.read",
+            "/api/internal/permissions/onedealer.bp.view",
             new { label = "Stale attempt", version = 0u });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -177,11 +177,11 @@ public class InternalPermissionsIntegrationTests(OneIdWebApplicationFactory fact
     public async Task Delete_ExistingPermission_Returns204AndSetsInactive()
     {
         var client = await AuthClientAsync();
-        var deleteResp = await client.DeleteAsync("/api/internal/permissions/od.crm.write");
+        var deleteResp = await client.DeleteAsync("/api/internal/permissions/onedealer.bp.create");
         Assert.Equal(HttpStatusCode.NoContent, deleteResp.StatusCode);
 
         // Verify soft-delete: active list no longer contains it
-        var activeResp = await client.GetAsync("/api/internal/permissions/od.crm.write");
+        var activeResp = await client.GetAsync("/api/internal/permissions/onedealer.bp.create");
         var body = await activeResp.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal("Inactive", body.GetProperty("status").GetString());
     }
@@ -202,20 +202,20 @@ public class InternalPermissionsIntegrationTests(OneIdWebApplicationFactory fact
         var client = await AuthClientAsync();
 
         // Deactivate first
-        var deleteResp = await client.DeleteAsync("/api/internal/permissions/od.crm.read");
+        var deleteResp = await client.DeleteAsync("/api/internal/permissions/onedealer.bp.view");
         Assert.Equal(HttpStatusCode.NoContent, deleteResp.StatusCode);
 
         // Verify it is now Inactive
-        var afterDeactivate = await client.GetAsync("/api/internal/permissions/od.crm.read");
+        var afterDeactivate = await client.GetAsync("/api/internal/permissions/onedealer.bp.view");
         var deactivatedBody = await afterDeactivate.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal("Inactive", deactivatedBody.GetProperty("status").GetString());
 
         // Reactivate
-        var activateResp = await client.PostAsync("/api/internal/permissions/od.crm.read/activate", null);
+        var activateResp = await client.PostAsync("/api/internal/permissions/onedealer.bp.view/activate", null);
         Assert.Equal(HttpStatusCode.NoContent, activateResp.StatusCode);
 
         // Verify status is Active again
-        var afterActivate = await client.GetAsync("/api/internal/permissions/od.crm.read");
+        var afterActivate = await client.GetAsync("/api/internal/permissions/onedealer.bp.view");
         var reactivatedBody = await afterActivate.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal("Active", reactivatedBody.GetProperty("status").GetString());
     }

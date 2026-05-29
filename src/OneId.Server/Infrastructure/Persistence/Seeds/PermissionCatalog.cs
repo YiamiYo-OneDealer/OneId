@@ -28,11 +28,7 @@ internal static class PermissionCatalog
         new(Permissions.OneIdIdpConfigure, "Configure IDP Federation"),
 
         new(Permissions.OneIdAuditView, "View Platform Audit Log"),
-    ];
 
-    // Seeded by DevSeeder in development only — tenant admin and demo business permissions.
-    public static readonly IReadOnlyList<PermissionSeedEntry> SeedEntries =
-    [
         new(Permissions.AdminUsersView,       "View Users"),
         new(Permissions.AdminUsersCreate,     "Create Users"),
         new(Permissions.AdminUsersUpdate,     "Update Users"),
@@ -59,15 +55,28 @@ internal static class PermissionCatalog
         new(Permissions.AdminDimensionsAssign, "Assign Dimensions to Users"),
 
         new(Permissions.AdminAuditView, "View Audit Log"),
+    ];
 
-        new(Permissions.CrmRead,           "CRM — Read"),
-        new(Permissions.CrmWrite,          "CRM — Write"),
-        new(Permissions.CrmInvoiceCreate,  "CRM — Create Invoice"),
-        new(Permissions.CrmInvoiceApprove, "CRM — Approve Invoice"),
+    // Seeded by DevSeeder in development only — demo OneDealer business permissions.
+    public static readonly IReadOnlyList<PermissionSeedEntry> SeedEntries =
+    [
+        new(Permissions.OdBpView,   "Business Partners — View List"),
+        new(Permissions.OdBpCreate, "Business Partners — Create"),
+        new(Permissions.OdBpEdit,   "Business Partners — Edit"),
+        new(Permissions.OdCpView,   "Contact Persons — View List"),
 
-        new(Permissions.FinanceRead,    "Finance — Read"),
-        new(Permissions.FinanceWrite,   "Finance — Write"),
-        new(Permissions.FinanceApprove, "Finance — Approve"),
+        new(Permissions.OdLeadsView,           "Leads — View List"),
+        new(Permissions.OdLeadsCreate,         "Leads — Create / Edit"),
+        new(Permissions.OdOpportunitiesView,   "Opportunities — View List"),
+        new(Permissions.OdOpportunitiesCreate, "Opportunities — Create / Edit"),
+
+        new(Permissions.OdVehiclesView,   "Vehicles — View List"),
+        new(Permissions.OdVehiclesCreate, "Vehicles — Add / Create"),
+
+        new(Permissions.OdAfterSalesJobCardView,   "After Sales — View Job Card List"),
+        new(Permissions.OdAfterSalesJobCardCreate, "After Sales — Add Job Card"),
+
+        new(Permissions.OdCalendarView, "Calendar — View"),
     ];
 }
 

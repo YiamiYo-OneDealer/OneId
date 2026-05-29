@@ -27,46 +27,58 @@ public static class Permissions
     public const string OneIdAuditView = "oneid.audit.view";
 
     // Tenant Admin — User lifecycle management (FR-14, FR-21)
-    public const string AdminUsersView       = "od.admin.users.view";
-    public const string AdminUsersCreate     = "od.admin.users.create";
-    public const string AdminUsersUpdate     = "od.admin.users.update";
-    public const string AdminUsersDeactivate = "od.admin.users.deactivate";
-    public const string AdminUsersRevoke     = "od.admin.users.revoke";
+    public const string AdminUsersView       = "oneid.admin.users.view";
+    public const string AdminUsersCreate     = "oneid.admin.users.create";
+    public const string AdminUsersUpdate     = "oneid.admin.users.update";
+    public const string AdminUsersDeactivate = "oneid.admin.users.deactivate";
+    public const string AdminUsersRevoke     = "oneid.admin.users.revoke";
 
     // Tenant Admin — Role management (FR-7)
-    public const string AdminRolesView   = "od.admin.roles.view";
-    public const string AdminRolesCreate = "od.admin.roles.create";
-    public const string AdminRolesUpdate = "od.admin.roles.update";
-    public const string AdminRolesDelete = "od.admin.roles.delete";
+    public const string AdminRolesView   = "oneid.admin.roles.view";
+    public const string AdminRolesCreate = "oneid.admin.roles.create";
+    public const string AdminRolesUpdate = "oneid.admin.roles.update";
+    public const string AdminRolesDelete = "oneid.admin.roles.delete";
 
     // Tenant Admin — Role Set management (FR-8)
-    public const string AdminRoleSetsView   = "od.admin.rolesets.view";
-    public const string AdminRoleSetsCreate = "od.admin.rolesets.create";
-    public const string AdminRoleSetsUpdate = "od.admin.rolesets.update";
-    public const string AdminRoleSetsDelete = "od.admin.rolesets.delete";
+    public const string AdminRoleSetsView   = "oneid.admin.rolesets.view";
+    public const string AdminRoleSetsCreate = "oneid.admin.rolesets.create";
+    public const string AdminRoleSetsUpdate = "oneid.admin.rolesets.update";
+    public const string AdminRoleSetsDelete = "oneid.admin.rolesets.delete";
 
     // Tenant Admin — Group management (FR-9)
-    public const string AdminGroupsView          = "od.admin.groups.view";
-    public const string AdminGroupsCreate        = "od.admin.groups.create";
-    public const string AdminGroupsUpdate        = "od.admin.groups.update";
-    public const string AdminGroupsDelete        = "od.admin.groups.delete";
-    public const string AdminGroupsMembersManage = "od.admin.groups.members.manage";
+    public const string AdminGroupsView          = "oneid.admin.groups.view";
+    public const string AdminGroupsCreate        = "oneid.admin.groups.create";
+    public const string AdminGroupsUpdate        = "oneid.admin.groups.update";
+    public const string AdminGroupsDelete        = "oneid.admin.groups.delete";
+    public const string AdminGroupsMembersManage = "oneid.admin.groups.members.manage";
 
     // Tenant Admin — Dimensional Attribute management (FR-10)
-    public const string AdminDimensionsView   = "od.admin.dimensions.view";
-    public const string AdminDimensionsAssign = "od.admin.dimensions.assign";
+    public const string AdminDimensionsView   = "oneid.admin.dimensions.view";
+    public const string AdminDimensionsAssign = "oneid.admin.dimensions.assign";
 
     // Tenant Admin — Audit log read (FR-22)
-    public const string AdminAuditView = "od.admin.audit.view";
+    public const string AdminAuditView = "oneid.admin.audit.view";
 
-    // Business permissions — CRM module
-    public const string CrmRead           = "od.crm.read";
-    public const string CrmWrite          = "od.crm.write";
-    public const string CrmInvoiceCreate  = "od.crm.invoice.create";
-    public const string CrmInvoiceApprove = "od.crm.invoice.approve";
+    // OneDealer sample permissions — Business Partners / Contact Persons
+    public const string OdBpView   = "onedealer.bp.view";
+    public const string OdBpCreate = "onedealer.bp.create";
+    public const string OdBpEdit   = "onedealer.bp.edit";
+    public const string OdCpView   = "onedealer.cp.view";
 
-    // Business permissions — Finance module
-    public const string FinanceRead    = "od.finance.read";
-    public const string FinanceWrite   = "od.finance.write";
-    public const string FinanceApprove = "od.finance.approve";
+    // OneDealer sample permissions — Leads & Opportunities
+    public const string OdLeadsView          = "onedealer.leads.view";
+    public const string OdLeadsCreate        = "onedealer.leads.create";
+    public const string OdOpportunitiesView  = "onedealer.opportunities.view";
+    public const string OdOpportunitiesCreate = "onedealer.opportunities.create";
+
+    // OneDealer sample permissions — Vehicles
+    public const string OdVehiclesView   = "onedealer.vehicles.view";
+    public const string OdVehiclesCreate = "onedealer.vehicles.create";
+
+    // OneDealer sample permissions — After Sales
+    public const string OdAfterSalesJobCardView   = "onedealer.aftersales.jobcard.view";
+    public const string OdAfterSalesJobCardCreate = "onedealer.aftersales.jobcard.create";
+
+    // OneDealer sample permissions — Calendar
+    public const string OdCalendarView = "onedealer.calendar.view";
 }
