@@ -177,6 +177,7 @@ export function CommandPalette({ open, onOpenChange, tier, tenantId }: CommandPa
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [entityResults, setEntityResults] = useState<EntitySearchResult[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
   const registry = useMemo(() => buildRegistry(tier, tenantId), [tier, tenantId])
 
@@ -188,6 +189,8 @@ export function CommandPalette({ open, onOpenChange, tier, tenantId }: CommandPa
       (a): a is EntitySearchAction => a.type === 'entity-search',
     )
 
+    setIsSearching(query.length >= 2)
+
     Promise.all(
       searchActions.map((a) =>
         query.length >= 2 ? a.search(query) : Promise.resolve([]),
@@ -195,6 +198,7 @@ export function CommandPalette({ open, onOpenChange, tier, tenantId }: CommandPa
     ).then((results) => {
       if (!cancelled) {
         setEntityResults(results.flat())
+        setIsSearching(false)
       }
     })
 
@@ -238,7 +242,7 @@ export function CommandPalette({ open, onOpenChange, tier, tenantId }: CommandPa
           {noTenantSelected
             ? 'Select a tenant first to search users, groups, or roles.'
             : query.length >= 2 && entityResults.length === 0
-              ? 'No results found.'
+              ? isSearching ? 'Searching…' : 'No results found.'
               : 'No results found.'}
         </CommandEmpty>
 

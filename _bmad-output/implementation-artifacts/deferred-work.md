@@ -1,5 +1,12 @@
 # Deferred Work Log
 
+## Deferred from: code review of gap-2-wire-frontend-to-real-api (2026-05-29)
+
+- **D1: Seat limit tooltip text truncated** (`src/OneId.Web/src/routes/tenant/users/new.tsx:264`) — tooltip reads "Seat limit reached" but spec requires "Seat limit reached. Contact your administrator to expand your license." Pre-existing in file, not changed by this story. Fix when Phase 6 licensing is wired and `atSeatLimit` can actually become `true`.
+- **D2: new.tsx group assignments use `Promise.all` not `Promise.allSettled`** (`src/OneId.Web/src/routes/tenant/users/new.tsx`) — if any single group PUT fails, the entire allSettled rejects and the user sees "Failed to create user" even though the user was created. Pre-existing pattern, not changed by this story.
+- **D3: `status` field collected in stepper UI but never included in createUser payload** (`src/OneId.Web/src/routes/tenant/users/new.tsx`) — Active/Inactive selection is displayed in StepReview but not sent to the API. Pre-existing omission from the stepper implementation.
+- **D4: Partial group-assignment failure in CreateUserDialog — re-submit creates duplicate user** (`src/OneId.Web/src/routes/internal/tenants/TenantUsersPage.tsx`) — when some group PUTs fail, dialog stays open showing error with form fields intact; a second submit attempt fires `createUser.mutateAsync` again with the same email (likely 409 from server). Spec is silent on the retry flow; acceptable for POC.
+
 ## Deferred from: code review of gap-1-effective-permissions-and-revoke-backend (2026-05-29)
 
 - **D1: EF Core named query filter refactor** (`AppDbContext.cs` + all entity configurations) — Current `User` filter combines `!u.DeletedAt.HasValue && u.TenantId == tenantContext.TenantId` in one lambda. `IgnoreQueryFilters()` bypasses both; any future caller that adds it to query soft-deleted users would silently lose tenant isolation unless they remember to add an explicit `tenantId` guard (as the DENY override path does). Refactor to EF Core 10 named filters (`"tenant"` / `"softDelete"`) per entity so that `IgnoreQueryFilters("softDelete")` is safe by construction. Reason: refactor after poc.

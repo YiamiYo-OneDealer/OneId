@@ -1,6 +1,6 @@
 # Story gap-2: Wire Frontend Off All Mock Data
 
-**Status:** review
+**Status:** done
 **Epic:** Phase 8 completion
 **Story ID:** gap-2
 **Prerequisite:** Story gap-1 complete ✓ — all four backend endpoints live and returning correct responses.
@@ -215,6 +215,17 @@ Implement ACs 1–6 sequentially. Run tests after all changes. Update story file
 - `src/OneId.Web/src/features/users/useEffectivePermissionsPreview.test.ts` — AC8
 
 ---
+
+## Review Findings
+
+- [x] [Review][Patch] CommandEmpty shows "No results found." while search is in flight — "Searching…" UX lost when results are loading [src/OneId.Web/src/components/shared/CommandPalette.tsx]
+- [x] [Review][Patch] Submit button re-enables during group-assignment PUT phase — double-submit window after mutateAsync resolves [src/OneId.Web/src/routes/internal/tenants/TenantUsersPage.tsx]
+- [x] [Review][Patch] `userId` in `useEffectivePermissionsPreview` useEffect deps causes spurious preview refetch on userId change (AC3: userId must not influence fetch) [src/OneId.Web/src/features/users/api.ts]
+- [x] [Review][Patch] No test for AbortController cancel-on-new-request behavior (AC3: cancel-on-new-request preserved) [src/OneId.Web/src/features/users/useEffectivePermissionsPreview.test.ts]
+- [x] [Review][Defer] Tooltip text truncated — "Seat limit reached" missing "Contact your administrator to expand your license." [src/OneId.Web/src/routes/tenant/users/new.tsx:264] — deferred, pre-existing
+- [x] [Review][Defer] new.tsx group assignments use Promise.all not Promise.allSettled — partial failure swallowed silently [src/OneId.Web/src/routes/tenant/users/new.tsx] — deferred, pre-existing
+- [x] [Review][Defer] status field collected in stepper UI but never sent to API in new.tsx — pre-existing omission [src/OneId.Web/src/routes/tenant/users/new.tsx] — deferred, pre-existing
+- [x] [Review][Defer] Partial group-assignment failure: dialog stays open, re-submit creates duplicate user — spec silent on this edge case [src/OneId.Web/src/routes/internal/tenants/TenantUsersPage.tsx] — deferred, pre-existing
 
 ## Change Log
 

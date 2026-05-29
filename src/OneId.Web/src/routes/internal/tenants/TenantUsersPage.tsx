@@ -88,6 +88,7 @@ function CreateUserDialog({
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [isAssigningGroups, setIsAssigningGroups] = useState(false)
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
   const createUser = useCreateUser(tenantId)
   const queryClient = useQueryClient()
@@ -107,11 +108,13 @@ function CreateUserDialog({
         { email: email.trim(), displayName: displayName.trim() || null },
       )
       if (selectedGroupIds.length > 0) {
+        setIsAssigningGroups(true)
         const results = await Promise.allSettled(
           selectedGroupIds.map((groupId) =>
             apiClient.put(`api/tenant/groups/${groupId}/members`, { json: { userId: newUser.id } }),
           ),
         )
+        setIsAssigningGroups(false)
         const failed = results.filter((r) => r.status === 'rejected')
         if (failed.length > 0) {
           queryClient.invalidateQueries({ queryKey: queryKeys.users(tenantId) })
@@ -125,12 +128,13 @@ function CreateUserDialog({
       setDisplayName(''); setEmail(''); setSelectedGroupIds([])
       onClose()
     } catch {
+      setIsAssigningGroups(false)
       setSubmitError('Failed to create user. Please try again.')
     }
   }
 
   const handleClose = () => {
-    setDisplayName(''); setEmail(''); setEmailError(''); setSubmitError(null); setSelectedGroupIds([])
+    setDisplayName(''); setEmail(''); setEmailError(''); setSubmitError(null); setIsAssigningGroups(false); setSelectedGroupIds([])
     onClose()
   }
 
@@ -169,11 +173,11 @@ function CreateUserDialog({
           {submitError && <p className="text-sm text-destructive">{submitError}</p>}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={createUser.isPending}>
+          <Button variant="outline" onClick={handleClose} disabled={createUser.isPending || isAssigningGroups}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={createUser.isPending}>
-            {createUser.isPending ? 'Creating…' : 'Create'}
+          <Button onClick={handleSubmit} disabled={createUser.isPending || isAssigningGroups}>
+            {createUser.isPending ? 'Creating…' : isAssigningGroups ? 'Assigning groups…' : 'Create'}
           </Button>
         </DialogFooter>
       </DialogContent>

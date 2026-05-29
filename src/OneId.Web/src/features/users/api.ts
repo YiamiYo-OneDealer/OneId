@@ -28,7 +28,7 @@ export function useEffectivePermissionsPreview(
   const abortRef = React.useRef<AbortController | null>(null)
 
   React.useEffect(() => {
-    if (!previewPayload || !userId) return
+    if (!previewPayload) return
     const timer = setTimeout(async () => {
       abortRef.current?.abort()
       const controller = new AbortController()
@@ -53,7 +53,7 @@ export function useEffectivePermissionsPreview(
       clearTimeout(timer)
       abortRef.current?.abort()
     }
-  }, [userId, previewPayload])
+  }, [previewPayload])
 
   return { data, isLoading }
 }

@@ -56,4 +56,26 @@ describe('useEffectivePermissionsPreview', () => {
 
     expect(mockPost).not.toHaveBeenCalled()
   })
+
+  it('aborts in-flight request when a new payload arrives before debounce fires', async () => {
+    let capturedSignal: AbortSignal | undefined
+    mockPost.mockImplementation((_url, opts) => {
+      capturedSignal = (opts as { signal?: AbortSignal } | undefined)?.signal
+      return { json: () => new Promise(() => {}) } as ReturnType<typeof apiClient.post>
+    })
+
+    const { rerender } = renderHook(
+      ({ payload }) => useEffectivePermissionsPreview('user-1', payload),
+      { initialProps: { payload: { groupIds: ['g1'] } } },
+    )
+
+    // Let debounce fire — request is now in-flight
+    await act(() => vi.advanceTimersByTimeAsync(400))
+    expect(mockPost).toHaveBeenCalledTimes(1)
+    expect(capturedSignal?.aborted).toBe(false)
+
+    // New payload arrives — effect cleanup aborts the in-flight request
+    rerender({ payload: { groupIds: ['g2'] } })
+    expect(capturedSignal?.aborted).toBe(true)
+  })
 })
