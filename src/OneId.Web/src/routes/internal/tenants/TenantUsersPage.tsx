@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { type ColumnDef } from '@tanstack/react-table'
@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useUsers, useCreateUser, useUpdateUser, useGroups } from '@/queries/hooks'
+import { useUsers, useCreateUser, useUpdateUser, useGroups, useUserGroups, useAddGroupMember, useRemoveGroupMember } from '@/queries/hooks'
 import { queryKeys } from '@/queries/keys'
 import { apiClient } from '@/lib/api-client'
 import type { UserDto, GroupDto } from '@/api/types'
@@ -189,17 +189,37 @@ function CreateUserDialog({
 
 function EditUserDialog({
   user,
+  tenantId,
+  groups,
   onClose,
   updateUser,
 }: {
   user: UserDto
+  tenantId: string
+  groups: GroupDto[]
   onClose: () => void
   updateUser: ReturnType<typeof useUpdateUser>
 }) {
   const [displayName, setDisplayName] = useState(user.displayName ?? '')
   const [email, setEmail] = useState(user.email)
+  const [isActive, setIsActive] = useState(user.isActive)
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
   const [emailError, setEmailError] = useState('')
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const initialGroupIdsRef = useRef<string[]>([])
+
+  const { data: userGroupData, isLoading: groupsLoading } = useUserGroups(tenantId, user.id)
+  const addGroupMember = useAddGroupMember(tenantId)
+  const removeGroupMember = useRemoveGroupMember(tenantId)
+
+  useEffect(() => {
+    if (userGroupData) {
+      const ids = userGroupData.map((g) => g.id)
+      setSelectedGroupIds(ids)
+      initialGroupIdsRef.current = ids
+    }
+  }, [userGroupData])
 
   const validateEmail = () => {
     if (!email.trim()) { setEmailError('Email is required.'); return false }
@@ -208,23 +228,54 @@ function EditUserDialog({
     return true
   }
 
-  const handleSubmit = () => {
+  const anyPending = isSubmitting || updateUser.isPending || addGroupMember.isPending || removeGroupMember.isPending
+
+  const handleSubmit = async () => {
     if (!validateEmail()) return
     setSaveError(null)
-    updateUser.mutate(
-      {
-        userId: user.id,
-        patch: { displayName: displayName.trim() || null, email: email.trim() },
-      },
-      {
-        onSuccess: onClose,
-        onError: () => setSaveError('Failed to save changes. Please try again.'),
-      },
-    )
+    setIsSubmitting(true)
+    try {
+      const nameChanged = displayName.trim() !== (user.displayName ?? '')
+      const emailChanged = email.trim() !== user.email
+      const statusChanged = isActive !== user.isActive
+      if (nameChanged || emailChanged || statusChanged) {
+        await updateUser.mutateAsync({
+          userId: user.id,
+          patch: {
+            ...(nameChanged && { displayName: displayName.trim() || null }),
+            ...(emailChanged && { email: email.trim() }),
+            ...(statusChanged && { isActive }),
+          },
+        })
+      }
+
+      const original = new Set(initialGroupIdsRef.current)
+      const current = new Set(selectedGroupIds)
+      const toAdd = [...current].filter((id) => !original.has(id))
+      const toRemove = [...original].filter((id) => !current.has(id))
+
+      if (toAdd.length > 0 || toRemove.length > 0) {
+        const results = await Promise.allSettled([
+          ...toAdd.map((groupId) => addGroupMember.mutateAsync({ groupId, userId: user.id })),
+          ...toRemove.map((groupId) => removeGroupMember.mutateAsync({ groupId, userId: user.id })),
+        ])
+        const failed = results.filter((r) => r.status === 'rejected')
+        if (failed.length > 0) {
+          setSaveError('Changes saved but some group assignments failed. Please check and retry.')
+          return
+        }
+      }
+
+      onClose()
+    } catch {
+      setSaveError('Failed to save changes. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open && !updateUser.isPending) onClose() }}>
+    <Dialog open onOpenChange={(open) => { if (!open && !anyPending) onClose() }}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
@@ -249,14 +300,50 @@ function EditUserDialog({
             />
             {emailError && <p className="text-sm text-destructive">{emailError}</p>}
           </div>
+          <div className="space-y-1">
+            <Label>Status</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={isActive ? 'default' : 'outline'}
+                size="sm"
+                disabled={anyPending}
+                onClick={() => setIsActive(true)}
+              >
+                Active
+              </Button>
+              <Button
+                type="button"
+                variant={!isActive ? 'default' : 'outline'}
+                size="sm"
+                disabled={anyPending}
+                onClick={() => setIsActive(false)}
+              >
+                Inactive
+              </Button>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label>Groups</Label>
+            {groupsLoading ? (
+              <p className="text-sm text-muted-foreground">Loading…</p>
+            ) : (
+              <GroupSelectList
+                groups={groups}
+                selected={selectedGroupIds}
+                onChange={setSelectedGroupIds}
+                idPrefix="edit-user-grp"
+              />
+            )}
+          </div>
         </div>
-        {saveError && <p className="text-sm text-destructive">{saveError}</p>}
+        {saveError && <p className="text-sm text-destructive mt-2">{saveError}</p>}
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={updateUser.isPending}>
+          <Button variant="outline" onClick={onClose} disabled={anyPending}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={updateUser.isPending}>
-            {updateUser.isPending ? 'Saving…' : 'Save'}
+          <Button onClick={handleSubmit} disabled={anyPending || groupsLoading}>
+            {isSubmitting ? 'Saving…' : 'Save'}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -361,6 +448,8 @@ export function TenantUsersPage() {
       {editUser && (
         <EditUserDialog
           user={editUser}
+          tenantId={tenantId}
+          groups={groups}
           onClose={() => setEditUser(null)}
           updateUser={updateUser}
         />

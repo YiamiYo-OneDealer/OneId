@@ -24,6 +24,14 @@ public sealed class TenantContextMiddleware(RequestDelegate next)
         {
             tenantContext.Initialize(tenantId);
         }
+        else if (context.User?.IsInRole("InternalAdmin") == true)
+        {
+            var headerValue = context.Request.Headers["X-Tenant-Id"].FirstOrDefault();
+            if (headerValue is not null && Guid.TryParse(headerValue, out var headerTenantId) && headerTenantId != Guid.Empty)
+            {
+                tenantContext.Initialize(headerTenantId);
+            }
+        }
         await next(context);
     }
 }

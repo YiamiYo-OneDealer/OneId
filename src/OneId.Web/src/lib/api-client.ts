@@ -1,6 +1,7 @@
 import ky from 'ky'
 import { refreshGrant } from './auth'
 import { useAuthStore } from '@/store/auth-store'
+import { useTenantStore } from '@/store/tenant-store'
 
 // Singleton in-flight refresh promise — prevents concurrent 401s from racing to refresh simultaneously.
 // Multiple simultaneous 401 responses share one refresh attempt; the second would fail (rotation).
@@ -36,6 +37,10 @@ export const apiClient = ky.create({
         const { accessToken } = useAuthStore.getState()
         if (accessToken) {
           request.headers.set('Authorization', `Bearer ${accessToken}`)
+        }
+        const { activeTenantId } = useTenantStore.getState()
+        if (activeTenantId) {
+          request.headers.set('X-Tenant-Id', activeTenantId)
         }
       },
     ],

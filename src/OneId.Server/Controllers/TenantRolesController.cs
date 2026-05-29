@@ -11,7 +11,7 @@ namespace OneId.Server.Controllers;
 [Route("api/tenant/roles")]
 [Authorize(
     AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme,
-    Roles = "TenantAdmin")]
+    Roles = "TenantAdmin,InternalAdmin")]
 public class TenantRolesController(
     ListRolesHandler listHandler,
     GetRoleHandler getHandler,
