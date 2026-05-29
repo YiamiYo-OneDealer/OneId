@@ -1,5 +1,10 @@
 # Deferred Work Log
 
+## Deferred from: code review of gap-4-internal-admin-tenant-context-and-edit-user-groups (2026-05-30)
+
+- **D1: TenantContextMiddleware registered before UseAuthentication — pipeline order fragility** (`TenantContextMiddleware.cs`) — middleware explicitly calls `AuthenticateAsync` itself; works correctly today because it runs before `UseAuthentication`. If registration order is ever swapped, `IsAuthenticated == true` on entry would skip the explicit auth call and `IsInRole("InternalAdmin")` would evaluate on the pipeline-populated User. Pre-existing design; add a startup assertion or order-enforcement test if pipeline order becomes a maintenance concern.
+- **D2: X-Tenant-Id header forwarded on all requests including tenant-agnostic endpoints** (`api-client.ts`) — `activeTenantId` is sent on every request when non-null (including `/api/internal/tenants`, `/api/internal/permissions`, token refresh). Backend middleware initializes tenant context for those requests; if any tenant-agnostic handler accidentally accesses `ITenantContext.TenantId`, it would silently scope to the active frontend tenant. Low risk as long as tenant-agnostic handlers never access tenant context; add an explicit guard comment in those handlers as the codebase grows.
+
 ## Deferred from: code review of gap-3-user-group-dimension-editing (2026-05-29)
 
 - **D1: `xmin` concurrency token in EF projection** (`GetUserGroupsHandler.cs`) — `EF.Property<uint>(g, "xmin")` used inside `Select` LINQ projection when building `GroupDto`. Pre-existing pattern used by all other GroupDto projections in the codebase; not introduced by this story.

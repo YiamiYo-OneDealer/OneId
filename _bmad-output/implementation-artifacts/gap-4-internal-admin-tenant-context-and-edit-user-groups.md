@@ -1,6 +1,6 @@
 # Story gap-4: Internal Admin Tenant Context Forwarding + Complete EditUserDialog
 
-**Status:** review
+**Status:** done
 **Epic:** Phase 8 completion
 **Story ID:** gap-4
 **Prerequisite:** gap-3 complete ✓ — `useUserGroups`, `useAddGroupMember`, `useRemoveGroupMember` hooks exist and are exported from the barrel.
@@ -136,6 +136,14 @@ The `EditUserDialog` in `TenantUsersPage.tsx` (lines 190–265) only patches `di
 - [x] T6 (AC3) Frontend: Update `apiClient.ts` — send `X-Tenant-Id` header from `tenantStore`
 - [x] T7 (AC5–AC7) Frontend: Update `EditUserDialog` in `TenantUsersPage.tsx` — groups + status
 - [x] T8 (AC9) Run `npm test -- --run` and fix any regressions
+
+### Review Findings
+
+- [x] [Review][Decision] PATCH failure silently aborts group changes — Resolved: all-or-nothing behavior confirmed (Option A). Current code is correct.
+- [x] [Review][Patch] User list not invalidated after group-only edit — fixed: added `useQueryClient` in `EditUserDialog`, `queryClient.invalidateQueries({ queryKey: queryKeys.users(tenantId) })` called before `onClose()`. [TenantUsersPage.tsx — EditUserDialog handleSubmit]
+- [x] [Review][Patch] Re-submit after partial group failure re-sends already-succeeded mutations — fixed: after `allSettled`, `initialGroupIdsRef.current` updated to reflect only succeeded operations so retry only re-attempts actual failures. [TenantUsersPage.tsx — EditUserDialog handleSubmit]
+- [x] [Review][Defer] TenantContextMiddleware registered before UseAuthentication — pipeline order fragility [TenantContextMiddleware.cs] — deferred, pre-existing
+- [x] [Review][Defer] X-Tenant-Id header forwarded on all requests including tenant-agnostic endpoints [api-client.ts] — deferred, pre-existing design concern
 
 ---
 

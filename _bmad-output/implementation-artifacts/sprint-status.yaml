@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-22
-last_updated: 2026-05-28  # Stories 5c-2, 5c-7, and 5c-3b done
+last_updated: 2026-05-30  # gap-4 done
 project: OneId
 project_key: NOKEY
 tracking_system: file-system

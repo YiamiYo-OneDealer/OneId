@@ -209,6 +209,7 @@ function EditUserDialog({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const initialGroupIdsRef = useRef<string[]>([])
 
+  const queryClient = useQueryClient()
   const { data: userGroupData, isLoading: groupsLoading } = useUserGroups(tenantId, user.id)
   const addGroupMember = useAddGroupMember(tenantId)
   const removeGroupMember = useRemoveGroupMember(tenantId)
@@ -259,6 +260,16 @@ function EditUserDialog({
           ...toAdd.map((groupId) => addGroupMember.mutateAsync({ groupId, userId: user.id })),
           ...toRemove.map((groupId) => removeGroupMember.mutateAsync({ groupId, userId: user.id })),
         ])
+        const addResults = results.slice(0, toAdd.length)
+        const removeResults = results.slice(toAdd.length)
+        const succeededAdds = toAdd.filter((_, i) => addResults[i].status === 'fulfilled')
+        const succeededRemoves = toRemove.filter((_, i) => removeResults[i].status === 'fulfilled')
+        if (succeededAdds.length > 0 || succeededRemoves.length > 0) {
+          const newBaseline = new Set(initialGroupIdsRef.current)
+          succeededAdds.forEach((id) => newBaseline.add(id))
+          succeededRemoves.forEach((id) => newBaseline.delete(id))
+          initialGroupIdsRef.current = [...newBaseline]
+        }
         const failed = results.filter((r) => r.status === 'rejected')
         if (failed.length > 0) {
           setSaveError('Changes saved but some group assignments failed. Please check and retry.')
@@ -266,6 +277,7 @@ function EditUserDialog({
         }
       }
 
+      queryClient.invalidateQueries({ queryKey: queryKeys.users(tenantId) })
       onClose()
     } catch {
       setSaveError('Failed to save changes. Please try again.')
